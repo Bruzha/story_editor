@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 
-interface MyInputTextProps {
+interface IProps {
   initialText: string;
   onChange: (value: string) => void;
 }
 
-export default function InputText({ initialText, onChange }: MyInputTextProps) {
+export default function InputText({ initialText, onChange }: IProps) {
   const [value, setValue] = useState(initialText);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {

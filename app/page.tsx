@@ -1,11 +1,10 @@
 'use client';
-import Button from './components/ui_components/Button';
-import InputText from './components/ui_components/InputText';
-import CardCharacter from './components/ui_components/CardCharacter';
-import Header from './components/layout_components/Header';
-import Footer from './components/layout_components/Footer';
-import Sidebar from './components/layout_components/Sidebar';
+import Button from './components/ui/button/Button';
+import InputText from './components/ui/inputText/InputText';
+import Card from './components/ui/card/Card';
+import Sidebar from './components/sections/sidebar/Sidebar';
 import { useState } from 'react';
+import './style.scss';
 
 export default function Home() {
   const [inputText, setInputText] = useState('');
@@ -15,14 +14,41 @@ export default function Home() {
   };
 
   return (
-    <>
-      <Header />
+    <div className="page__body">
       <Sidebar type="профиль" />
-      <Button name="button1" />
-      <InputText initialText={inputText} onChange={handleInputChange} />
-      <p>Input value: {inputText}</p>
-      <CardCharacter src="путь" alt="Персонаж 1" name="Персонаж 1" />
-      <Footer />
-    </>
+      <div>
+        <Button name="button1" />
+        <InputText initialText={inputText} onChange={handleInputChange} />
+        <p>Input value: {inputText}</p>
+        <Card
+          id={1}
+          src="путь"
+          alt="Аватарка персонажа 1"
+          data={[
+            'Эдгар Энгл Уайт-Верм',
+            'Англичанин, пытающийся отреставрировать родительский особняк после пожара и получить опеку над Бриттаном.',
+            'протагонист',
+            'мужской',
+            '32 года',
+            'человек, англичанин',
+          ]}
+          markColor="red"
+        />
+        <Card
+          id={2}
+          src="путь"
+          alt="Аватарка персонажа 2"
+          data={[
+            'Гвиллим Камбрия Ап Драйг Гох',
+            'Школьный друг Эдгара, снимающий у него часть особняка. Работал учителем Бриттана на дому пока в семье последнего не произошла трагедия. Сподвиг Эдгара взять опеку над осиротевшим мальчиком.',
+            'друг протагониста',
+            'мужской',
+            '34 года',
+            'человек, валлиец',
+          ]}
+          markColor="#0db545"
+        />
+      </div>
+    </div>
   );
 }

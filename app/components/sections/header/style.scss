@@ -1,0 +1,23 @@
+.header__container{
+    background-color: dimgray;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-family: var(--font-open-sans), sans-serif;
+    background-color: var(--primary-color);
+    color: var(--secondary-text-color);
+}
+
+.header__name{
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+}
+
+.header__name > p{
+    font-family: var(--font-merriweather), serif;
+}

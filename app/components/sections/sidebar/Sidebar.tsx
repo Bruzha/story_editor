@@ -1,5 +1,5 @@
-import Link from '../ui_components/Link';
-import '../style_components/sidebar.css';
+import Link from '../../ui/link/Link';
+import './style.scss';
 import React from 'react';
 
 interface SidebarProps {
@@ -16,6 +16,7 @@ export default function Sidebar({ type }: SidebarProps) {
 
   if (type === 'профиль') {
     masLinks = [
+      { name: 'Профиль', href: 'путь1' },
       { name: 'Проекты', href: 'путь1' },
       { name: 'Идеи', href: 'путь2' },
     ];
@@ -46,11 +47,9 @@ export default function Sidebar({ type }: SidebarProps) {
 
   return (
     <aside className="sidebar__container">
-      <div>
-        {masLinks.map((link, index) => (
-          <Link key={index} href={link.href} name={link.name} />
-        ))}
-      </div>
+      {masLinks.map((link, index) => (
+        <Link key={index} href={link.href} name={link.name} className="black-link" />
+      ))}
     </aside>
   );
 }
