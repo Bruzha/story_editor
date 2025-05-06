@@ -1,6 +1,6 @@
 'use client';
 import Button from './components/ui/button/Button';
-import InputText from './components/ui/inputText/InputText';
+import InputText from './components/ui/input/Input';
 import Card from './components/ui/card/Card';
 import Sidebar from './components/sections/sidebar/Sidebar';
 import { useState } from 'react';
@@ -18,7 +18,6 @@ export default function Home() {
       <Sidebar type="профиль" />
       <div>
         <Button name="button1" />
-        <InputText initialText={inputText} onChange={handleInputChange} />
         <p>Input value: {inputText}</p>
         <Card
           id={1}

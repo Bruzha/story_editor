@@ -1,12 +1,13 @@
-.link__body{
+.link{
     text-decoration: none;
     color: var(--secondary-text-color);
+    font-family: var(--font-open-sans), sans-serif;
 }
 
 .white-link {
     color: var(--secondary-text-color);
   }
   
-  .black-link {
-    color: var(--text-color);
-  }
+.black-link {
+  color: var(--text-color);
+}

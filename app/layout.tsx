@@ -1,10 +1,9 @@
-// layout.tsx
 import React from 'react';
 import type { Metadata } from 'next';
 import { Merriweather, Open_Sans } from 'next/font/google';
 import Header from './components/sections/header/Header';
 import Footer from './components/sections/footer/Footer';
-import './globals.css';
+import './globals.scss';
 
 const merriweather = Merriweather({
   subsets: ['cyrillic'],

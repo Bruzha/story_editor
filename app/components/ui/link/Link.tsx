@@ -9,7 +9,7 @@ interface IProps {
 
 export default function MyLink({ name, href, className }: IProps) {
   return (
-    <Link href={href} className={`link__body ${className || ''}`}>
+    <Link href={href} className={`link ${className || ''}`}>
       {name}
     </Link>
   );
