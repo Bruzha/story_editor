@@ -10,7 +10,6 @@ import Title from '../components/ui/title/Title';
 import Link from '../components/ui/link/Link';
 import './style.scss';
 
-// Определяем типы для схем валидации
 interface BaseSchemaType {
   email: string;
 }
@@ -20,19 +19,19 @@ interface PasswordSchemaType {
   confirmPassword?: string;
 }
 
-//Первая схема с email
+//Первая схема валидации с email
 const baseValidationSchema: yup.ObjectSchema<BaseSchemaType> = yup.object({
   email: yup.string().required('Email обязателен').email('Неверный формат email'),
 });
 
-//Вторая схема с паролями
+//Вторая схема валидации с паролями
 const passwordValidationSchema: yup.ObjectSchema<PasswordSchemaType> = yup.object({
   password: yup
     .string()
     .required('Пароль обязателен')
     .min(8, 'Пароль должен содержать не менее 8 символов')
     .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/,
+      /^(?=.*[a-zа-яё])(?=.*[A-ZА-ЯЁ])(?=.*\d)(?=.*[!@#$%^&*])/,
       'Пароль должен содержать минимум одну заглавную букву, одну строчную букву, одну цифру и один специальный символ'
     ),
   confirmPassword: yup
@@ -49,22 +48,17 @@ interface FormData {
 
 export default function ResetPassword() {
   const [showSecondForm, setShowSecondForm] = useState(false);
-
-  // Устанавливаем начальное значение для validationSchema
   const [validationSchema, setValidationSchema] = useState<yup.AnyObjectSchema>(baseValidationSchema);
 
   useEffect(() => {
-    // Обновляем схему валидации при изменении состояния showSecondForm
     if (showSecondForm) {
-      // Создаем новую схему, объединяя базовую и схему с паролями
       setValidationSchema(
         yup.object().shape({
-          ...baseValidationSchema.fields, // Копируем поля из базовой схемы
-          ...passwordValidationSchema.fields, // Добавляем поля с паролями
+          ...baseValidationSchema.fields,
+          ...passwordValidationSchema.fields,
         }) as yup.AnyObjectSchema
       );
     } else {
-      // Возвращаемся к базовой схеме
       setValidationSchema(baseValidationSchema);
     }
   }, [showSecondForm]);
