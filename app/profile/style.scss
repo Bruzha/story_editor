@@ -1,0 +1,163 @@
+@import "../mixins";
+
+.profile {
+
+    @include media-breakpoint-down(sm){
+        h3{
+            font-size: 22px;
+        }
+        p{
+            font-size: 16px;
+        }
+        &__inputs{
+            margin-bottom: calc(40px + 60px);
+            gap: 60px;
+        }
+    } 
+
+    @include media-breakpoint-up(sm){
+        h3{
+            font-size: 28px;
+        }
+        p{
+            font-size: 22px;
+        }
+    }
+
+    @include media-breakpoint-between(sm, md){
+        &__inputs{
+            margin-bottom: calc(40px + 50px);
+            gap: 50px;
+        }
+    }
+
+    @include media-breakpoint-down(md) {
+        flex-direction: column;
+
+        &__window {
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+        &__line{
+            margin-bottom: 30px;
+        }
+        &__form{
+            margin-top: 55px;
+        }
+        &__form-title,  &__info{
+            margin-bottom: 40px;
+        }
+    }
+
+    @include media-breakpoint-up(md) {
+        flex-direction: row;
+    
+        &__sidebar {
+          width: 15%;
+          min-width: 180px;
+        }
+    
+        &__window {
+          width: 85%;
+        }
+    }
+
+    @include media-breakpoint-between(md, xxxl) {
+        &__window {
+            padding-top: 60px;
+            padding-bottom: 60px;
+        }
+        &__inputs{
+            margin: 0 12.44vw 60px 12.44vw;
+            gap: 40px;
+            margin-bottom: calc(60px + 30px);
+        }
+        &__line{
+            margin-bottom: 40px;
+        }
+        &__form{
+            margin-top: 85px;
+        }
+        &__form-title, &__info{
+            margin-bottom: 60px;
+        }
+    }
+
+    @include media-breakpoint-up(xxxl) {
+        &__window {
+            padding-top: 75px;
+            padding-bottom: 75px;
+        }
+        &__inputs{
+            margin-bottom: calc(75px + 30px);
+            gap: 30px;
+        }
+        &__data-container{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        &__line{
+            margin-bottom: 60px;
+        }
+        &__form{
+            width: 65%;
+        }
+        &__form-title, &__info{
+            margin-bottom: 75px;
+        }
+      
+    }
+
+    background-color: var(--background-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    overflow: hidden;
+    gap: 20px;
+
+    p{
+        font-family: var(--font-open-sans), sans-serif;
+        color: var(--text-color);
+    }
+    h3, span{
+        font-family: var(--font-merriweather), serif;
+        color: var(--secondary-color);
+        font-weight: 700;
+    }
+
+    &__window {
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+    &__inputs{
+        display: flex;
+        flex-direction: column;
+    }
+    &__inputs > div{
+        position: relative;
+    }
+    &__error-message{
+        font-size: 12px;
+        color: var(--text-color);
+        font-family: var(--font-open-sans), sans-serif;
+        position: absolute;
+    }
+    &__button{
+        display: flex;
+        justify-content: center;
+    }
+    &__line{
+        background-color: var(--primary-color);
+        height: 3px;
+    }
+    &__info{
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    &__form-title{
+        text-align: center;
+    }
+  }
