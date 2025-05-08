@@ -9,8 +9,12 @@ export default function Footer() {
         <p>РЕДАКТОР ИСТОРИЙ</p>
       </div>
       <div className="footer__links">
-        <Link href="путь1" name="Войти" className="white-link" />
-        <Link href="путь2" name="Зарегистрироваться" className="white-link" />
+        <Link href="путь1" name="Войти" className="white-link">
+          {''}
+        </Link>
+        <Link href="путь2" name="Зарегистрироваться" className="white-link">
+          {''}
+        </Link>
       </div>
     </footer>
   );

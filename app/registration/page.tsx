@@ -67,7 +67,9 @@ export default function Registration() {
           <Button name="Регистрация" type="submit" />
         </div>
         <div className="registration__link">
-          <Link name="Еще нет аккаунта? Зарегистрироваться" href={'../autorisation'} className="black-link" />
+          <Link name="Еще нет аккаунта? Зарегистрироваться" href={'../autorisation'} className="black-link-form">
+            <></>
+          </Link>
         </div>
       </Form>
     </div>

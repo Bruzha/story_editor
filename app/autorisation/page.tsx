@@ -50,10 +50,14 @@ export default function Autorisation() {
           <Button name="Вход" type="submit" />
         </div>
         <div className="autorisation__link">
-          <Link name="Уже есть аккаунт? Войти" href={'../registration'} className="black-link" />
+          <Link name="Уже есть аккаунт? Войти" href={'../registration'} className="black-link-form">
+            <></>
+          </Link>
         </div>
         <div className="autorisation__link">
-          <Link name="Забыли пароль?" href={'../reset_password'} className="black-link" />
+          <Link name="Забыли пароль?" href={'../reset_password'} className="black-link-form">
+            <></>
+          </Link>
         </div>
       </Form>
     </div>

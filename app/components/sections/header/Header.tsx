@@ -9,8 +9,12 @@ export default function Header() {
         <h1>РЕДАКТОР ИСТОРИЙ</h1>
       </div>
       <div className="header__links">
-        <Link href="путь1" name="Войти" className="white-link" />
-        <Link href="путь2" name="Зарегистрироваться" className="white-link" />
+        <Link href="../../autorisation" name="Войти" className="white-link">
+          {''}
+        </Link>
+        <Link href="../../registration" name="Зарегистрироваться" className="white-link">
+          {''}
+        </Link>
       </div>
     </header>
   );

@@ -6,7 +6,7 @@
         h3{
             font-size: 22px;
         }
-        p{
+        &__info p{
             font-size: 16px;
         }
         &__inputs{
@@ -19,7 +19,7 @@
         h3{
             font-size: 28px;
         }
-        p{
+        &__info p{
             font-size: 22px;
         }
     }
@@ -32,7 +32,6 @@
     }
 
     @include media-breakpoint-down(md) {
-        flex-direction: column;
 
         &__window {
             padding-top: 40px;
@@ -49,24 +48,7 @@
         }
     }
 
-    @include media-breakpoint-up(md) {
-        flex-direction: row;
-    
-        &__sidebar {
-          width: 15%;
-          min-width: 180px;
-        }
-    
-        &__window {
-          width: 85%;
-        }
-    }
-
     @include media-breakpoint-between(md, xxxl) {
-        &__window {
-            padding-top: 60px;
-            padding-bottom: 60px;
-        }
         &__inputs{
             margin: 0 12.44vw 60px 12.44vw;
             gap: 40px;
@@ -84,19 +66,13 @@
     }
 
     @include media-breakpoint-up(xxxl) {
-        &__window {
-            padding-top: 75px;
-            padding-bottom: 75px;
-        }
-        &__inputs{
-            margin-bottom: calc(75px + 30px);
-            gap: 30px;
-        }
-        &__data-container{
-            display: flex;
+        display: flex;
             flex-direction: row;
             justify-content: space-between;
             gap: 20px;
+        &__inputs{
+            margin-bottom: calc(75px + 30px);
+            gap: 30px;
         }
         &__line{
             margin-bottom: 60px;
@@ -109,14 +85,6 @@
         }
       
     }
-
-    background-color: var(--background-color);
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    overflow: hidden;
-    gap: 20px;
-
     p{
         font-family: var(--font-open-sans), sans-serif;
         color: var(--text-color);
@@ -127,10 +95,6 @@
         font-weight: 700;
     }
 
-    &__window {
-        padding-right: 20px;
-        padding-left: 20px;
-    }
     &__inputs{
         display: flex;
         flex-direction: column;
@@ -140,8 +104,6 @@
     }
     &__error-message{
         font-size: 12px;
-        color: var(--text-color);
-        font-family: var(--font-open-sans), sans-serif;
         position: absolute;
     }
     &__button{

@@ -99,7 +99,9 @@ export default function ResetPassword() {
               <Button name="Новый пароль" type="submit" />
             </div>
             <div className="reset__link">
-              <Link name="Вернуться на страницу авторизации?" href={'../autorisation'} className="black-link" />
+              <Link name="Вернуться на страницу авторизации?" href={'../autorisation'} className="black-link-form">
+                <></>
+              </Link>
             </div>
           </div>
         )}
@@ -125,7 +127,9 @@ export default function ResetPassword() {
               <Button name="Подтвердить" type="submit" />
             </div>
             <div className="reset__link">
-              <Link name="Вернуться на страницу авторизации?" href={'../autorisation'} className="black-link" />
+              <Link name="Вернуться на страницу авторизации?" href={'../autorisation'} className="black-link-form">
+                <></>
+              </Link>
             </div>
           </div>
         )}

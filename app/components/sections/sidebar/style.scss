@@ -1,84 +1,97 @@
 @import "../../../mixins";
 
-.sidebar{
-
-    @include media-breakpoint-down(md){
-        height: 100%;
-        padding-top: 20px;
-        padding-bottom: 10px;
-        padding-right: 10px;
-        flex-direction: row;
-        justify-content: space-between;
-        font-size: 16px;
-        overflow-x: auto;
-        border-bottom: 3px solid var(--primary-color);
-
-        // box-shadow: 
-        // 0px 0px 5px 1px var(--primary-color);
-        // -15px 15px var(--secondary-text-color),
-        // -15px 15px 15px -8px var(--secondary-color);
-
-        &__items{
-            flex-direction: column;
-            text-align: center;
-        }
-        &__icon{
-            width: 35px;
-            height: 35px;
-        }
-    } 
-
-    @include media-breakpoint-up(md){
-        width: 100%;
-        height: 100%;
-        flex-direction: column;
-        border-right: 3px solid var(--primary-color);
-
-        &__items{
-            flex-direction: row;
-        }
-
-        &__icon{
-            width: 25px;
-            height: 25px;
-        }
-    }
-
-    @include media-breakpoint-between(md, xxxl){
-        padding-top: 60px;
-        padding-bottom: 60px;
-
-        // box-shadow: 
-        // 0px 0px 5px 1px var(--primary-color);
-        // 20px 25px var(--secondary-text-color),
-        // 20px 25px 15px -8px var(--secondary-color);
-    }
-
-    @include media-breakpoint-up(md){
-        font-size: 22px;
-    } 
-
-    @include media-breakpoint-up(xxxl){
-        padding-top: 75px;
-        padding-bottom: 75px;
-
-        // box-shadow: 
-        // 0px 0px 5px 1px var(--primary-color),
-        // 30px 35px var(--secondary-text-color),
-        // 30px 35px 15px -8px var(--secondary-color);
-    }
-
-    padding-left: 20px;
-    display: flex;
+.sidebar {
+  @include media-breakpoint-down(md) {
+    height: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-bottom: 3px solid var(--primary-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
     background-color: var(--background-color);
-    gap: 25px;
-    font-family: var(--font-open-sans), sans-serif;
-    box-shadow: 
-        0px 0px 5px 1px var(--primary-color);
-
-    &__items{
-        display: flex;
-        gap: 10px;
-        align-items: center;
+    overflow-x: auto;
+    
+    &__links-container {
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0 20px;
+      box-sizing: border-box;
     }
+
+    &__items {
+      flex-direction: column;
+      text-align: center;
+      flex-shrink: 0;
+      width: auto;
+    }
+
+    &__icon {
+      width: 35px;
+      height: 35px;
+    }
+  }
+
+  @include media-breakpoint-up(md) {
+    width: 15%;
+    border-right: 3px solid var(--primary-color);
+
+    &__links-container {
+      flex-direction: column;
+      position: sticky;
+      left: 0;
+      padding-right: 20px;
+      padding-left: 20px;
+    }
+
+    &__items {
+      flex-direction: row;
+      margin-bottom: 10px;
+    }
+
+    &__icon {
+      width: 25px;
+      height: 25px;
+      margin-right: 10px;
+    }
+  }
+
+  @include media-breakpoint-between(md, xxxl) {
+    padding-top: 60px;
+    padding-bottom: 60px;
+    min-width: 200px;
+    max-height: calc(100% - 120px);
+    &__links-container {
+        top: 60px;
+    }
+  }
+
+  @include media-breakpoint-up(md) {
+    font-size: 22px;
+  }
+
+  @include media-breakpoint-up(xxxl) {
+    padding-top: 75px;
+    padding-bottom: 75px;
+    position: relative;
+    max-height: calc(100% - 150px);
+    &__links-container {
+        top: 75px;
+    }
+  }
+
+  background-color: var(--background-color);
+  font-family: var(--font-open-sans), sans-serif;
+  box-shadow: 0px 0px 5px 1px var(--primary-color);
+
+  &__items {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  &__links-container{
+    display: flex;
+    gap: 30px;
+  }
 }

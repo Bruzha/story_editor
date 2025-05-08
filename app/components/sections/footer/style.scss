@@ -41,7 +41,7 @@
 
     @include media-breakpoint-up(xxxl){
         height: 150px;
-        padding: 0 240px;
+        padding: 0 230px 0 240px;
 
         &__links{
             font-size: 22px;
