@@ -2,7 +2,7 @@ import './style.scss';
 
 interface IProps {
   id: number;
-  src: string;
+  src?: string;
   data: string[];
   markColor: string;
 }
@@ -23,7 +23,6 @@ export default function Card({ id, src, data, markColor }: IProps) {
 
   const isLightColor = getColorBrightness(markColor) > 128;
   const textColor = isLightColor ? '#333333' : '#FFFFFF';
-
   const textStyle = {
     backgroundColor: markColor,
     color: textColor,
@@ -33,13 +32,31 @@ export default function Card({ id, src, data, markColor }: IProps) {
   };
   const combinedStyle = { ...textStyle, ...borderStyle };
 
+  const isValidSrc = src && src.trim() !== '';
+
+  const filterStyle = {
+    filter: textColor === '#FFFFFF' ? 'invert(1)' : 'none',
+  };
+
   return (
-    <div className="card" style={textStyle}>
-      <div>
-        <img className="card__avatar" src={src} alt="" style={borderStyle} />
-      </div>
-      <div>
-        <header className="card__title">{data[0]}</header>
+    <div key={id} className="card" style={textStyle}>
+      {isValidSrc && (
+        <div>
+          <img className="card__avatar" src={src} alt="" style={borderStyle} />
+        </div>
+      )}
+      <div className="card__container-info">
+        <div className="card__first-line">
+          <header className="card__title">{data[0]}</header>
+          <input
+            title="Удалить"
+            className="card__button-delete"
+            type="image"
+            src="/icons/delete.svg"
+            alt="удалить"
+            style={filterStyle}
+          />
+        </div>
         <section>{data[1]}</section>
         <ul>
           {data.slice(2).map((text) => (

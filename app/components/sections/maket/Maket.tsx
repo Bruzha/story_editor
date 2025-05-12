@@ -6,19 +6,22 @@ import Title from '../../ui/title/Title';
 import React from 'react';
 
 interface IProps {
-  typeSidebar: 'profile' | 'project';
+  typeSidebar: 'profile' | 'project' | 'timeline' | 'help';
   title: string;
   children: React.ReactNode;
+  subtitle: string;
 }
 
-export default function Maket({ typeSidebar, title, children }: IProps) {
+export default function Maket({ typeSidebar, title, subtitle, children }: IProps) {
   return (
     <div className="maket">
       <Sidebar type={typeSidebar} />
       <div className="maket__window">
         <Title text={title} />
-        <h3>Ruzhastik</h3>
-        <div className="maket__line"></div>
+        <div className="maket__subtitle-container">
+          <h3>{subtitle}</h3>
+          <div className="maket__line"></div>
+        </div>
         <div>{children}</div>
       </div>
     </div>

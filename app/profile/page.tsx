@@ -40,7 +40,7 @@ export default function Profile({ email, date, updateDate, login, name, lastname
   };
 
   return (
-    <Maket typeSidebar="profile" title="ПРОФИЛЬ">
+    <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle="Ruzhastik">
       <div className="profile">
         <div>
           <div className="profile__info">

@@ -10,22 +10,26 @@
     padding-left: 40px;
 
     &__wrapper {
-      position: relative; /* Контейнер для позиционирования */
-      display: flex; /* Для удобного выравнивания */
-      align-items: center; /* Выравниваем по вертикали */
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      :focus{
+        outline: 3px solid var(--secondary-color);
+      }
     }
 
     &__icon {
       position: absolute;
-      left: 10px; /* Отступ от левого края */
+      left: 10px;
       top: 50%;
       transform: translateY(-50%);
-      pointer-events: none; /* Чтобы иконка не перехватывала клики */
+      pointer-events: none;
     }
 
     &__icon img {
       width: 20px;
       height: 20px;
-      display: block; /* Убираем лишние отступы у img */
+      display: block;
     }
 }

@@ -20,7 +20,7 @@
     }
     @include media-breakpoint-down(md){
         gap: 20px;
-        img{
+        &__avatar{
             width: 90px;
             height: 90px;
         }
@@ -29,7 +29,7 @@
         gap: 30px;
     }
     @include media-breakpoint-between(md, xxxl){
-        img{
+        &__avatar{
             width: 120px;
             height: 120px;
         }
@@ -37,7 +37,7 @@
     @include media-breakpoint-up(xxxl){
         padding-left: 120px;
         padding-right: 120px;
-        img{
+        &__avatar{
             width: 150px;
             height: 150px;
         }
@@ -53,43 +53,43 @@
     transition: box-shadow 0.5s;
     &:hover{
         box-shadow: 0px 0px 15px var(--primary-color);
+        .card__title{
+          text-decoration: underline;
+        }
     }
   
-    section, ul {
-      margin-top: 10px;
+    section {
+      margin-top: 20px;
     }
   
-    img {
+    &__avatar {
       border-radius: 50%;
       object-fit: cover;
     }
-  
+    &__button-delete{
+        width: 25px;
+        height: 25px;
+    }
+    &__first-line{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
     &__title {
       display: flex;
       flex-direction: row;
       font-weight: 600;
       font-family: var(--font-merriweather), serif;
-      &:hover{
-        text-decoration: underline;
-      }
-    }
-  
-    ul {
-      display: flex;
-      flex-direction: row;
-      gap: 20px;
     }
   
     &__elements {
       padding: 5px 10px;
       border-radius: 10px;
-      margin: 0;
-      display: flex;
-      align-items: center;
+      margin: 20px 20px 0 0;
+      display: inline-block;
+    }
+    &__container-info{
+        width: 100%;
     }
   
-    &__avatar {
-      width: 100px;
-      height: 100px;
-    }
   }
