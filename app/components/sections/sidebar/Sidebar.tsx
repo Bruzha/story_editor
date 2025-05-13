@@ -7,7 +7,7 @@ interface IProps {
   type: string;
 }
 
-interface LinkListItem {
+interface ListItem {
   name: string;
   href: string;
   icon: string;
@@ -20,7 +20,7 @@ export default function Sidebar({ type }: IProps) {
     setCurrentPath(window.location.pathname);
   }, []);
 
-  let masLinks: LinkListItem[] = [];
+  let masLinks: ListItem[] = [];
   if (type === 'profile') {
     masLinks = [
       { name: 'Профиль', href: '/profile', icon: './icons/name.svg' },
@@ -35,7 +35,7 @@ export default function Sidebar({ type }: IProps) {
       { name: 'Локации', href: '/locations', icon: './icons/location.svg' },
       { name: 'Объекты', href: '/objects', icon: './icons/object.svg' },
       { name: 'Группы', href: '/groups', icon: './icons/group.svg' },
-      { name: 'Схема отношений', href: '/relationships', icon: './icons/relationship.svg' },
+      { name: 'Схемы отношений', href: '/relationships', icon: './icons/relationship.svg' },
       { name: 'Линия времени', href: '/timeevents', icon: './icons/timelines.svg' },
       { name: 'Главы', href: '/chapters', icon: './icons/chapter.svg' },
       { name: 'Заметки', href: '/notes', icon: './icons/notes.svg' },
@@ -52,7 +52,15 @@ export default function Sidebar({ type }: IProps) {
     masLinks = [
       { name: 'Назад', href: '/plotlines', icon: './icons/back.svg' },
       { name: 'Советы', href: '/advices', icon: './icons/help.svg' },
-      { name: 'Термины', href: '/terms', icon: './icons/terms.svg' },
+      { name: 'Словарь терминов', href: '/terms', icon: './icons/terms.svg' },
+    ];
+  } else if (type === 'create_character') {
+    masLinks = [
+      { name: 'Назад', href: '/plotlines', icon: './icons/back.svg' },
+      { name: 'Основная информация', href: '/create_character_base', icon: './icons/help.svg' },
+      { name: 'Внешность', href: '/create_character_appearance', icon: './icons/terms.svg' },
+      { name: 'Личность', href: '/create_character_personality', icon: './icons/terms.svg' },
+      { name: 'Социальные связи', href: '/create_character_social', icon: './icons/terms.svg' },
     ];
   }
   if (!masLinks || masLinks.length === 0) {

@@ -33,3 +33,11 @@
       display: block;
     }
 }
+
+input[type="color"]{
+  width: 90px;
+  height: 90px;
+  padding: 3px;
+  background-color: var(--secondary-text-color);
+  margin-top: 5px;
+}

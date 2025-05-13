@@ -1,0 +1,36 @@
+@import "../../../mixins";
+
+.create{
+
+    @include media-breakpoint-down(md){
+        &__button{
+            margin-top: 40px;
+            flex-direction: column;
+            width: fit-content;
+            margin-right: 0;
+            margin-left: auto;
+        }
+    }
+    @include media-breakpoint-between(md, xxxl){
+        &__button{
+            margin-top: 60px;
+        }
+    }
+    @include media-breakpoint-up(xxxl){
+        &__button{
+            margin-top: 75px;
+        }
+    }
+
+    &__items{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    }
+
+    &__button{
+        display: flex;
+        justify-content: right;
+        gap: 20px;
+    }
+}

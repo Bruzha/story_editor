@@ -6,7 +6,7 @@ import Title from '../../ui/title/Title';
 import React from 'react';
 
 interface IProps {
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help';
+  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character';
   title: string;
   children: React.ReactNode;
   subtitle: string;

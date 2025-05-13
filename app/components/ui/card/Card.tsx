@@ -4,7 +4,8 @@ interface IProps {
   id: number;
   src?: string;
   data: string[];
-  markColor: string;
+  markColor?: string;
+  showDeleteButton?: boolean;
 }
 
 function getColorBrightness(hexColor: string): number {
@@ -16,15 +17,12 @@ function getColorBrightness(hexColor: string): number {
   return brightness;
 }
 
-export default function Card({ id, src, data, markColor }: IProps) {
-  if (!markColor || !/^#([0-9A-Fa-f]{3}){1,2}$/.test(markColor)) {
-    markColor = '#4682B4';
-  }
-
-  const isLightColor = getColorBrightness(markColor) > 128;
+export default function Card({ id, src, data, markColor, showDeleteButton = true }: IProps) {
+  const actualMarkColor = markColor || '#4682B4';
+  const isLightColor = getColorBrightness(actualMarkColor) > 128;
   const textColor = isLightColor ? '#333333' : '#FFFFFF';
   const textStyle = {
-    backgroundColor: markColor,
+    backgroundColor: actualMarkColor,
     color: textColor,
   };
   const borderStyle = {
@@ -48,14 +46,16 @@ export default function Card({ id, src, data, markColor }: IProps) {
       <div className="card__container-info">
         <div className="card__first-line">
           <header className="card__title">{data[0]}</header>
-          <input
-            title="Удалить"
-            className="card__button-delete"
-            type="image"
-            src="/icons/delete.svg"
-            alt="удалить"
-            style={filterStyle}
-          />
+          {showDeleteButton && (
+            <input
+              title="Удалить"
+              className="card__button-delete"
+              type="image"
+              src="/icons/delete.svg"
+              alt="удалить"
+              style={filterStyle}
+            />
+          )}
         </div>
         <section>{data[1]}</section>
         <ul>
