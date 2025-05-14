@@ -53,7 +53,7 @@ export default function CreatePageMaket({ typeSidebar, title, subtitle, masItems
             </Label>
           </div>
           <div className="create__button">
-            <Button type="submit" name={'Создать'} />
+            <Button type="submit" name={'Сохранить'} />
             <Button type="button" name={'Отмена'} onClick={handleCancelClick} />
           </div>
         </div>

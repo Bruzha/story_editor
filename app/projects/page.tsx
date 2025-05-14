@@ -27,7 +27,7 @@ export default function Projects() {
       title="ПРОЕКТЫ"
       subtitle="Ruzhastik"
       masItems={masData}
-      createPageUrl="/create_project"
+      createPageUrl="/projects/create"
     />
   );
 }

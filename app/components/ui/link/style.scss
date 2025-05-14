@@ -1,4 +1,4 @@
-@import "../../../mixins";
+@import "/app/mixins.scss";
 
 .link{
 
@@ -20,6 +20,9 @@
 
 .white-link {
   color: var(--secondary-text-color);
+   &:hover{
+    text-decoration: underline;
+   }
 }
 
 .black-link-form {

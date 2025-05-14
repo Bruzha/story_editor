@@ -1,0 +1,17 @@
+@import "/app/mixins.scss";
+
+.export{
+
+    @include media-breakpoint-down(xl) {
+        flex-direction: column;
+    }
+    @include media-breakpoint-up(xl) {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    @include media-breakpoint-up(xxxl) {
+        margin: 0 240px 0 240px;
+    }
+    display: flex;
+    gap: 20px;
+}

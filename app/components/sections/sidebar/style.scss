@@ -1,4 +1,4 @@
-@import "../../../mixins";
+@import "/app/mixins.scss";
 
 .sidebar {
   @include media-breakpoint-down(md) {
