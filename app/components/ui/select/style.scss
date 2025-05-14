@@ -1,0 +1,28 @@
+.select {
+  height: 35px;
+  width: 100%;
+  font-size: 18px;
+  font-family: var(--font-open-sans), sans-serif;
+  color: var(--text-color);
+  border: none;
+  box-shadow: 0px 0px 10px -6px var(--secondary-color);
+  border-radius: 5px;
+  padding: 0 10px;
+  appearance: none;
+  margin-top: 5px;
+
+  background-image: url('/icons/arrow.svg');
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 20px;
+
+  &__wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &:focus {
+    outline: 3px solid var(--secondary-color);
+  }
+}

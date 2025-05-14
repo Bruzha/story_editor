@@ -8,6 +8,9 @@ export default function CreateProject() {
       title="СОЗДАНИЕ ПЕРСОНАЖА"
       subtitle="Проект 1"
       masItems={masTitle}
+      showMarkerColorInput={false}
+      showCancelButton={false}
+      showSaveExitButton={true}
     />
   );
 }

@@ -30,6 +30,7 @@ export default function Sidebar({ type }: IProps) {
   } else if (type === 'project') {
     masLinks = [
       { name: 'Назад', href: '/projects', icon: '/icons/back.svg' },
+      { name: 'Данные проекта', href: '/projects/project/info', icon: '/icons/base.svg' },
       { name: 'Сюжетные линии', href: '/projects/project/plotlines', icon: '/icons/plotline.svg' },
       { name: 'Персонажи', href: '/projects/project/characters', icon: '/icons/character.svg' },
       { name: 'Локации', href: '/projects/project/locations', icon: '/icons/location.svg' },
@@ -44,23 +45,23 @@ export default function Sidebar({ type }: IProps) {
     ];
   } else if (type === 'timeline') {
     masLinks = [
-      { name: 'Назад', href: '/projects/project/plotlines', icon: '/icons/back.svg' },
+      { name: 'Назад', href: '/projects/project/info', icon: '/icons/back.svg' },
       { name: 'Список событий', href: '/projects/project/time_events', icon: '/icons/timeevent.svg' },
       { name: 'Линия времени', href: '/projects/project/timeline', icon: '/icons/timeline.svg' },
     ];
   } else if (type === 'help') {
     masLinks = [
-      { name: 'Назад', href: '/projects/project/plotlines', icon: '/icons/back.svg' },
+      { name: 'Назад', href: '/projects/project/info', icon: '/icons/back.svg' },
       { name: 'Советы', href: '/projects/project/advices', icon: '/icons/help.svg' },
       { name: 'Словарь терминов', href: '/projects/project/terms', icon: '/icons/terms.svg' },
     ];
   } else if (type === 'create_character') {
     masLinks = [
-      { name: 'Назад', href: '/projects/project/plotlines', icon: '/icons/back.svg' },
-      { name: 'Основная информация', href: '/projects/project/characters/create/base', icon: '/icons/help.svg' },
-      { name: 'Внешность', href: '/projects/project/characters/create/appearance', icon: '/icons/terms.svg' },
-      { name: 'Личность', href: '/projects/project/characters/create/personality', icon: '/icons/terms.svg' },
-      { name: 'Социальные связи', href: '/projects/project/characters/create/social', icon: '/icons/terms.svg' },
+      { name: 'Отмена', href: '/projects/project/info', icon: '/icons/cancel.svg' },
+      { name: 'Основная информация', href: '/projects/project/characters/create/base', icon: '/icons/base.svg' },
+      { name: 'Внешность', href: '/projects/project/characters/create/appearance', icon: '/icons/appearance.svg' },
+      { name: 'Личность', href: '/projects/project/characters/create/personality', icon: '/icons/personality.svg' },
+      { name: 'Социальные связи', href: '/projects/project/characters/create/social', icon: '/icons/social.svg' },
     ];
   }
   if (!masLinks || masLinks.length === 0) {

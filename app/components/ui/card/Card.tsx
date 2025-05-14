@@ -6,6 +6,7 @@ interface IProps {
   data: string[];
   markColor?: string;
   showDeleteButton?: boolean;
+  onClick?: () => void;
 }
 
 function getColorBrightness(hexColor: string): number {
@@ -17,7 +18,7 @@ function getColorBrightness(hexColor: string): number {
   return brightness;
 }
 
-export default function Card({ id, src, data, markColor, showDeleteButton = true }: IProps) {
+export default function Card({ id, src, onClick, data, markColor, showDeleteButton = true }: IProps) {
   const actualMarkColor = markColor || '#4682B4';
   const isLightColor = getColorBrightness(actualMarkColor) > 128;
   const textColor = isLightColor ? '#333333' : '#FFFFFF';
@@ -37,7 +38,7 @@ export default function Card({ id, src, data, markColor, showDeleteButton = true
   };
 
   return (
-    <div key={id} className="card" style={textStyle}>
+    <div key={id} className="card" style={textStyle} onClick={onClick}>
       {isValidSrc && (
         <div>
           <img className="card__avatar" src={src} alt="" style={borderStyle} />

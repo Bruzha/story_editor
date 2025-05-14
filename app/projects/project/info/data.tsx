@@ -2,6 +2,7 @@ const masTitle = [
   {
     id: 0,
     title: 'Название',
+    removable: false,
   },
   {
     id: 5,
