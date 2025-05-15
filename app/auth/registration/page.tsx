@@ -27,9 +27,27 @@ export default function Registration() {
     mode: 'onBlur',
   });
 
-  const onSubmit = async (data: FormData) => {
-    console.log(data);
-    // Здесь будет логика отправки данных на сервер
+   const onSubmit = async (data: FormData) => {
+    try {
+      const response = await fetch('http://localhost:3001/auth/register', {  // Замените на ваш URL
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Success:', result);
+      // Обработайте успешную регистрацию (например, перенаправление на страницу входа)
+    } catch (error) {
+      console.error('Error:', error);
+      // Обработайте ошибку регистрации (например, отобразите сообщение об ошибке пользователю)
+    }
   };
 
   return (
