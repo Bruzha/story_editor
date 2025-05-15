@@ -1,12 +1,40 @@
-.link__body{
-    text-decoration: none;
-    color: var(--secondary-text-color);
+@import "/app/mixins.scss";
+
+.link{
+
+  @include media-breakpoint-down(md) {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+    
+  text-decoration: none;
+  color: var(--secondary-text-color);
+  font-family: var(--font-open-sans), sans-serif;
+  padding: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
 }
 
 .white-link {
-    color: var(--secondary-text-color);
-  }
+  color: var(--secondary-text-color);
+   &:hover{
+    text-decoration: underline;
+   }
+}
+
+.black-link-form {
+  color: var(--text-color);
+  text-align: center;
+  display: inline;
+}
   
-  .black-link {
-    color: var(--text-color);
+.black-link {
+  color: var(--text-color);
+
+  &:hover{
+    background-color: #e8e5dc;
   }
+}

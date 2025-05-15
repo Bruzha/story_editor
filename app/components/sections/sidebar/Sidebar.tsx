@@ -1,43 +1,72 @@
+'use client';
 import Link from '../../ui/link/Link';
 import './style.scss';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-interface SidebarProps {
+interface IProps {
   type: string;
 }
 
-interface LinkListItem {
+interface ListItem {
   name: string;
   href: string;
+  icon: string;
 }
 
-export default function Sidebar({ type }: SidebarProps) {
-  let masLinks: LinkListItem[] = [];
+export default function Sidebar({ type }: IProps) {
+  const [currentPath, setCurrentPath] = useState('');
 
-  if (type === 'профиль') {
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
+  }, []);
+
+  let masLinks: ListItem[] = [];
+  if (type === 'profile') {
     masLinks = [
-      { name: 'Профиль', href: 'путь1' },
-      { name: 'Проекты', href: 'путь1' },
-      { name: 'Идеи', href: 'путь2' },
+      { name: 'Профиль', href: '/profile', icon: '/icons/name.svg' },
+      { name: 'Проекты', href: '/projects', icon: '/icons/project.svg' },
+      { name: 'Идеи', href: '/ideas', icon: '/icons/idea.svg' },
     ];
-  } else if (type === 'станица проекта') {
+  } else if (type === 'project') {
     masLinks = [
-      { name: 'Сюжетные линии', href: 'путь1' },
-      { name: 'Персонажи', href: 'путь2' },
-      { name: 'Локации', href: 'путь1' },
-      { name: 'Объекты', href: 'путь2' },
-      { name: 'Группы', href: 'путь1' },
-      { name: 'Схема отношений', href: 'путь2' },
-      { name: 'Линия времени', href: 'путь1' },
-      { name: 'Главы', href: 'путь2' },
-      { name: 'Заметки', href: 'путь1' },
-      { name: 'Экспорт', href: 'путь2' },
-      { name: 'Вспомогательные материалы', href: 'путь2' },
+      { name: 'Назад', href: '/projects', icon: '/icons/back.svg' },
+      { name: 'Данные проекта', href: '/projects/project/info', icon: '/icons/base.svg' },
+      { name: 'Сюжетные линии', href: '/projects/project/plotlines', icon: '/icons/plotline.svg' },
+      { name: 'Персонажи', href: '/projects/project/characters', icon: '/icons/character.svg' },
+      { name: 'Локации', href: '/projects/project/locations', icon: '/icons/location.svg' },
+      { name: 'Объекты', href: '/projects/project/objects', icon: '/icons/object.svg' },
+      { name: 'Группы', href: '/projects/project/groups', icon: '/icons/group.svg' },
+      { name: 'Схемы отношений', href: '/projects/project/relationships', icon: '/icons/relationship.svg' },
+      { name: 'Линия времени', href: '/projects/project/time_events', icon: '/icons/timelines.svg' },
+      { name: 'Главы', href: '/projects/project/chapters', icon: '/icons/chapter.svg' },
+      { name: 'Заметки', href: '/projects/project/notes', icon: '/icons/notes.svg' },
+      { name: 'Экспорт', href: '/projects/project/export', icon: '/icons/export.svg' },
+      { name: 'Советы', href: '/projects/project/advices', icon: '/icons/help.svg' },
+    ];
+  } else if (type === 'timeline') {
+    masLinks = [
+      { name: 'Назад', href: '/projects/project/info', icon: '/icons/back.svg' },
+      { name: 'Список событий', href: '/projects/project/time_events', icon: '/icons/timeevent.svg' },
+      { name: 'Линия времени', href: '/projects/project/timeline', icon: '/icons/timeline.svg' },
+    ];
+  } else if (type === 'help') {
+    masLinks = [
+      { name: 'Назад', href: '/projects/project/info', icon: '/icons/back.svg' },
+      { name: 'Советы', href: '/projects/project/advices', icon: '/icons/help.svg' },
+      { name: 'Словарь терминов', href: '/projects/project/terms', icon: '/icons/terms.svg' },
+    ];
+  } else if (type === 'create_character') {
+    masLinks = [
+      { name: 'Отмена', href: '/projects/project/info', icon: '/icons/cancel.svg' },
+      { name: 'Основная информация', href: '/projects/project/characters/create/base', icon: '/icons/base.svg' },
+      { name: 'Внешность', href: '/projects/project/characters/create/appearance', icon: '/icons/appearance.svg' },
+      { name: 'Личность', href: '/projects/project/characters/create/personality', icon: '/icons/personality.svg' },
+      { name: 'Социальные связи', href: '/projects/project/characters/create/social', icon: '/icons/social.svg' },
     ];
   }
   if (!masLinks || masLinks.length === 0) {
     return (
-      <aside className="sidebar__container">
+      <aside className="sidebar">
         <div>
           <p>Нет доступных ссылок</p>
         </div>
@@ -46,10 +75,21 @@ export default function Sidebar({ type }: SidebarProps) {
   }
 
   return (
-    <aside className="sidebar__container">
-      {masLinks.map((link, index) => (
-        <Link key={index} href={link.href} name={link.name} className="black-link" />
-      ))}
+    <aside className="sidebar">
+      <ul className="sidebar__links-container">
+        {masLinks.map((link, index) => {
+          const isActive = currentPath === link.href;
+          const itemClass = isActive ? 'sidebar__items sidebar__items-active' : 'sidebar__items';
+
+          return (
+            <li key={index} className={itemClass}>
+              <Link href={link.href} name={link.name} className="black-link">
+                <img className="sidebar__icon" src={link.icon} alt={link.name} />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </aside>
   );
 }

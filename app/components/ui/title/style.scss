@@ -1,0 +1,31 @@
+@import "/app/mixins.scss";
+
+.title{
+
+    @include media-breakpoint-down(sm){
+        font-size: 6.67vw;
+    }
+
+    @include media-breakpoint-between(sm, md){
+        font-size: 40px;
+    }
+
+    @include media-breakpoint-down(md){
+        margin-bottom: 40px;
+    }
+
+    @include media-breakpoint-between(md, xxxl){
+        font-size: 50px;
+        margin-bottom: 60px;
+    }
+
+    @include media-breakpoint-up(xxxl){
+        font-size: 80px;
+        margin-bottom: 75px;
+    }
+
+    font-family: var(--font-merriweather), serif;
+    font-weight: 700;
+    color: var(--secondary-color);
+    text-align: center;
+}

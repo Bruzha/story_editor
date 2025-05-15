@@ -1,0 +1,82 @@
+@import "/app/mixins.scss";
+
+.pagination {
+
+  @include media-breakpoint-down(sm) {
+    &__link {
+      width: 16px;
+      height: 16px;
+      font-size: 12px;
+    }
+    &__list {
+      gap: 10px;
+      margin: 0 15px;
+    }
+  }
+  @include media-breakpoint-up(sm) {
+    &__link {
+      font-size: 16px;
+    }
+    &__list {
+      gap: 15px;
+      margin: 0 20px;
+    }
+  }
+  @include media-breakpoint-between(sm, md) {
+    &__link {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  @include media-breakpoint-up(md) {
+    &__link {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  
+  button {
+    width: fit-content;
+    padding: 5px 10px;
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  span{
+    font-family: var(--font-open-sans), sans-serif;
+    color: var(--text-color);
+  }
+  
+  &__list {
+    display: flex;
+    list-style: none;
+    padding: 0;
+  }
+  
+  &__item {
+    margin: 0 5px;
+  }
+  
+  &__link {
+    background-color: var(--primary-color);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-open-sans), sans-serif;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    &--active {
+      background-color: var(--secondary-text-color);
+      color: var(--text-color);
+      box-shadow: 0px 0px 10px -1px var(--secondary-color);
+    }
+  }
+}
+  

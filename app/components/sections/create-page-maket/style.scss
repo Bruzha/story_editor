@@ -1,0 +1,83 @@
+@import "/app/mixins.scss";
+
+.create{
+
+    @include media-breakpoint-down(md){
+        &__button{
+            margin-top: 40px;
+            flex-direction: column;
+            width: fit-content;
+            margin-right: 0;
+            margin-left: auto;
+        }
+        &__select{
+             top: 157px;
+        }
+        &__select{
+            margin-bottom: 20px;
+        }
+        &__line{
+            margin-top: 5px;
+        }
+    }
+     @include media-breakpoint-up(md){
+        &__line{
+            margin-top: 10px;
+        }
+        &__select{
+            top: 50px;
+        }
+     }
+    @include media-breakpoint-between(md, xxxl){
+        &__button{
+            margin-top: 60px;
+        }
+        &__select{
+            margin-bottom: 40px;
+        }
+    }
+    @include media-breakpoint-up(xxxl){
+        &__button{
+            margin-top: 75px;
+        }
+        &__select{
+            margin-bottom: 55px;
+        }
+    }
+
+    &__items{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    }
+
+    &__button{
+        display: flex;
+        justify-content: right;
+        gap: 20px;
+    }
+    &__select{
+        position: sticky;
+        left: 0;
+        z-index: 4;
+        background-color: var(--background-color);
+        box-shadow: 0px 0px 0px 10px var(--background-color);
+    }
+    &__line{
+        height: 3px;
+        background-color: var(--primary-color);
+    }
+    &__button-textarea{
+        width: 20px;
+        height: 20px;
+    }
+    &__textarea-container{
+        display: grid;
+        grid-template-columns: calc(100% - 40px) 20px;
+        gap: 20px;
+    }
+    &__input-file{
+        margin-top: 20px;
+        justify-items: right;
+    }
+}

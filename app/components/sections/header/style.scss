@@ -1,23 +1,73 @@
-.header__container{
-    background-color: dimgray;
-    height: 50px;
+@import "/app/mixins.scss";
+
+.header{
+
+    @include media-breakpoint-down(sm){
+        height: 90px;
+
+        h1{
+            font-size: 16px;
+        }
+
+        img{
+            font-size: 12px;
+        }
+    }
+
+    @include media-breakpoint-up(sm){
+        h1{
+            font-size: 28px;
+        }
+
+        img{
+            font-size: 22px;
+        }
+    }
+
+    @include media-breakpoint-between(sm, md){
+        height: 110px;
+    }
+
+    @include media-breakpoint-between(md, xxxl){
+        height: 130px;
+    }
+
+    @include media-breakpoint-down(xxxl){
+        &__links{
+            display: none;
+        }
+        padding: 0 20px;
+    } 
+
+    @include media-breakpoint-up(xxxl){
+        height: 150px;
+        padding: 0 230px 0 240px;
+
+        &__links{
+            font-size: 22px;
+            width: 350px;
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+        }
+    }
+
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-left: 20px;
-    padding-right: 20px;
     font-family: var(--font-open-sans), sans-serif;
     background-color: var(--primary-color);
     color: var(--secondary-text-color);
-}
 
-.header__name{
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    align-items: center;
-}
-
-.header__name > p{
-    font-family: var(--font-merriweather), serif;
+    &__name{
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        align-items: center;
+    }
+    
+    h1{
+        font-family: var(--font-merriweather), serif;
+        font-weight: 400;
+    }
 }

@@ -3,14 +3,18 @@ import './style.scss';
 
 export default function Header() {
   return (
-    <header className="header__container">
+    <header className="header">
       <div className="header__name">
         <img src="1" alt="Логотип" />
-        <p>РЕДАКТОР ИСТОРИЙ</p>
+        <h1>РЕДАКТОР ИСТОРИЙ</h1>
       </div>
-      <div>
-        <Link href="путь1" name="Войти" className="white-link" />
-        <Link href="путь2" name="Зарегистрироваться" className="white-link" />
+      <div className="header__links">
+        <Link href="../../auth/autorisation" name="Войти" className="white-link">
+          {''}
+        </Link>
+        <Link href="../../auth/registration" name="Зарегистрироваться" className="white-link">
+          {''}
+        </Link>
       </div>
     </header>
   );

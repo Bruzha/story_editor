@@ -1,8 +1,25 @@
-.button__body{
-    width: 100px;
-    border-radius: 5px;
+@import "/app/mixins.scss";
+
+.button{
+
+    @include media-breakpoint-down(sm){
+        font-size: 16px;
+    } 
+
+    @include media-breakpoint-up(sm){
+        font-size: 22px;
+    }
+
+    border-radius: 10px;
+    padding: 15px 50px;
     border: none;
     background-color: var(--primary-color);
     color: var(--secondary-text-color);
     font-family: var(--font-open-sans);
-}
+    font-weight: 400;
+    cursor: pointer;
+
+    &:hover{
+        box-shadow: 0px 0px 10px -2px var(--primary-color);
+    }
+} 

@@ -1,0 +1,48 @@
+@import '/app/components/ui/button/style.scss';
+.input{
+    height: 35px;
+    width: 100%;
+    font-size: 18px;
+    font-family: var(--font-open-sans), sans-serif;
+    color: var(--text-color);
+    border: none;
+    box-shadow: 0px 0px 10px -6px var(--secondary-color);
+    border-radius: 5px;
+    padding-left: 10px;
+
+    &__wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      :focus{
+        outline: 3px solid var(--secondary-color);
+      }
+    }
+    &__wrapper--readonly :focus{
+        outline: none;
+    }
+    &__icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    &__icon img {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+    &--with-icon {
+      padding-left: 40px;
+    }
+}
+
+input[type="color"]{
+  width: 90px;
+  height: 90px;
+  padding: 3px;
+  background-color: var(--secondary-text-color);
+  margin-top: 5px;
+}

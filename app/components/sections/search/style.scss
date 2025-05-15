@@ -1,0 +1,53 @@
+@import "/app/mixins.scss";
+
+.search{
+
+    @include media-breakpoint-down(sm){
+        &__button{
+            flex-direction: column;
+            margin: 0 10% 30px 10%;
+        }
+    }
+
+    @include media-breakpoint-up(sm){
+        &__button{
+            flex-direction: row;
+        }
+    }
+
+    @include media-breakpoint-down(md){
+        margin-bottom: 30px;
+    }
+
+    @include media-breakpoint-down(xl){
+        flex-direction: column;
+        &__button{
+            display: flex;
+            justify-content: right;
+        }
+    }
+
+    @include media-breakpoint-up(xl){
+        flex-direction: row;
+        align-items: center;
+    }
+
+    @include media-breakpoint-between(md, xxxl){
+        margin-bottom: 40px;
+    }
+
+    @include media-breakpoint-up(xxxl){
+        margin: 0 15% 60px 15%;
+    }
+
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    &__input{
+        width: 100%;
+    }
+    &__button{
+        display: flex;
+        gap: 20px;
+    }
+}
