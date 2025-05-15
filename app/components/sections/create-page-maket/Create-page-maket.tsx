@@ -217,7 +217,6 @@ export default function CreatePageMaket({
             )}
           </div>
           <div className="create__button">
-            <Button name={'Добавить поле'} />
             <Button type="submit" name={'Сохранить'} />
             {showCancelButton && <Button name={'Отмена'} onClick={handleCancelClick} />}
             {showSaveExitButton && <Button name={'Сохранить и выйти'} />}
