@@ -61,3 +61,33 @@ export const register = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Ошибка регистрации', error: (error as Error).message });
   }
 };
+
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    // 1. Проверяем, что email и пароль переданы
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Необходимо указать email и пароль' });
+    }
+    const User = UserFactory(sequelize, DataTypes) as ModelStatic<UserInstance>;
+
+    // 2. Ищем пользователя по email
+    const user = await User.findOne({ where: { email: email } });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Неверный email или пароль' });
+    }
+
+    // 3. Сравниваем пароли
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'Неверный email или пароль' });
+    }
+
+    // 4. Если все прошло успешно, отправляем ответ
+    res.status(200).json({ message: 'Вход выполнен успешно' });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ message: 'Ошибка при входе' });
+  }
+};

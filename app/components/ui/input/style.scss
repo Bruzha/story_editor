@@ -14,8 +14,10 @@
       position: relative;
       display: flex;
       align-items: center;
-
       :focus{
+        outline: 3px solid var(--secondary-color);
+      }
+      :hover{
         outline: 3px solid var(--secondary-color);
       }
     }

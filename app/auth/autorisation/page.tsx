@@ -1,6 +1,7 @@
 'use client';
-import React from 'react';
-import { useForm } from 'react-hook-form';
+
+import React, { useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema from './validation';
 import Input from '../../components/ui/input/Input';
@@ -15,7 +16,19 @@ interface FormData {
   password: string;
 }
 
+interface BackendError {
+  message: string;
+  path: string;
+}
+
+interface LoginResponse {
+  message: string;
+  errors?: BackendError[];
+}
+
 export default function Autorisation() {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -25,15 +38,39 @@ export default function Autorisation() {
     mode: 'onBlur',
   });
 
-  const onSubmit = async (data: FormData) => {
-    console.log(data);
-    // Здесь будет логика отправки данных на сервер
+  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
+    try {
+      const response = await fetch('http://localhost:3001/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result: LoginResponse = await response.json();
+
+      if (response.ok) {
+        console.log('Success:', result);
+        // Обработайте успешный вход (например, перенаправление на другую страницу)
+        setErrorMessage(null);
+      } else {
+        if (result.message) {
+          setErrorMessage(result.message);
+        } else {
+          console.error('Неверный формат ответа:', result);
+          setErrorMessage('Произошла ошибка при входе');
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      setErrorMessage('Произошла ошибка при входе');
+    }
   };
 
   return (
     <div className="autorisation">
       <Form onSubmit={handleSubmit(onSubmit)}>
-        {' '}
         <Title text="АВТОРИЗАЦИЯ" />
         <div className="autorisation__inputs">
           <div>
@@ -45,6 +82,7 @@ export default function Autorisation() {
             <Input type="password" placeholder="Пароль" iconSrc="/icons/password.svg" {...register('password')} />
             {errors.password && <p className="autorisation__error-message">{errors.password.message}</p>}
           </div>
+          {errorMessage && <p className="autorisation__error-message autorisation__unit-error">{errorMessage}</p>}
         </div>
         <div className="autorisation__button">
           <Button name="Вход" type="submit" />
