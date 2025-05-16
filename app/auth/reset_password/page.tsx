@@ -1,5 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -9,29 +10,33 @@ import Form from '../../components/ui/form/Form';
 import Title from '../../components/ui/title/Title';
 import Link from '../../components/ui/link/Link';
 import './style.scss';
+import { useRouter } from 'next/navigation';
 
-interface BaseSchemaType {
+interface EmailForm {
   email: string;
 }
 
-interface PasswordSchemaType {
-  password?: string;
-  confirmPassword?: string;
+interface PasswordForm {
+  password: string;
+  confirmPassword: string;
 }
 
-//Первая схема валидации с email
-const baseValidationSchema: yup.ObjectSchema<BaseSchemaType> = yup.object({
-  email: yup.string().required('Email обязателен').email('Неверный формат email'),
+interface ResetPasswordResponse {
+  message: string;
+  errors?: { [key: string]: string };
+}
+
+const emailValidationSchema = yup.object({
+  email: yup.string().email('Неверный формат email').required('Email обязателен'),
 });
 
-//Вторая схема валидации с паролями
-const passwordValidationSchema: yup.ObjectSchema<PasswordSchemaType> = yup.object({
+const passwordValidationSchema = yup.object({
   password: yup
     .string()
     .required('Пароль обязателен')
     .min(8, 'Пароль должен содержать не менее 8 символов')
     .matches(
-      /^(?=.*[a-zа-яё])(?=.*[A-ZА-ЯЁ])(?=.*\d)(?=.*[!@#$%^&*])/,
+      /^(?=.*[a-zа-яё])(?=.*[A-ZА-ЯЁ])(?=.*\d)(?=.*[!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~])/,
       'Пароль должен содержать минимум одну заглавную букву, одну строчную букву, одну цифру и один специальный символ'
     ),
   confirmPassword: yup
@@ -40,100 +45,153 @@ const passwordValidationSchema: yup.ObjectSchema<PasswordSchemaType> = yup.objec
     .oneOf([yup.ref('password')], 'Пароли должны совпадать'),
 });
 
-interface FormData {
-  email: string;
-  password?: string;
-  confirmPassword?: string;
-}
-
 export default function ResetPassword() {
-  const [showSecondForm, setShowSecondForm] = useState(false);
-  const [validationSchema, setValidationSchema] = useState<yup.AnyObjectSchema>(baseValidationSchema);
-
-  useEffect(() => {
-    if (showSecondForm) {
-      setValidationSchema(
-        yup.object().shape({
-          ...baseValidationSchema.fields,
-          ...passwordValidationSchema.fields,
-        }) as yup.AnyObjectSchema
-      );
-    } else {
-      setValidationSchema(baseValidationSchema);
-    }
-  }, [showSecondForm]);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [email, setEmail] = useState('');
+  const [, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: yupResolver(validationSchema),
+    register: registerEmail,
+    handleSubmit: handleSubmitEmail,
+    formState: { errors: emailErrors },
+  } = useForm<EmailForm>({
+    resolver: yupResolver(emailValidationSchema),
     mode: 'onBlur',
   });
 
-  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    if (!showSecondForm) {
-      console.log('First form data:', data);
-      setShowSecondForm(true);
-    } else {
-      console.log('Second form data:', data);
-      // Здесь будет логика отправки данных на сервер для сброса пароля
+  const {
+    register: registerPassword,
+    handleSubmit: handleSubmitPassword,
+    formState: { errors: passwordErrors },
+  } = useForm<PasswordForm>({
+    resolver: yupResolver(passwordValidationSchema),
+    mode: 'onBlur',
+  });
+
+  const onSubmitEmail: SubmitHandler<EmailForm> = async (data: EmailForm) => {
+    try {
+      const response = await fetch('http://localhost:3001/auth/check-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: data.email }),
+      });
+      const result: ResetPasswordResponse = await response.json();
+      console.log(JSON.stringify({ email: data.email }));
+      if (response.ok) {
+        console.log('Email check success:', result);
+        setEmail(data.email);
+        setShowPasswordForm(true);
+        setSuccessMessage(null);
+        setErrorMessage(null);
+      } else {
+        console.error('Email check error:', result);
+        setErrorMessage(result.message || 'Пользователь с таким email не найден');
+        setSuccessMessage(null);
+        setShowPasswordForm(false);
+      }
+    } catch (error) {
+      console.error('Error checking email:', error);
+      setErrorMessage('Произошла ошибка при проверке email');
+      setSuccessMessage(null);
+      setShowPasswordForm(false);
+    }
+  };
+
+  const onSubmitPassword: SubmitHandler<PasswordForm> = async (data: PasswordForm) => {
+    try {
+      const response = await fetch('http://localhost:3001/auth/reset-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: data.password,
+          confirmPassword: data.confirmPassword,
+        }),
+      });
+
+      const result: ResetPasswordResponse = await response.json();
+
+      if (response.ok) {
+        console.log('Password reset success:', result);
+        setSuccessMessage(result.message);
+        setErrorMessage(null);
+        router.push('/auth/autorisation');
+      } else {
+        console.error('Password reset error:', result);
+        setErrorMessage(result.message || 'Не удалось сбросить пароль');
+        setSuccessMessage(null);
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      setErrorMessage('Произошла ошибка при сбросе пароля');
+      setSuccessMessage(null);
     }
   };
 
   return (
     <div className="reset">
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        <Title text="СБРОС ПАРОЛЯ" />
-        {/* Первая форма */}
-        {!showSecondForm && (
-          <div className="reset__first-form">
-            <div className="reset__inputs">
-              <div>
-                <Input type="email" placeholder="Email" iconSrc="/icons/email.svg" {...register('email')} />
-                {errors.email && <p className="reset__error-message">{errors.email.message}</p>}
-              </div>
-            </div>
-            <div className="reset__button">
-              <Button name="Новый пароль" type="submit" />
-            </div>
-            <div className="reset__link">
-              <Link name="Вернуться на страницу авторизации?" href={'./autorisation'} className="black-link-form">
-                <></>
-              </Link>
+      <Title text="СБРОС ПАРОЛЯ" />
+      {!showPasswordForm ? (
+        <Form onSubmit={handleSubmitEmail(onSubmitEmail)}>
+          <div className="reset__inputs">
+            <div>
+              <Input key={1} type="email" placeholder="Email" iconSrc="/icons/email.svg" {...registerEmail('email')} />
+              {emailErrors.email && <p className="reset__error-message">{emailErrors.email.message}</p>}
+              {errorMessage && <p className="reset__error-message reset__unit-error">{errorMessage}</p>}
             </div>
           </div>
-        )}
-        {/* Вторая форма */}
-        {showSecondForm && (
-          <div className="reset__second-form">
-            <div className="reset__inputs">
-              <div>
-                <Input type="password" placeholder="Пароль" iconSrc="/icons/password.svg" {...register('password')} />
-                {errors.password && <p className="reset__error-message">{errors.password?.message}</p>}
-              </div>
-              <div>
-                <Input
-                  type="password"
-                  placeholder="Подтвердите пароль"
-                  iconSrc="/icons/password.svg"
-                  {...register('confirmPassword')}
-                />
-                {errors.confirmPassword && <p className="reset__error-message">{errors.confirmPassword?.message}</p>}
-              </div>
-            </div>
-            <div className="reset__button">
-              <Button name="Подтвердить" type="submit" />
-            </div>
-            <div className="reset__link">
-              <Link name="Вернуться на страницу авторизации?" href={'./autorisation'} className="black-link-form">
-                <></>
-              </Link>
-            </div>
+          <div className="reset__button">
+            <Button name="Проверить email" type="submit" />
           </div>
-        )}
-      </Form>
+          <div className="reset__link">
+            <Link name="Вернуться на страницу авторизации?" href={'./autorisation'} className="black-link-form">
+              <></>
+            </Link>
+          </div>
+        </Form>
+      ) : (
+        <Form onSubmit={handleSubmitPassword(onSubmitPassword)}>
+          <div className="reset__inputs">
+            <div>
+              <Input
+                key={2}
+                type="password"
+                placeholder="Пароль"
+                iconSrc="/icons/password.svg"
+                {...registerPassword('password')}
+              />
+              {passwordErrors.password && <p className="reset__error-message">{passwordErrors.password.message}</p>}
+            </div>
+            <div>
+              <Input
+                key={3}
+                type="password"
+                placeholder="Подтвердите пароль"
+                iconSrc="/icons/password.svg"
+                {...registerPassword('confirmPassword')}
+              />
+              {passwordErrors.confirmPassword && (
+                <p className="reset__error-message">{passwordErrors.confirmPassword.message}</p>
+              )}
+            </div>
+            {errorMessage && <p className="reset__error-message reset__unit-error">{errorMessage}</p>}
+          </div>
+          <div className="reset__button">
+            <Button name="Сменить пароль" type="submit" />
+          </div>
+          <div className="reset__link">
+            <Link name="Вернуться на страницу авторизации?" href={'./autorisation'} className="black-link-form">
+              <></>
+            </Link>
+          </div>
+        </Form>
+      )}
     </div>
   );
 }

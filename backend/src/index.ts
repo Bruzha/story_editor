@@ -27,3 +27,12 @@ testConnection();
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+sequelize
+  .sync({ alter: true }) // Добавьте { alter: true } чтобы обновить схему БД
+  .then(() => {
+    console.log('Database synced');
+  })
+  .catch((error) => {
+    console.error('Error syncing database:', error);
+  });

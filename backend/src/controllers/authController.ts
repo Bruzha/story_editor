@@ -91,3 +91,75 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Ошибка при входе' });
   }
 };
+
+export const reset_password = async (req: Request, res: Response) => {
+  try {
+    const { email, password, confirmPassword } = req.body;
+
+    // 1. Проверяем, что все необходимые данные переданы
+    if (!email || !password || !confirmPassword) {
+      return res.status(400).json({ message: 'Необходимо указать все данные для сброса пароля' });
+    }
+
+    // 2. Проверяем совпадение паролей
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Пароли не совпадают' });
+    }
+
+    // 3. Получаем модель User
+    const User = UserFactory(sequelize, DataTypes) as ModelStatic<UserInstance>;
+
+    // 4. Ищем пользователя по email
+    const user = await User.findOne({ where: { email: email } });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Пользователь с таким email не найден' });
+    }
+
+    // 5. Сравниваем новый пароль со старым
+    const isSamePassword = await bcrypt.compare(password, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({ message: 'Новый пароль должен отличаться от старого' });
+    }
+
+    // 6. Хешируем новый пароль
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 7. Обновляем пароль пользователя
+    user.password = hashedPassword;
+    await user.save();
+
+    // 8. Отправляем успешный ответ
+    return res.status(200).json({ message: 'Пароль успешно сброшен' });
+  } catch (error) {
+    console.error('Ошибка при сбросе пароля:', error);
+    res.status(500).json({ message: 'Ошибка при сбросе пароля' });
+  }
+};
+
+export const check_email = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    // 1. Проверяем, что email передан
+    if (!email) {
+      return res.status(400).json({ message: 'Необходимо указать email' });
+    }
+
+    // 2. Получаем модель User
+    const User = UserFactory(sequelize, DataTypes) as ModelStatic<UserInstance>;
+
+    // 3. Ищем пользователя по email
+    const user = await User.findOne({ where: { email: email } });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Пользователь с таким email не найден' });
+    }
+
+    // 4. Отправляем успешный ответ
+    return res.status(200).json({ message: 'Email найден' });
+  } catch (error) {
+    console.error('Ошибка при проверке email:', error);
+    res.status(500).json({ message: 'Ошибка при проверке email' });
+  }
+};
