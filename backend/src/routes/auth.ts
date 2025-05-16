@@ -8,8 +8,8 @@ router.post('/register', async (req: Request, res: Response) => {
   try {
     await register(req, res);
   } catch (error) {
-    console.error("Error during registration:", error);
-    res.status(500).send("Registration failed");
+    console.error('Error during registration:', error);
+    res.status(500).send('Registration failed');
   }
 });
 
