@@ -151,7 +151,6 @@ export const check_email = async (req: Request, res: Response) => {
 
     // 3. Ищем пользователя по email
     const user = await User.findOne({ where: { email: email } });
-
     if (!user) {
       return res.status(400).json({ message: 'Пользователь с таким email не найден' });
     }
