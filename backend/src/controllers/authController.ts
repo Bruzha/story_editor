@@ -3,6 +3,8 @@ import { DataTypes, ModelStatic, UniqueConstraintError } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { UserFactory, UserInstance } from '../models/User';
 import { sequelize } from '../config/database';
+import jwt from 'jsonwebtoken';
+import { CookieOptions } from 'express'; // Import CookieOptions
 
 interface BackendError {
   message: string;
@@ -14,6 +16,25 @@ interface UniqueConstraintErrorParent {
   detail?: string;
   constraint?: string;
 }
+
+// Срок действия токена (например, 12 часов)
+const JWT_EXPIRES_IN = '12h';
+
+// Функция для создания JWT
+const signToken = (id: number): string => {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'your-secret-key', {
+    // Use JWT_SECRET from env
+    expiresIn: JWT_EXPIRES_IN,
+  });
+};
+
+// Options for cookies
+const cookieOptions: CookieOptions = {
+  expires: new Date(Date.now() + parseInt(process.env.JWT_COOKIE_EXPIRES_IN || '7') * 24 * 60 * 60 * 1000), // Convert days to milliseconds
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production', // Set to true in production for HTTPS
+  sameSite: 'lax', // Or 'strict' depending on your needs
+};
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -41,7 +62,17 @@ export const register = async (req: Request, res: Response) => {
 
     console.log('Новый пользователь создан:', newUser.toJSON());
 
-    res.status(201).json({ message: 'Пользователь успешно зарегистрирован' });
+    // Create JWT token
+    const token = signToken(newUser.id!); //  <---  Используем оператор !
+
+    // Send token in cookie
+    res.cookie('jwt', token, cookieOptions);
+
+    res.status(201).json({
+      message: 'Пользователь успешно зарегистрирован',
+      token, // Send token as part of the response
+      userId: newUser.id,
+    });
   } catch (error: any) {
     console.error('Ошибка во время регистрации:', error);
     console.log('Тип ошибки:', error.constructor.name);
@@ -84,8 +115,18 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Неверный email или пароль' });
     }
 
+    // Create JWT token
+    const token = signToken(user.id!); //  <---  Используем оператор !
+
+    // Send token in cookie
+    res.cookie('jwt', token, cookieOptions);
+
     // 4. Если все прошло успешно, отправляем ответ
-    res.status(200).json({ message: 'Вход выполнен успешно' });
+    res.status(200).json({
+      message: 'Вход выполнен успешно',
+      token, // Send token as part of the response
+      userId: user.id,
+    });
   } catch (error) {
     console.error('Ошибка при входе:', error);
     res.status(500).json({ message: 'Ошибка при входе' });

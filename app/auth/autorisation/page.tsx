@@ -10,6 +10,8 @@ import Form from '../../components/ui/form/Form';
 import Title from '../../components/ui/title/Title';
 import Link from '../../components/ui/link/Link';
 import './style.scss';
+import { useRouter } from 'next/navigation'; // Import useRouter
+import { setCookie } from 'nookies'; // Import setCookie
 
 interface FormData {
   email: string;
@@ -24,10 +26,13 @@ interface BackendError {
 interface LoginResponse {
   message: string;
   errors?: BackendError[];
+  token?: string; // Add token
+  userId?: number; // Add userId
 }
 
 export default function Autorisation() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter(); // Initialize useRouter
 
   const {
     register,
@@ -52,8 +57,17 @@ export default function Autorisation() {
 
       if (response.ok) {
         console.log('Success:', result);
-        // Обработайте успешный вход (например, перенаправление на другую страницу)
         setErrorMessage(null);
+
+        // Set the cookie
+        if (result.token) {
+          setCookie(null, 'my-token', result.token, {
+            maxAge: 30 * 24 * 60 * 60, // 30 days
+            path: '/',
+          });
+        }
+
+        router.push('/profile'); // Redirect to profile page
       } else {
         if (result.message) {
           setErrorMessage(result.message);
