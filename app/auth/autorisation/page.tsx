@@ -8,10 +8,11 @@ import Input from '../../components/ui/input/Input';
 import Button from '../../components/ui/button/Button';
 import Form from '../../components/ui/form/Form';
 import Title from '../../components/ui/title/Title';
-import Link from '../../components/ui/link/Link';
+import MyLink from '../../components/ui/link/Link';
 import './style.scss';
-import { useRouter } from 'next/navigation'; // Import useRouter
-import { setCookie } from 'nookies'; // Import setCookie
+import { useRouter } from 'next/navigation';
+import { setCookie } from 'nookies';
+import { useAuth } from '../../AuthContext';
 
 interface FormData {
   email: string;
@@ -26,13 +27,14 @@ interface BackendError {
 interface LoginResponse {
   message: string;
   errors?: BackendError[];
-  token?: string; // Add token
-  userId?: number; // Add userId
+  token?: string;
+  userId?: number;
 }
 
 export default function Autorisation() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
+  const { login } = useAuth();
 
   const {
     register,
@@ -58,16 +60,15 @@ export default function Autorisation() {
       if (response.ok) {
         console.log('Success:', result);
         setErrorMessage(null);
-
-        // Set the cookie
         if (result.token) {
           setCookie(null, 'my-token', result.token, {
-            maxAge: 30 * 24 * 60 * 60, // 30 days
+            maxAge: 30 * 24 * 60 * 60, // 30 дней
             path: '/',
           });
         }
 
-        router.push('/profile'); // Redirect to profile page
+        login(); // Вызов функции входа и контекста
+        router.push('/profile');
       } else {
         if (result.message) {
           setErrorMessage(result.message);
@@ -102,14 +103,14 @@ export default function Autorisation() {
           <Button name="Вход" type="submit" />
         </div>
         <div className="autorisation__link">
-          <Link name="Еще нет аккаунта? Зарегистрироваться" href={'./registration'} className="black-link-form">
+          <MyLink name="Еще нет аккаунта? Зарегистрироваться" href={'./registration'} className="black-link-form">
             <></>
-          </Link>
+          </MyLink>
         </div>
         <div className="autorisation__link">
-          <Link name="Забыли пароль?" href={'./reset_password'} className="black-link-form">
+          <MyLink name="Забыли пароль?" href={'./reset_password'} className="black-link-form">
             <></>
-          </Link>
+          </MyLink>
         </div>
       </Form>
     </div>

@@ -10,7 +10,10 @@ interface UserAttributes {
   role: string;
 }
 
-export interface UserInstance extends Model<UserAttributes>, UserAttributes {} // Исправлен тип UserInstance
+export interface UserInstance extends Model<UserAttributes>, UserAttributes {
+  createdAt: Date; // Add createdAt
+  updatedAt: Date; // Add updatedAt
+}
 
 export const UserFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes): ModelStatic<UserInstance> => {
   // Исправлен тип возврата

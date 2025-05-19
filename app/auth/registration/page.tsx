@@ -3,15 +3,16 @@
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import validationSchema from './validation';
 import Input from '../../components/ui/input/Input';
 import Button from '../../components/ui/button/Button';
 import Form from '../../components/ui/form/Form';
 import Title from '../../components/ui/title/Title';
-import Link from '../../components/ui/link/Link';
+import MyLink from '../../components/ui/link/Link';
 import './style.scss';
 import { useRouter } from 'next/navigation';
 import { setCookie } from 'nookies';
+import { useAuth } from '../../AuthContext';
 
 interface FormData {
   login: string;
@@ -28,30 +29,14 @@ interface BackendError {
 interface RegistrationResponse {
   message: string;
   errors?: BackendError[];
-  token?: string; // Add token
-  userId?: number; // Add userId
+  token?: string;
+  userId?: number;
 }
-
-const validationSchema = yup.object().shape({
-  login: yup.string().required('Login обязателен').min(3, 'Login должен содержать не менее 3 символов'),
-  email: yup.string().email('Неверный формат email').required('Email обязателен'),
-  password: yup
-    .string()
-    .required('Пароль обязателен')
-    .min(8, 'Пароль должен содержать не менее 8 символов')
-    .matches(
-      /^(?=.*[a-zа-яё])(?=.*[A-ZА-ЯЁ])(?=.*\d)(?=.*[!@#$%^&*])/,
-      'Пароль должен содержать минимум одну заглавную букву, одну строчную букву, одну цифру и один специальный символ'
-    ),
-  confirmPassword: yup
-    .string()
-    .required('Подтверждение пароля обязательно')
-    .oneOf([yup.ref('password')], 'Пароли должны совпадать'),
-});
 
 export default function Registration() {
   const [, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
+  const { login } = useAuth();
 
   const {
     register,
@@ -74,24 +59,23 @@ export default function Registration() {
           login: data.login,
           email: data.email,
           password: data.password,
-        }), //  <---  Отправляем только необходимые поля
+        }),
       });
 
-      const result: RegistrationResponse = await response.json(); // Явное указание типа
+      const result: RegistrationResponse = await response.json();
 
       if (response.ok) {
         console.log('Success:', result);
         setErrorMessage(null);
-
-        // Set the cookie
         if (result.token) {
           setCookie(null, 'my-token', result.token, {
-            maxAge: 30 * 24 * 60 * 60, // 30 days
+            maxAge: 30 * 24 * 60 * 60, // 30 дней
             path: '/',
           });
         }
 
-        router.push('/profile'); // Redirect to profile page
+        login(); // Вызов функции входа из контекста
+        router.push('/profile');
       } else {
         if (result.errors && Array.isArray(result.errors)) {
           result.errors.forEach((error) => {
@@ -102,7 +86,7 @@ export default function Registration() {
             }
           });
         } else {
-          console.error('Неверный формат ответа:', result); // Логируем, если формат ответа не соответствует ожиданиям
+          console.error('Неверный формат ответа:', result);
           setErrorMessage('Произошла ошибка при регистрации');
         }
       }
@@ -146,9 +130,9 @@ export default function Registration() {
           <Button name="Регистрация" type="submit" />
         </div>
         <div className="registration__link">
-          <Link name="Уже есть аккаунт? Войти" href={'./autorisation'} className="black-link-form">
+          <MyLink name="Уже есть аккаунт? Войти" href={'./autorisation'} className="black-link-form">
             <></>
-          </Link>
+          </MyLink>
         </div>
       </Form>
     </div>

@@ -4,22 +4,61 @@ import './style.scss';
 import Maket from '../components/sections/maket/Maket';
 import Form from '../components/ui/form/Form';
 import Button from '../components/ui/button/Button';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema, { ValidationSchemaType } from './validation';
 import Input from '../components/ui/input/Input';
+import { parseCookies } from 'nookies'; // Import parseCookies
 
-interface ProfileProps {
+interface ProfileData {
   email: string;
   date: string;
   updateDate: string;
   login: string;
   name: string;
   lastname: string;
+  totalProjects: number;
+  plannedProjects: number;
+  inProgressProjects: number;
+  completedProjects: number;
+  suspendedProjects: number;
+  totalIdeas: number;
 }
 
-export default function Profile({ email, date, updateDate, login, name, lastname }: ProfileProps) {
+export default function Profile() {
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const cookies = parseCookies(); // Use parseCookies to get cookies
+        const token = cookies['jwt']; // Get token from cookie
+
+        const response = await fetch('http://localhost:3001/auth/profile', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Add Authorization header
+          },
+        });
+
+        if (!response.ok) {
+          // Handle non-200 OK responses
+          console.error('Ошибка при получении данных профиля:', response.status, response.statusText);
+          throw new Error(`Ошибка при получении данных профиля: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setProfileData(data);
+      } catch (error) {
+        console.error('Ошибка при получении данных профиля:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const {
     register,
     handleSubmit,
@@ -28,9 +67,9 @@ export default function Profile({ email, date, updateDate, login, name, lastname
     resolver: yupResolver(validationSchema),
     mode: 'onBlur',
     defaultValues: {
-      login: login,
-      name: name,
-      lastname: lastname,
+      login: profileData?.login || '',
+      name: profileData?.name || '',
+      lastname: profileData?.lastname || '',
     },
   });
 
@@ -39,38 +78,51 @@ export default function Profile({ email, date, updateDate, login, name, lastname
     // Здесь будет логика отправки данных на сервер
   };
 
+  if (!profileData) {
+    return <div>Loading...</div>; // Отображаем индикатор загрузки
+  }
+
   return (
     <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle="Ruzhastik">
       <div className="profile">
         <div>
           <div className="profile__info">
             <p>
-              <span>Имя:</span> Дарья {name}
+              <span>Имя:</span> {profileData.name}
             </p>
             <p>
-              <span>Фамилия:</span> Бружас {lastname}
+              <span>Фамилия:</span> {profileData.lastname}
             </p>
             <p>
-              <span>Email:</span> dashabry15@gmail.com{email}
+              <span>Email:</span> {profileData.email}
             </p>
             <p>
-              <span>Дата создания профиля:</span> 01.05.2025{date}
+              <span>Дата создания профиля:</span> {profileData.date}
             </p>
             <p>
-              <span>Дата последнего изменения профиля:</span> 07.05.2025{updateDate}
+              <span>Дата последнего изменения профиля:</span> {profileData.updateDate}
             </p>
           </div>
           <h3>Статистика</h3>
           <div className="profile__line"></div>
           <div className="profile__info">
             <p>
-              <span>Количество проектов:</span> 0{updateDate}
+              <span>Общее количество проектов:</span> {profileData.totalProjects}
             </p>
             <p>
-              <span>Количество законченных проектов:</span> 0{updateDate}
+              <span>Количество запланированных проектов:</span> {profileData.plannedProjects}
             </p>
             <p>
-              <span>Количество идей:</span> 0{updateDate}
+              <span>Количество проектов в процессе:</span> {profileData.inProgressProjects}
+            </p>
+            <p>
+              <span>Количество законченных проектов:</span> {profileData.completedProjects}
+            </p>
+            <p>
+              <span>Количество приостановленных проектов:</span> {profileData.suspendedProjects}
+            </p>
+            <p>
+              <span>Количество идей:</span> {profileData.totalIdeas}
             </p>
           </div>
         </div>
