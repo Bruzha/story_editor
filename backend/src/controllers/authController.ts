@@ -5,6 +5,8 @@ import { UserFactory, UserInstance } from '../models/User';
 import { sequelize } from '../config/database';
 import jwt from 'jsonwebtoken';
 import { CookieOptions } from 'express';
+import { ProjectFactory, ProjectInstance, enum_projects_status } from '../models/Project';
+import { IdeaFactory } from '../models/Idea';
 
 interface BackendError {
   message: string;
@@ -218,12 +220,38 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
     const userId = (req as AuthRequest).user!.id;
 
     const User = UserFactory(sequelize, DataTypes) as ModelStatic<UserInstance>;
+    const Project = ProjectFactory(sequelize, DataTypes) as any;
+    const Idea = IdeaFactory(sequelize, DataTypes) as any;
+
     const user = await User.findByPk(userId);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Get project counts
+    const totalProjects = await Project.count({ where: { userId } });
+    const plannedProjects = await Project.count({ where: { userId, status: enum_projects_status.PLANNED } });
+    const inProgressProjects = await Project.count({ where: { userId, status: enum_projects_status.IN_PROGRESS } });
+    const completedProjects = await Project.count({ where: { userId, status: enum_projects_status.COMPLETED } });
+    const suspendedProjects = await Project.count({ where: { userId, status: enum_projects_status.SUSPENDED } });
+
+    // Get idea count
+    const totalIdeas = await Idea.count({ where: { userId } });
+    console.log('Данные для ответа:', {
+      email: user.email,
+      date: user.createdAt.toLocaleDateString(),
+      updateDate: user.updatedAt.toLocaleDateString(),
+      login: user.username,
+      name: user.firstName || '',
+      lastname: user.lastName || '',
+      totalProjects,
+      plannedProjects,
+      inProgressProjects,
+      completedProjects,
+      suspendedProjects,
+      totalIdeas,
+    });
     res.status(200).json({
       email: user.email,
       date: user.createdAt.toLocaleDateString(),
@@ -231,6 +259,12 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
       login: user.username,
       name: user.firstName || '',
       lastname: user.lastName || '',
+      totalProjects: totalProjects || 0,
+      plannedProjects: plannedProjects || 0,
+      inProgressProjects: inProgressProjects || 0,
+      completedProjects: completedProjects || 0,
+      suspendedProjects: suspendedProjects || 0,
+      totalIdeas: totalIdeas || 0,
     });
   } catch (error) {
     console.error('Ошибка при получении данных профиля:', error);
@@ -261,6 +295,41 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
     res.status(200).json({ message: 'Profile updated successfully' });
   } catch (error) {
     console.error('Ошибка при обновлении данных профиля:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+    next(error);
+  }
+};
+
+export const getProjects = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as AuthRequest).user!.id; // Получаем ID пользователя из запроса
+
+    const Project = ProjectFactory(sequelize, DataTypes) as any;
+
+    const projects = await Project.findAll({
+      where: { userId },
+      order: [['createdAt', 'DESC']], // Optional: Order by creation date
+    });
+
+    const formattedProjects = projects.map((project: ProjectInstance) => {
+      const info = project.info; //  Access the 'info' field
+      return {
+        id: project.id,
+        src: '', //  You'll need to handle miniature later.  Leave empty for now
+        data: [
+          info?.['title'] || 'Название не указано', // Access properties from 'info'
+          info?.['fabula'] || 'Описание отсутствует',
+          info?.['genre'] || 'Жанр не указан',
+          project.createdAt.toLocaleDateString(), // Format the date
+          project.status, // Assuming status is a string or enum
+        ],
+        markColor: info?.['markerColor'],
+      };
+    });
+
+    res.status(200).json(formattedProjects); // Отправляем отформатированные проекты
+  } catch (error) {
+    console.error('Ошибка при получении проектов:', error);
     res.status(500).json({ message: 'Internal Server Error' });
     next(error);
   }

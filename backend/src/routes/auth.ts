@@ -1,5 +1,13 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
-import { register, login, reset_password, check_email, getProfile, updateProfile } from '../controllers/authController'; //  <---  Импортируем updateProfile
+import {
+  register,
+  login,
+  reset_password,
+  check_email,
+  getProfile,
+  updateProfile,
+  getProjects,
+} from '../controllers/authController'; //  <---  Импортируем updateProfile
 import { protect } from '../middleware/authMiddleware'; // Import protect middleware
 import { UserInstance } from '../models/User';
 
@@ -59,6 +67,11 @@ router.get('/profile', protect as ProtectMiddleware, (req: Request, res: Respons
 // Update profile route
 router.put('/profile', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
   updateProfile(req as AuthRequest, res, next);
+});
+
+//Маршрут для получения проектов
+router.get('/projects', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  getProjects(req as AuthRequest, res, next);
 });
 
 export default router;

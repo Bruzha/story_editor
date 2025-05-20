@@ -1,4 +1,4 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { Sequelize, DataTypes, Model, ModelStatic } from 'sequelize';
 import { UserInstance } from './User';
 
 export enum enum_projects_status {
@@ -19,57 +19,57 @@ interface ProjectAttributes {
 export interface ProjectInstance extends Model<ProjectAttributes>, ProjectAttributes {
   createdAt: Date;
   updatedAt: Date;
-  getUser: () => Promise<UserInstance>; // Add association method
+  getUser: () => Promise<UserInstance>;
+  // user?: UserInstance; //  <-- Add this line
 }
 
-export const ProjectFactory = (sequelize: Sequelize, dataType: typeof DataTypes) => {
-  class Project extends Model<ProjectAttributes, ProjectAttributes> implements ProjectInstance {
-    public id!: number;
-    public userId!: number;
-    public info!: any;
-    public status!: enum_projects_status;
-    public miniature!: Buffer | null;
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
+export interface ProjectModel extends ModelStatic<ProjectInstance> {
+  associate: (models: any) => void;
+}
 
-    public getUser!: () => Promise<UserInstance>; // Define association method
-  }
-
-  Project.init(
+export const ProjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes): ProjectModel => {
+  const Project = sequelize.define<ProjectInstance, ProjectAttributes>(
+    'Project',
     {
       id: {
-        type: dataType.INTEGER,
+        type: dataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
       userId: {
-        type: dataType.INTEGER,
+        type: dataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', // This needs to match the table name
+          model: 'Users',
           key: 'id',
         },
       },
       info: {
-        type: dataType.JSONB,
-        allowNull: true, // Changed to true, if your column can be null
+        type: dataTypes.JSONB,
+        allowNull: true,
       },
       status: {
-        type: dataType.ENUM(...Object.values(enum_projects_status)),
+        type: dataTypes.ENUM(...Object.values(enum_projects_status)),
         allowNull: false,
         defaultValue: enum_projects_status.PLANNED,
         field: 'status',
       },
       miniature: {
-        type: dataType.BLOB('long'),
+        type: dataTypes.BLOB('long'),
         allowNull: true,
       },
     },
     {
-      sequelize,
-      tableName: 'Projects', // Needs to match ur table name
+      tableName: 'Projects',
     }
-  );
+  ) as ProjectModel;
+
+  Project.associate = (models: any) => {
+    Project.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user',
+    });
+  };
 
   return Project;
 };

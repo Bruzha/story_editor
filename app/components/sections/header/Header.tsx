@@ -26,6 +26,9 @@ export default function Header() {
       <div className="header__links">
         {isAuthenticated ? (
           <>
+            <MyLink href="/" name="Главная" className="white-link header__exit-link">
+              {''}
+            </MyLink>
             <MyLink href="/profile" name="Профиль" className="white-link header__exit-link">
               {''}
             </MyLink>
@@ -35,6 +38,9 @@ export default function Header() {
           </>
         ) : (
           <>
+            <MyLink href="/" name="Главная" className="white-link header__exit-link">
+              {''}
+            </MyLink>
             <MyLink href="/auth/autorisation" name="Войти" className="white-link">
               {''}
             </MyLink>

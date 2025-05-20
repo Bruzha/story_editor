@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema from './validation';
@@ -11,7 +11,6 @@ import Title from '../../components/ui/title/Title';
 import MyLink from '../../components/ui/link/Link';
 import './style.scss';
 import { useRouter } from 'next/navigation';
-import { setCookie } from 'nookies';
 import { useAuth } from '../../AuthContext';
 
 interface FormData {
@@ -37,7 +36,6 @@ export default function Registration() {
   const [, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
   const { login } = useAuth();
-  const [cookieSet, setCookieSet] = useState(false); // Track if cookie is set
 
   const {
     register,
@@ -69,14 +67,11 @@ export default function Registration() {
         console.log('Success:', result);
         setErrorMessage(null);
         if (result.token) {
-          setCookie(null, 'jwt', result.token, {
-            maxAge: 30 * 24 * 60 * 60, // 30 дней
-            path: '/',
-          });
-          setCookieSet(true); // Set cookieSet to true after setting the cookie
+          login(result.token); // Login and pass the token
+          router.push('/profile');
+        } else {
+          setErrorMessage('Token not found in response');
         }
-
-        login(); // Вызов функции входа из контекста
       } else {
         if (result.errors && Array.isArray(result.errors)) {
           result.errors.forEach((error) => {
@@ -96,13 +91,6 @@ export default function Registration() {
       setErrorMessage('Произошла ошибка при регистрации');
     }
   };
-
-  useEffect(() => {
-    if (cookieSet) {
-      router.push('/profile'); // Redirect only when cookie is set
-    }
-  }, [cookieSet, router]);
-
   return (
     <div className="registration">
       <Form onSubmit={handleSubmit(onSubmit)}>

@@ -1,54 +1,56 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
-import { UserInstance } from './User'; // Import UserInstance
+import { Sequelize, DataTypes, Model, ModelStatic } from 'sequelize';
+import { UserInstance } from './User';
 
 interface IdeaAttributes {
   id?: number;
   userId: number;
-  info: any; // Use any or define a more specific type for JSONB
+  info: any;
 }
 
 export interface IdeaInstance extends Model<IdeaAttributes>, IdeaAttributes {
   createdAt: Date;
   updatedAt: Date;
-  getUser: () => Promise<UserInstance>; // Add association method
+  getUser: () => Promise<UserInstance>;
+  // user?: UserInstance; //  <-- Add this line
 }
 
-export const IdeaFactory = (sequelize: Sequelize, dataType: typeof DataTypes) => {
-  class Idea extends Model<IdeaAttributes, IdeaAttributes> implements IdeaInstance {
-    public id!: number;
-    public userId!: number;
-    public info!: any;
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
+export interface IdeaModel extends ModelStatic<IdeaInstance> {
+  associate: (models: any) => void;
+}
 
-    public getUser!: () => Promise<UserInstance>; // Define association method
-  }
-
-  Idea.init(
+export const IdeaFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes): IdeaModel => {
+  const Idea = sequelize.define<IdeaInstance, IdeaAttributes>(
+    'Idea',
     {
       id: {
-        type: dataType.INTEGER,
+        type: dataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
       userId: {
-        type: dataType.INTEGER,
+        type: dataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', // This needs to match the table name
+          model: 'Users',
           key: 'id',
         },
       },
       info: {
-        type: dataType.JSONB,
-        allowNull: true, // Changed to true, if your column can be null
+        type: dataTypes.JSONB,
+        allowNull: true,
       },
     },
     {
-      sequelize,
-      tableName: 'Ideas', // Needs to match ur table name
+      tableName: 'Ideas',
     }
-  );
+  ) as IdeaModel;
+
+  Idea.associate = (models: any) => {
+    Idea.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user',
+    });
+  };
 
   return Idea;
 };
