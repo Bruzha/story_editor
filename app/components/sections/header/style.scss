@@ -31,25 +31,28 @@
     @include media-breakpoint-between(md, xxxl){
         height: 130px;
     }
-
-    @include media-breakpoint-down(xxxl){
+    @include media-breakpoint-down(xl){
         &__links{
             display: none;
         }
+    }
+    @include media-breakpoint-up(xl){
+        &__links{
+            font-size: 22px;
+            
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+        }
+    }
+
+    @include media-breakpoint-down(xxxl){
         padding: 0 20px;
     } 
 
     @include media-breakpoint-up(xxxl){
         height: 150px;
         padding: 0 230px 0 240px;
-
-        &__links{
-            font-size: 22px;
-            width: 350px;
-            display: flex;
-            gap: 20px;
-            justify-content: space-between;
-        }
     }
 
     display: flex;

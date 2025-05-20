@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import validationSchema from './validation';
+import * as yup from 'yup';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../AuthContext';
 import Input from '../../components/ui/input/Input';
 import Button from '../../components/ui/button/Button';
 import Form from '../../components/ui/form/Form';
 import Title from '../../components/ui/title/Title';
-import Link from '../../components/ui/link/Link';
+import MyLink from '../../components/ui/link/Link';
 import './style.scss';
 
 interface FormData {
@@ -24,17 +26,28 @@ interface BackendError {
 interface LoginResponse {
   message: string;
   errors?: BackendError[];
+  token?: string;
+  userId?: number;
 }
+
+const schema = yup
+  .object({
+    email: yup.string().email('Неверный формат email').required('Обязательное поле'),
+    password: yup.string().required('Обязательное поле'),
+  })
+  .required();
 
 export default function Autorisation() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
+  const { login } = useAuth();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: yupResolver(validationSchema),
+    resolver: yupResolver(schema),
     mode: 'onBlur',
   });
 
@@ -52,8 +65,13 @@ export default function Autorisation() {
 
       if (response.ok) {
         console.log('Success:', result);
-        // Обработайте успешный вход (например, перенаправление на другую страницу)
         setErrorMessage(null);
+        if (result.token) {
+          login(result.token); //  Pass the token to login
+          router.push('/profile'); // Redirect after successful login
+        } else {
+          setErrorMessage('Token not found in response');
+        }
       } else {
         if (result.message) {
           setErrorMessage(result.message);
@@ -63,7 +81,7 @@ export default function Autorisation() {
         }
       }
     } catch (error) {
-      console.error('Ошибка:', error);
+      console.error('Error:', error);
       setErrorMessage('Произошла ошибка при входе');
     }
   };
@@ -88,14 +106,14 @@ export default function Autorisation() {
           <Button name="Вход" type="submit" />
         </div>
         <div className="autorisation__link">
-          <Link name="Еще нет аккаунта? Зарегистрироваться" href={'./registration'} className="black-link-form">
+          <MyLink name="Еще нет аккаунта? Зарегистрироваться" href={'./registration'} className="black-link-form">
             <></>
-          </Link>
+          </MyLink>
         </div>
         <div className="autorisation__link">
-          <Link name="Забыли пароль?" href={'./reset_password'} className="black-link-form">
+          <MyLink name="Забыли пароль?" href={'./reset_password'} className="black-link-form">
             <></>
-          </Link>
+          </MyLink>
         </div>
       </Form>
     </div>

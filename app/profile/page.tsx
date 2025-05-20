@@ -1,43 +1,142 @@
 'use client';
 
-import './style.scss';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../AuthContext';
+import { useRouter } from 'next/navigation';
+import { parseCookies } from 'nookies';
 import Maket from '../components/sections/maket/Maket';
 import Form from '../components/ui/form/Form';
 import Button from '../components/ui/button/Button';
-import React from 'react';
+import Input from '../components/ui/input/Input';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema, { ValidationSchemaType } from './validation';
-import Input from '../components/ui/input/Input';
+import './style.scss';
 
-interface ProfileProps {
+interface ProfileData {
   email: string;
   date: string;
   updateDate: string;
   login: string;
   name: string;
   lastname: string;
+  totalProjects: number;
+  plannedProjects: number;
+  inProgressProjects: number;
+  completedProjects: number;
+  suspendedProjects: number;
+  totalIdeas: number;
 }
 
-export default function Profile({ email, date, updateDate, login, name, lastname }: ProfileProps) {
+export default function Profile() {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
+
+  const fetchData = async () => {
+    // Объявляем fetchData вне useEffect
+    try {
+      console.log('Profile: fetchData - fetching data...');
+      const cookies = parseCookies();
+      const token = cookies['jwt'];
+      console.log('Profile: fetchData - token from cookie:', token);
+
+      if (!token) {
+        console.error('Token not found in cookies');
+        router.push('/auth/autorisation'); // Redirect if no token
+        return;
+      }
+
+      const response = await fetch('http://localhost:3001/auth/profile', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error('Ошибка при получении данных профиля:', response.status, response.statusText);
+        throw new Error(`Ошибка при получении данных профиля: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('Profile: fetchData - data received:', data);
+      setProfileData(data);
+    } catch (error) {
+      console.error('Ошибка при получении данных профиля:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/auth/autorisation');
+      return;
+    }
+
+    fetchData();
+  }, [isAuthenticated, router]);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ValidationSchemaType>({
     resolver: yupResolver(validationSchema),
     mode: 'onBlur',
     defaultValues: {
-      login: login,
-      name: name,
-      lastname: lastname,
+      login: profileData?.login || '',
+      name: profileData?.name || '',
+      lastname: profileData?.lastname || '',
     },
   });
 
+  useEffect(() => {
+    if (profileData) {
+      reset({
+        login: profileData.login,
+        name: profileData.name,
+        lastname: profileData.lastname,
+      });
+    }
+  }, [profileData, reset]);
+
   const onSubmit: SubmitHandler<ValidationSchemaType> = async (data: ValidationSchemaType) => {
-    console.log(data);
-    // Здесь будет логика отправки данных на сервер
+    try {
+      console.log('Profile: onSubmit - submitting form...');
+      const cookies = parseCookies();
+      const token = cookies['jwt'];
+
+      const response = await fetch('http://localhost:3001/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        console.error('Ошибка при обновлении данных профиля:', response.status, response.statusText);
+        throw new Error(`Ошибка при обновлении данных профиля: ${response.status} ${response.statusText}`);
+      }
+
+      // Refresh profile data after successful update
+      await fetchData();
+      console.log('Profile: onSubmit - form submitted successfully');
+    } catch (error) {
+      console.error('Ошибка при обновлении данных профиля:', error);
+    }
   };
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  if (!profileData) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle="Ruzhastik">
@@ -45,32 +144,41 @@ export default function Profile({ email, date, updateDate, login, name, lastname
         <div>
           <div className="profile__info">
             <p>
-              <span>Имя:</span> Дарья {name}
+              <span>Имя:</span> {profileData.name}
             </p>
             <p>
-              <span>Фамилия:</span> Бружас {lastname}
+              <span>Фамилия:</span> {profileData.lastname}
             </p>
             <p>
-              <span>Email:</span> dashabry15@gmail.com{email}
+              <span>Email:</span> {profileData.email}
             </p>
             <p>
-              <span>Дата создания профиля:</span> 01.05.2025{date}
+              <span>Дата создания профиля:</span> {profileData.date}
             </p>
             <p>
-              <span>Дата последнего изменения профиля:</span> 07.05.2025{updateDate}
+              <span>Дата последнего изменения профиля:</span> {profileData.updateDate}
             </p>
           </div>
           <h3>Статистика</h3>
           <div className="profile__line"></div>
           <div className="profile__info">
             <p>
-              <span>Количество проектов:</span> 0{updateDate}
+              <span>Общее количество проектов:</span> {profileData.totalProjects}
             </p>
             <p>
-              <span>Количество законченных проектов:</span> 0{updateDate}
+              <span>Количество запланированных проектов:</span> {profileData.plannedProjects}
             </p>
             <p>
-              <span>Количество идей:</span> 0{updateDate}
+              <span>Количество проектов в процессе:</span> {profileData.inProgressProjects}
+            </p>
+            <p>
+              <span>Количество законченных проектов:</span> {profileData.completedProjects}
+            </p>
+            <p>
+              <span>Количество приостановленных проектов:</span> {profileData.suspendedProjects}
+            </p>
+            <p>
+              <span>Количество идей:</span> {profileData.totalIdeas}
             </p>
           </div>
         </div>

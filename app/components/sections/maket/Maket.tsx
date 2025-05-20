@@ -3,7 +3,9 @@
 import './style.scss';
 import Sidebar from '../sidebar/Sidebar';
 import Title from '../../ui/title/Title';
-import React from 'react';
+import React from 'react'; // Removed useEffect and useRouter
+// import { useRouter } from 'next/navigation'; // Removed
+// import { parseCookies } from 'nookies'; // Removed
 
 interface IProps {
   typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character';
@@ -13,6 +15,17 @@ interface IProps {
 }
 
 export default function Maket({ typeSidebar, title, subtitle, children }: IProps) {
+  // const router = useRouter(); // Removed
+
+  // useEffect(() => { // Removed
+  //     const cookies = parseCookies();
+  //     const token = cookies['my-token'];
+
+  //     if (!token) {
+  //         router.push('/auth/autorisation');
+  //     }
+  // }, [router]);
+
   return (
     <div className="maket">
       <Sidebar type={typeSidebar} />
