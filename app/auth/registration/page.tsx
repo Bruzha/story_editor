@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema from './validation';
 import Input from '../../components/ui/input/Input';
@@ -17,25 +17,62 @@ interface FormData {
   confirmPassword: string;
 }
 
+interface BackendError {
+  message: string;
+  path: string;
+}
+
+interface RegistrationResponse {
+  message: string;
+  errors?: BackendError[];
+}
+
 export default function Registration() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<FormData>({
     resolver: yupResolver(validationSchema),
     mode: 'onBlur',
   });
 
-  const onSubmit = async (data: FormData) => {
-    console.log(data);
-    // Здесь будет логика отправки данных на сервер
+  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
+    try {
+      const response = await fetch('http://localhost:3001/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result: RegistrationResponse = await response.json(); // Явное указание типа
+      if (response.ok) {
+        console.log('Success:', result);
+        // Обработайте успешную регистрацию
+      } else {
+        if (result.errors && Array.isArray(result.errors)) {
+          result.errors.forEach((error) => {
+            if (error.path === 'login') {
+              setError('login', { type: 'manual', message: 'Аккаунт с таким логином уже есть' });
+            } else if (error.path === 'email') {
+              setError('email', { type: 'manual', message: 'Аккаунт с таким email уже есть' });
+            }
+          });
+        } else {
+          console.error('Неверный формат ответа:', result); // Логируем, если формат ответа не соответствует ожиданиям
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+    }
   };
 
   return (
     <div className="registration">
       <Form onSubmit={handleSubmit(onSubmit)}>
-        {' '}
         <Title text="РЕГИСТРАЦИЯ" />
         <div className="registration__inputs">
           <div>

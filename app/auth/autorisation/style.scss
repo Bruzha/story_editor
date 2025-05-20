@@ -7,6 +7,9 @@
             margin-bottom: calc(40px + 60px);
             gap: 60px;
         }
+        &__unit-error{
+            bottom: -76px;
+        }
     } 
 
     @include media-breakpoint-down(md){
@@ -20,6 +23,9 @@
             margin-bottom: calc(40px + 50px);
             gap: 50px;
         }
+        &__unit-error{
+            bottom: -66px;
+        }
     }
 
     @include media-breakpoint-between(md, xxxl){
@@ -30,6 +36,9 @@
             margin: 0 12.44vw 60px 12.44vw;
             gap: 40px;
             margin-bottom: calc(60px + 30px);
+        }
+        &__unit-error{
+            bottom: -56px;
         }
     }
 
@@ -45,6 +54,9 @@
             margin-bottom: calc(75px + 30px);
             gap: 30px;
         }
+        &__unit-error{
+            bottom: -46px;
+        }
     }
 
     background-color: var(--background-color);
@@ -52,6 +64,7 @@
     &__inputs{
         display: flex;
         flex-direction: column;
+        position: relative;
     }
 
     &__button{
@@ -76,5 +89,9 @@
         justify-content: center;
         margin-top: 20px;
         text-align: center;
+    }
+    &__unit-error{
+        text-align: center;
+        width: 100%;
     }
 }
