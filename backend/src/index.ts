@@ -4,10 +4,6 @@ import cors from 'cors';
 import { sequelize } from './config/database';
 import authRoutes from './routes/auth';
 import cookieParser from 'cookie-parser';
-import { UserFactory } from './models/User';
-import { ProjectFactory } from './models/Project';
-import { IdeaFactory } from './models/Idea';
-import { DataTypes } from 'sequelize';
 
 dotenv.config({ path: '../.env' });
 
@@ -30,44 +26,6 @@ app.use(express.json()); // Используем middleware для обрабо�
 // Подключаем маршруты аутентификации
 app.use('/auth', authRoutes);
 
-// Initialize Sequelize models
-const User = UserFactory(sequelize, DataTypes);
-const Project = ProjectFactory(sequelize, DataTypes);
-const Idea = IdeaFactory(sequelize, DataTypes);
-
-// Define associations
-(User as any).associate = () => {
-  (User as any).hasMany(Project, {
-    foreignKey: 'userId',
-    as: 'projects',
-    onDelete: 'CASCADE', // Add onDelete: 'CASCADE' if needed
-  });
-  (User as any).hasMany(Idea, {
-    foreignKey: 'userId',
-    as: 'ideas',
-    onDelete: 'CASCADE', // Add onDelete: 'CASCADE' if needed
-  });
-};
-
-(Project as any).associate = () => {
-  (Project as any).belongsTo(User, {
-    foreignKey: 'userId',
-    as: 'user',
-  });
-};
-
-(Idea as any).associate = () => {
-  (Idea as any).belongsTo(User, {
-    foreignKey: 'userId',
-    as: 'user',
-  });
-};
-
-// Call associate after defining models
-(User as any).associate();
-(Project as any).associate();
-(Idea as any).associate();
-
 // Функция для проверки подключения к базе данных
 async function testConnection() {
   try {
@@ -82,7 +40,7 @@ testConnection();
 
 // Запускаем сервер после синхронизации базы данных
 sequelize
-  .sync({ alter: false }) // { alter: true }  автоматически обновит схему БД. Осторожно в production!
+  .sync({ alter: true }) // { alter: true }  автоматически обновит схему БД. Осторожно в production!
   .then(() => {
     console.log('Database synced');
     app.listen(port, () => {

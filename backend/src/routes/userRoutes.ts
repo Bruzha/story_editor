@@ -10,7 +10,7 @@ interface AuthRequest extends Request {
 }
 type ProtectMiddleware = (req: Request, res: Response, next: NextFunction) => void;
 
-router.get('/me', protect as ProtectMiddleware, (req: AuthRequest, res: Response) => {
+router.get('/me', (req: AuthRequest, res: Response) => {
   if (req.user) {
     res.status(200).json({
       data: {

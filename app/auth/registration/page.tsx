@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema from './validation';
@@ -37,6 +37,7 @@ export default function Registration() {
   const [, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
   const { login } = useAuth();
+  const [cookieSet, setCookieSet] = useState(false); // Track if cookie is set
 
   const {
     register,
@@ -68,14 +69,14 @@ export default function Registration() {
         console.log('Success:', result);
         setErrorMessage(null);
         if (result.token) {
-          setCookie(null, 'my-token', result.token, {
+          setCookie(null, 'jwt', result.token, {
             maxAge: 30 * 24 * 60 * 60, // 30 дней
             path: '/',
           });
+          setCookieSet(true); // Set cookieSet to true after setting the cookie
         }
 
         login(); // Вызов функции входа из контекста
-        router.push('/profile');
       } else {
         if (result.errors && Array.isArray(result.errors)) {
           result.errors.forEach((error) => {
@@ -95,6 +96,12 @@ export default function Registration() {
       setErrorMessage('Произошла ошибка при регистрации');
     }
   };
+
+  useEffect(() => {
+    if (cookieSet) {
+      router.push('/profile'); // Redirect only when cookie is set
+    }
+  }, [cookieSet, router]);
 
   return (
     <div className="registration">

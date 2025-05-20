@@ -39,7 +39,7 @@
     @include media-breakpoint-up(xl){
         &__links{
             font-size: 22px;
-            width: 350px;
+            
             display: flex;
             gap: 20px;
             justify-content: space-between;
@@ -72,9 +72,5 @@
     h1{
         font-family: var(--font-merriweather), serif;
         font-weight: 400;
-    }
-    &__exit-link{
-        display: flex;
-        justify-content: right;
     }
 }

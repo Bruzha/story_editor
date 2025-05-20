@@ -25,15 +25,20 @@ export default function Header() {
       </div>
       <div className="header__links">
         {isAuthenticated ? (
-          <MyLink href="/" name="Выйти" className="white-link header__exit-link" onClick={handleLogout}>
-            {''}
-          </MyLink>
-        ) : (
           <>
-            <MyLink href="../../auth/autorisation" name="Войти" className="white-link">
+            <MyLink href="/profile" name="Профиль" className="white-link header__exit-link">
               {''}
             </MyLink>
-            <MyLink href="../../auth/registration" name="Зарегистрироваться" className="white-link">
+            <MyLink href="/" name="Выйти" className="white-link header__exit-link" onClick={handleLogout}>
+              {''}
+            </MyLink>
+          </>
+        ) : (
+          <>
+            <MyLink href="/auth/autorisation" name="Войти" className="white-link">
+              {''}
+            </MyLink>
+            <MyLink href="/auth/registration" name="Зарегистрироваться" className="white-link">
               {''}
             </MyLink>
           </>

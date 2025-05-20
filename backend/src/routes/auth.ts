@@ -1,5 +1,5 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
-import { register, login, reset_password, check_email, getProfile } from '../controllers/authController'; //  <---  Импортируем getProfile
+import { register, login, reset_password, check_email, getProfile, updateProfile } from '../controllers/authController'; //  <---  Импортируем updateProfile
 import { protect } from '../middleware/authMiddleware'; // Import protect middleware
 import { UserInstance } from '../models/User';
 
@@ -54,6 +54,11 @@ router.post('/check-email', async (req: Request, res: Response) => {
 //Маршрут для получения профиля
 router.get('/profile', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
   getProfile(req as AuthRequest, res, next);
+});
+
+// Update profile route
+router.put('/profile', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  updateProfile(req as AuthRequest, res, next);
 });
 
 export default router;

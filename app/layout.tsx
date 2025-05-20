@@ -1,7 +1,8 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { Merriweather, Open_Sans } from 'next/font/google';
-import ClientLayout from './ClientLayout';
+import Header from './components/sections/header/Header'; // Import Header
+import Footer from './components/sections/footer/Footer'; // Import Footer
 import { AuthProvider } from './AuthContext';
 import './globals.scss';
 
@@ -48,8 +49,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className={`${merriweather.variable} ${openSans.variable}`}
       >
         <AuthProvider>
-          {' '}
-          <ClientLayout>{children}</ClientLayout>
+          <Header /> {/* Render Header here */}
+          {children}
+          <Footer /> {/* Render Footer here */}
         </AuthProvider>
       </body>
     </html>

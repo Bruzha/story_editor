@@ -3,16 +3,15 @@
 import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import validationSchema from './validation';
+import * as yup from 'yup';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../AuthContext';
 import Input from '../../components/ui/input/Input';
 import Button from '../../components/ui/button/Button';
 import Form from '../../components/ui/form/Form';
 import Title from '../../components/ui/title/Title';
 import MyLink from '../../components/ui/link/Link';
 import './style.scss';
-import { useRouter } from 'next/navigation';
-import { setCookie } from 'nookies';
-import { useAuth } from '../../AuthContext';
 
 interface FormData {
   email: string;
@@ -31,6 +30,13 @@ interface LoginResponse {
   userId?: number;
 }
 
+const schema = yup
+  .object({
+    email: yup.string().email('Неверный формат email').required('Обязательное поле'),
+    password: yup.string().required('Обязательное поле'),
+  })
+  .required();
+
 export default function Autorisation() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
@@ -41,7 +47,7 @@ export default function Autorisation() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: yupResolver(validationSchema),
+    resolver: yupResolver(schema),
     mode: 'onBlur',
   });
 
@@ -61,14 +67,11 @@ export default function Autorisation() {
         console.log('Success:', result);
         setErrorMessage(null);
         if (result.token) {
-          setCookie(null, 'my-token', result.token, {
-            maxAge: 30 * 24 * 60 * 60, // 30 дней
-            path: '/',
-          });
+          login(result.token); //  Pass the token to login
+          router.push('/profile'); // Redirect after successful login
+        } else {
+          setErrorMessage('Token not found in response');
         }
-
-        login(); // Вызов функции входа и контекста
-        router.push('/profile');
       } else {
         if (result.message) {
           setErrorMessage(result.message);
@@ -78,7 +81,7 @@ export default function Autorisation() {
         }
       }
     } catch (error) {
-      console.error('Ошибка:', error);
+      console.error('Error:', error);
       setErrorMessage('Произошла ошибка при входе');
     }
   };

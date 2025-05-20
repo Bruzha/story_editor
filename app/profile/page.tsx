@@ -1,15 +1,17 @@
 'use client';
 
-import './style.scss';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../AuthContext';
+import { useRouter } from 'next/navigation';
+import { parseCookies } from 'nookies';
 import Maket from '../components/sections/maket/Maket';
 import Form from '../components/ui/form/Form';
 import Button from '../components/ui/button/Button';
-import React, { useEffect, useState } from 'react';
+import Input from '../components/ui/input/Input';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema, { ValidationSchemaType } from './validation';
-import Input from '../components/ui/input/Input';
-import { parseCookies } from 'nookies'; // Import parseCookies
+import './style.scss';
 
 interface ProfileData {
   email: string;
@@ -27,42 +29,59 @@ interface ProfileData {
 }
 
 export default function Profile() {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const cookies = parseCookies(); // Use parseCookies to get cookies
-        const token = cookies['jwt']; // Get token from cookie
+  const fetchData = async () => {
+    // Объявляем fetchData вне useEffect
+    try {
+      console.log('Profile: fetchData - fetching data...');
+      const cookies = parseCookies();
+      const token = cookies['jwt'];
+      console.log('Profile: fetchData - token from cookie:', token);
 
-        const response = await fetch('http://localhost:3001/auth/profile', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`, // Add Authorization header
-          },
-        });
-
-        if (!response.ok) {
-          // Handle non-200 OK responses
-          console.error('Ошибка при получении данных профиля:', response.status, response.statusText);
-          throw new Error(`Ошибка при получении данных профиля: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        setProfileData(data);
-      } catch (error) {
-        console.error('Ошибка при получении данных профиля:', error);
+      if (!token) {
+        console.error('Token not found in cookies');
+        router.push('/auth/autorisation'); // Redirect if no token
+        return;
       }
-    };
+
+      const response = await fetch('http://localhost:3001/auth/profile', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.error('Ошибка при получении данных профиля:', response.status, response.statusText);
+        throw new Error(`Ошибка при получении данных профиля: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('Profile: fetchData - data received:', data);
+      setProfileData(data);
+    } catch (error) {
+      console.error('Ошибка при получении данных профиля:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/auth/autorisation');
+      return;
+    }
 
     fetchData();
-  }, []);
+  }, [isAuthenticated, router]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ValidationSchemaType>({
     resolver: yupResolver(validationSchema),
     mode: 'onBlur',
@@ -73,13 +92,50 @@ export default function Profile() {
     },
   });
 
+  useEffect(() => {
+    if (profileData) {
+      reset({
+        login: profileData.login,
+        name: profileData.name,
+        lastname: profileData.lastname,
+      });
+    }
+  }, [profileData, reset]);
+
   const onSubmit: SubmitHandler<ValidationSchemaType> = async (data: ValidationSchemaType) => {
-    console.log(data);
-    // Здесь будет логика отправки данных на сервер
+    try {
+      console.log('Profile: onSubmit - submitting form...');
+      const cookies = parseCookies();
+      const token = cookies['jwt'];
+
+      const response = await fetch('http://localhost:3001/auth/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        console.error('Ошибка при обновлении данных профиля:', response.status, response.statusText);
+        throw new Error(`Ошибка при обновлении данных профиля: ${response.status} ${response.statusText}`);
+      }
+
+      // Refresh profile data after successful update
+      await fetchData();
+      console.log('Profile: onSubmit - form submitted successfully');
+    } catch (error) {
+      console.error('Ошибка при обновлении данных профиля:', error);
+    }
   };
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
   if (!profileData) {
-    return <div>Loading...</div>; // Отображаем индикатор загрузки
+    return <div>Loading...</div>;
   }
 
   return (

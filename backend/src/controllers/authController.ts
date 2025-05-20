@@ -5,8 +5,6 @@ import { UserFactory, UserInstance } from '../models/User';
 import { sequelize } from '../config/database';
 import jwt from 'jsonwebtoken';
 import { CookieOptions } from 'express';
-import { ProjectFactory, ProjectInstance } from '../models/Project';
-import { IdeaFactory, IdeaInstance } from '../models/Idea';
 
 interface BackendError {
   message: string;
@@ -19,19 +17,24 @@ interface UniqueConstraintErrorParent {
   constraint?: string;
 }
 
-// Срок действия токена (6 часов)
-const JWT_EXPIRES_IN = '6h';
+// Срок действия токена
+const JWT_EXPIRES_IN = '30d';
 
 // Функция для создания JWT
 const signToken = (id: number): string => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'your-secret-key', {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+  return jwt.sign(
+    { id },
+    process.env.JWT_SECRET ||
+      'ypjo$22$%urGHjksu645**wsupe/GhjsuYuhu2uhuGYswq542?.sJjwoar85Хet*klGGkGRDrabVsal8*Rqns433PlsjjwnHFqL93496*2',
+    {
+      expiresIn: JWT_EXPIRES_IN,
+    }
+  );
 };
 
 // Параметры для cookies
 const cookieOptions: CookieOptions = {
-  expires: new Date(Date.now() + parseInt(process.env.JWT_COOKIE_EXPIRES_IN || '7') * 24 * 60 * 60 * 1000), // Перевод дней в милисекунды
+  expires: new Date(Date.now() + parseInt(process.env.JWT_COOKIE_EXPIRES_IN || '30') * 24 * 60 * 60 * 1000), // Перевод дней в милисекунды
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'lax',
@@ -221,16 +224,6 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const Project = ProjectFactory(sequelize, DataTypes) as ModelStatic<ProjectInstance>;
-    const Idea = IdeaFactory(sequelize, DataTypes) as ModelStatic<IdeaInstance>;
-
-    const totalProjects = await Project.count({ where: { userId } });
-    const plannedProjects = await Project.count({ where: { userId, status: 'запланирован' } });
-    const inProgressProjects = await Project.count({ where: { userId, status: 'в процессе' } });
-    const completedProjects = await Project.count({ where: { userId, status: 'завершен' } });
-    const suspendedProjects = await Project.count({ where: { userId, status: 'приостановлен' } });
-    const totalIdeas = await Idea.count({ where: { userId } });
-
     res.status(200).json({
       email: user.email,
       date: user.createdAt.toLocaleDateString(),
@@ -238,15 +231,36 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
       login: user.username,
       name: user.firstName || '',
       lastname: user.lastName || '',
-      totalProjects,
-      plannedProjects,
-      inProgressProjects,
-      completedProjects,
-      suspendedProjects,
-      totalIdeas,
     });
   } catch (error) {
     console.error('Ошибка при получении данных профиля:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+    next(error);
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as AuthRequest).user!.id;
+    const { login, name, lastname } = req.body;
+
+    const User = UserFactory(sequelize, DataTypes) as ModelStatic<UserInstance>;
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update user data
+    user.username = login || user.username;
+    user.firstName = name || user.firstName;
+    user.lastName = lastname || user.lastName;
+
+    await user.save();
+
+    res.status(200).json({ message: 'Profile updated successfully' });
+  } catch (error) {
+    console.error('Ошибка при обновлении данных профиля:', error);
     res.status(500).json({ message: 'Internal Server Error' });
     next(error);
   }
