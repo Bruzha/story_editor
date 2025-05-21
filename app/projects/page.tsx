@@ -57,6 +57,7 @@ export default function Projects() {
   return (
     <CardsPageMaket
       typeSidebar="profile"
+      typeCard="project"
       title="ПРОЕКТЫ"
       subtitle="Ruzhastik"
       masItems={projects}

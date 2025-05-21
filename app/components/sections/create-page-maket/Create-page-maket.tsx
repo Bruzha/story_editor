@@ -1,41 +1,30 @@
 'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Maket from '../maket/Maket';
-import Textarea from '../../ui/textarea/Textarea';
-import Label from '../../ui/label/Label';
+import Form from '../../ui/form/Form';
 import Button from '../../ui/button/Button';
 import Input from '../../ui/input/Input';
-import Form from '../../ui/form/Form';
+import Textarea from '../../ui/textarea/Textarea';
+import Label from '../../ui/label/Label';
 import Select from '../../ui/select/Select';
+import { useForm, SubmitHandler, useFieldArray } from 'react-hook-form';
 import './style.scss';
-import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
 
 interface IProps {
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character';
+  typeSidebar: 'project' | 'profile' | 'timeline' | 'help';
   title: string;
   subtitle: string;
-  masItems: {
-    id: number;
-    title: string;
-    placeholder?: string;
-    removable?: boolean;
-  }[];
+  masItems: { label: string; value: any }[]; // Updated type
+  markerColor?: string;
+  children?: React.ReactNode;
+  showImageInput?: boolean;
   showMarkerColorInput?: boolean;
   showCancelButton?: boolean;
   showSaveExitButton?: boolean;
-  showImageInput?: boolean; // Добавили showImageInput
-  handleFileChange?: (event: React.ChangeEvent<HTMLInputElement>) => void; // Добавили handleFileChange
-  children?: React.ReactNode;
+  handleCancelClick?: () => void;
+  onSubmit: SubmitHandler<any>; //  Pass onSubmit from parent
 }
 
-interface FormData {
-  [key: string]: string;
-  markerColor: string;
-}
-
-// Определение интерфейса для пропсов Label
 interface LabelProps {
   text: string;
   id?: string;
@@ -46,53 +35,37 @@ export default function CreatePageMaket({
   typeSidebar,
   title,
   subtitle,
-  masItems: initialMasItems,
-  showMarkerColorInput = true,
-  showCancelButton = true,
-  showSaveExitButton = false,
-  showImageInput = true, // Значение по умолчанию для showImageInput
+  masItems,
+  markerColor,
   children,
+  showImageInput = false,
+  showMarkerColorInput = true,
+  showCancelButton = false,
+  showSaveExitButton = false,
+  handleCancelClick,
+  onSubmit,
 }: IProps) {
-  const { register, handleSubmit } = useForm<FormData>();
-  const router = useRouter();
-  const [masItems, setMasItems] = useState(initialMasItems);
+  const [, setSelectedFile] = useState<File | null>(null);
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
-    // Здесь будет логика отправки данных на сервер
-  };
-
-  const handleCancelClick = () => {
-    router.back();
-  };
-
-  const selectOptions = masItems.map((item) => ({
-    value: `item_${item.id}`,
-    label: item.title,
-  }));
-  React.Children.forEach(children, (child) => {
-    if (React.isValidElement(child) && child.type === Label) {
-      const labelElement = child as React.ReactElement<LabelProps>;
-      const labelText = labelElement.props.text;
-      const labelId = labelElement.props.id || `child_${selectOptions.length}`;
-      selectOptions.push({ label: labelText, value: labelId });
-    }
+  const {
+    handleSubmit,
+    control,
+    formState: {},
+    setValue,
+  } = useForm({
+    mode: 'onBlur',
   });
-  if (showImageInput) {
-    selectOptions.push({ label: 'Миниатюра', value: 'item_miniature' });
-  }
-  if (showMarkerColorInput) {
-    selectOptions.push({ label: 'Маркерный цвет', value: 'item_marker_color' });
-  }
 
-  // Функция для удаления поля
-  const handleDeleteItem = (id: number) => {
-    setMasItems(masItems.filter((item) => item.id !== id));
-  };
+  const {} = useFieldArray({
+    control,
+    name: 'dynamicFields',
+  });
 
   // Функция выбора миниатюры
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const file = event.target.files && event.target.files[0];
+    setSelectedFile(file || null);
+    setValue('miniature', file); // Set the file value in react-hook-form
     if (file) {
       if (file.type.startsWith('image/')) {
         console.log('Выбранный файл:', file);
@@ -108,6 +81,34 @@ export default function CreatePageMaket({
       }
     }
   };
+
+  const [selectOptions, setSelectOptions] = useState<{ label: string; value: string }[]>([]);
+
+  useEffect(() => {
+    const options = masItems.map((item) => ({
+      value: `item_${item.label}`,
+      label: item.label,
+    }));
+
+    React.Children.forEach(children, (child) => {
+      if (React.isValidElement(child) && child.type === Label) {
+        const labelElement = child as React.ReactElement<LabelProps>;
+        const labelText = labelElement.props.text;
+        const labelId = labelElement.props.id || `child_${options.length}`;
+        options.push({ label: labelText, value: labelId });
+      }
+    });
+
+    if (showImageInput) {
+      options.push({ label: 'Миниатюра', value: 'item_miniature' });
+    }
+
+    if (showMarkerColorInput) {
+      options.push({ label: 'Маркерный цвет', value: 'item_marker_color' });
+    }
+
+    setSelectOptions(options);
+  }, [masItems, children, showImageInput, showMarkerColorInput]);
 
   // Функция для прокрутки с учетом смещения
   const scrollToElement = (targetId: string) => {
@@ -153,7 +154,7 @@ export default function CreatePageMaket({
   };
 
   return (
-    <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle}>
+    <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle} lineColor={markerColor}>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <div className="create">
           <div className="create__items">
@@ -168,14 +169,19 @@ export default function CreatePageMaket({
                   }}
                 />
               </Label>
-              <div className="create__line"></div>
+              <div className="create__line" style={{ backgroundColor: markerColor }}></div>
             </div>
             {masItems.map((item) => (
-              <Label key={item.id} text={item.title} id={`item_${item.id}`}>
+              <Label key={item.label} text={item.label} id={`item_${item.label}`}>
                 <div className="create__textarea-container">
-                  <Textarea key={item.id} placeholder={item.placeholder} {...register(item.title)} />
+                  <Textarea
+                    key={item.label}
+                    name={item.label} //  Add a name prop
+                    defaultValue={item.value} // Set the value prop
+                    placeholder={`Введите ${item.label}`}
+                  />
                   <div>
-                    <input
+                    {/* <input
                       title="Добавить поле ниже"
                       className="create__button-textarea"
                       type="image"
@@ -196,7 +202,7 @@ export default function CreatePageMaket({
                       type="image"
                       src="/icons/move.svg"
                       alt="Перетащить поле"
-                    />
+                    /> */}
                   </div>
                 </div>
               </Label>
@@ -212,7 +218,7 @@ export default function CreatePageMaket({
             )}
             {showMarkerColorInput && (
               <Label text={'Маркерный цвет'} id="item_marker_color">
-                <Input type="color" defaultValue="#4682B4" />
+                <Input type="color" defaultValue={markerColor} />
               </Label>
             )}
           </div>

@@ -1,12 +1,16 @@
+'use client';
+
 import './style.scss';
+import { useRouter } from 'next/navigation'; // Import useRouter
 
 interface IProps {
   id: number;
+  type: 'project' | 'character' | 'idea' | string; //  Add a 'type' prop
   src?: string;
   data: string[];
   markColor?: string;
   showDeleteButton?: boolean;
-  onClick?: () => void;
+  onDelete?: () => void;
 }
 
 function getColorBrightness(hexColor: string): number {
@@ -18,7 +22,7 @@ function getColorBrightness(hexColor: string): number {
   return brightness;
 }
 
-export default function Card({ id, src, onClick, data, markColor, showDeleteButton = true }: IProps) {
+export default function Card({ id, type, src, data, markColor, showDeleteButton = true, onDelete }: IProps) {
   const actualMarkColor = markColor || '#4682B4';
   const isLightColor = getColorBrightness(actualMarkColor) > 128;
   const textColor = isLightColor ? '#333333' : '#FFFFFF';
@@ -37,8 +41,14 @@ export default function Card({ id, src, onClick, data, markColor, showDeleteButt
     filter: textColor === '#FFFFFF' ? 'invert(1)' : 'none',
   };
 
+  const router = useRouter(); // Initialize useRouter
+
+  const handleClick = () => {
+    router.push(`/${type}s/${id}`); //  Navigate to the dynamic page
+  };
+
   return (
-    <div key={id} className="card" style={textStyle} onClick={onClick}>
+    <div key={id} className="card" style={textStyle} onClick={handleClick}>
       {isValidSrc && (
         <div>
           <img className="card__avatar" src={src} alt="" style={borderStyle} />
@@ -55,13 +65,14 @@ export default function Card({ id, src, onClick, data, markColor, showDeleteButt
               src="/icons/delete.svg"
               alt="удалить"
               style={filterStyle}
+              onClick={onDelete}
             />
           )}
         </div>
         <section>{data[1]}</section>
         <ul>
-          {data.slice(2).map((text) => (
-            <li className="card__elements" key={id} style={combinedStyle}>
+          {data.slice(2).map((text, index) => (
+            <li className="card__elements" key={index} style={combinedStyle}>
               {text}
             </li>
           ))}

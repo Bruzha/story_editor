@@ -14,6 +14,7 @@ interface ProjectAttributes {
   info: any;
   status: enum_projects_status;
   miniature: Buffer | null;
+  markerColor?: string;
 }
 
 export interface ProjectInstance extends Model<ProjectAttributes>, ProjectAttributes {
@@ -56,6 +57,10 @@ export const ProjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes
       },
       miniature: {
         type: dataTypes.BLOB('long'),
+        allowNull: true,
+      },
+      markerColor: {
+        type: dataTypes.STRING,
         allowNull: true,
       },
     },

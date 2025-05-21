@@ -27,13 +27,13 @@ export const getProjects = async (req: Request, res: Response, next: NextFunctio
         id: project.id,
         src: '.',
         data: [
-          info?.['title'] || 'Проект ' + project.id,
-          info?.['annotation'] || '',
-          info?.['genre'] || '',
+          info?.['Название'] || 'Проект ' + project.id,
+          info?.['Аннотация'] || '',
+          info?.['Жанр'] || '',
           project.createdAt.toLocaleDateString(),
           project.status,
         ],
-        markColor: info?.['markerColor'],
+        markColor: project.markerColor,
       };
     });
 
@@ -74,28 +74,44 @@ export const getIdeas = async (req: Request, res: Response, next: NextFunction) 
 };
 
 export const getPlotlines = async (req: Request, res: Response, next: NextFunction) => {
+  // try {
+  //   const userId = (req as AuthRequest).user!.id; // ID пользователя
+  //   const Plotline = PlotLineFactory(sequelize, DataTypes) as any;
+  //   const plotlines = await Plotline.findAll({
+  //     where: { userId },
+  //     order: [['createdAt', 'DESC']],
+  //   });
+  //   const formattedPlotlines = plotlines.map((plotline: PlotLineInstance) => {
+  //     const info = plotline.info;
+  //     return {
+  //       id: plotline.id,
+  //       data: [info?.['title'], info?.['description'], plotline.type],
+  //       markColor: plotline.markerColor,
+  //     };
+  //   });
+  //   res.status(200).json(formattedPlotlines);
+  // } catch (error) {
+  //   console.error('Ошибка при получении сюжетных линий:', error);
+  //   res.status(500).json({ message: 'Internal Server Error' });
+  //   next(error);
+  //}
+};
+
+export const getProjectById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = (req as AuthRequest).user!.id; // ID пользователя
+    const { projectId } = req.params;
+    console.log('getProjectById - projectId:', projectId);
+    const Project = ProjectFactory(sequelize, DataTypes) as any;
 
-    const Plotline = PlotLineFactory(sequelize, DataTypes) as any;
+    const project = await Project.findByPk(projectId);
 
-    const plotlines = await Plotline.findAll({
-      where: { userId },
-      order: [['createdAt', 'DESC']],
-    });
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
 
-    const formattedPlotlines = plotlines.map((plotline: PlotLineInstance) => {
-      const info = plotline.info;
-      return {
-        id: plotline.id,
-        data: [info?.['title'], info?.['description'], plotline.type],
-        markColor: plotline.markerColor,
-      };
-    });
-
-    res.status(200).json(formattedPlotlines);
+    res.status(200).json(project);
   } catch (error) {
-    console.error('Ошибка при получении сюжетных линий:', error);
+    console.error('Error fetching project by ID:', error);
     res.status(500).json({ message: 'Internal Server Error' });
     next(error);
   }

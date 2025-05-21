@@ -12,20 +12,10 @@ interface IProps {
   title: string;
   children: React.ReactNode;
   subtitle: string;
+  lineColor?: string;
 }
 
-export default function Maket({ typeSidebar, title, subtitle, children }: IProps) {
-  // const router = useRouter(); // Removed
-
-  // useEffect(() => { // Removed
-  //     const cookies = parseCookies();
-  //     const token = cookies['my-token'];
-
-  //     if (!token) {
-  //         router.push('/auth/autorisation');
-  //     }
-  // }, [router]);
-
+export default function Maket({ typeSidebar, title, subtitle, children, lineColor }: IProps) {
   return (
     <div className="maket">
       <Sidebar type={typeSidebar} />
@@ -33,7 +23,7 @@ export default function Maket({ typeSidebar, title, subtitle, children }: IProps
         <Title text={title} />
         <div className="maket__subtitle-container">
           <h3>{subtitle}</h3>
-          <div className="maket__line"></div>
+          <div className="maket__line" style={{ backgroundColor: lineColor }}></div>
         </div>
         <div>{children}</div>
       </div>

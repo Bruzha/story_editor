@@ -9,6 +9,7 @@ interface IProps {
   typeSidebar: 'profile' | 'project' | 'timeline' | 'help';
   title: string;
   subtitle: string;
+  typeCard: 'project' | 'character' | 'idea' | string;
   masItems: {
     id: number;
     src?: string;
@@ -23,6 +24,7 @@ interface IProps {
 export default function CardsPageMaket({
   typeSidebar,
   title,
+  typeCard,
   subtitle,
   masItems,
   showDeleteButton = true,
@@ -47,6 +49,7 @@ export default function CardsPageMaket({
         <Card
           key={item.id}
           id={item.id}
+          type={typeCard}
           src={item.src}
           data={item.data}
           markColor={item.markColor}
