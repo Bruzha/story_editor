@@ -5,13 +5,13 @@ interface IdeaAttributes {
   id?: number;
   userId: number;
   info: any;
+  markerColor?: string;
 }
 
 export interface IdeaInstance extends Model<IdeaAttributes>, IdeaAttributes {
   createdAt: Date;
   updatedAt: Date;
   getUser: () => Promise<UserInstance>;
-  // user?: UserInstance; //  <-- Add this line
 }
 
 export interface IdeaModel extends ModelStatic<IdeaInstance> {
@@ -37,6 +37,10 @@ export const IdeaFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes): 
       },
       info: {
         type: dataTypes.JSONB,
+        allowNull: true,
+      },
+      markerColor: {
+        type: dataTypes.STRING,
         allowNull: true,
       },
     },

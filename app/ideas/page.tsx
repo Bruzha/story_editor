@@ -1,22 +1,58 @@
+'use client';
 import CardsPageMaket from '../components/sections/cards-page-maket/Cards-page-maket';
+import React, { useState, useEffect } from 'react';
+import { parseCookies } from 'nookies';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../AuthContext';
 
-const masData = [
-  {
-    id: 0,
-    data: ['Идея 1', 'Описание идеи 1', 'Дата создания'],
-    markColor: '#cc2336',
-  },
-  {
-    id: 1,
-    data: ['Идея 2', 'Описание идеи 2', 'Дата создания'],
-    markColor: '#a9e08d',
-  },
-  {
-    id: 2,
-    data: ['Идея 3', 'Описание идеи 3', 'Дата создания'],
-  },
-];
+interface IdeaData {
+  id: number;
+  src?: string;
+  data: string[];
+  markColor?: string;
+}
 
 export default function Ideas() {
-  return <CardsPageMaket typeSidebar="profile" title="ИДЕИ" subtitle="Ruzhastik" masItems={masData} />;
+  const [ideas, setIdeas] = useState<IdeaData[]>([]);
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    const fetchIdeas = async () => {
+      try {
+        const cookies = parseCookies();
+        const token = cookies['jwt'];
+
+        if (!token) {
+          router.push('/auth/autorisation');
+          return;
+        }
+
+        const response = await fetch('http://localhost:3001/auth/ideas', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Ideas: Error fetching ideas: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setIdeas(data);
+      } catch (error) {
+        console.error('Ideas: Error fetching ideas:', error);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchIdeas();
+    } else {
+      router.push('/auth/autorisation');
+    }
+  }, [isAuthenticated, router]);
+
+  return <CardsPageMaket typeSidebar="profile" title="ИДЕИ" subtitle="Ruzhastik" masItems={ideas} />;
 }

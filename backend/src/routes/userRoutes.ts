@@ -1,6 +1,4 @@
-import express, { Request, Response, Router, NextFunction } from 'express';
-import { protect } from '../middleware/authMiddleware';
-import { getProfile } from '../controllers/authController';
+import express, { Request, Response, Router } from 'express';
 import { UserInstance } from '../models/User';
 
 const router: Router = express.Router();
@@ -8,7 +6,6 @@ const router: Router = express.Router();
 interface AuthRequest extends Request {
   user?: UserInstance;
 }
-type ProtectMiddleware = (req: Request, res: Response, next: NextFunction) => void;
 
 router.get('/me', (req: AuthRequest, res: Response) => {
   if (req.user) {
@@ -23,10 +20,6 @@ router.get('/me', (req: AuthRequest, res: Response) => {
     res.status(404).json({ message: 'User not found' });
     return;
   }
-});
-
-router.get('/profile', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
-  getProfile(req as AuthRequest, res, next);
 });
 
 export default router;

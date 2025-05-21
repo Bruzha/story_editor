@@ -34,7 +34,6 @@ export default function Profile() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
   const fetchData = async () => {
-    // Объявляем fetchData вне useEffect
     try {
       console.log('Profile: fetchData - fetching data...');
       const cookies = parseCookies();
@@ -43,7 +42,7 @@ export default function Profile() {
 
       if (!token) {
         console.error('Token not found in cookies');
-        router.push('/auth/autorisation'); // Redirect if no token
+        router.push('/auth/autorisation');
         return;
       }
 
@@ -121,8 +120,6 @@ export default function Profile() {
         console.error('Ошибка при обновлении данных профиля:', response.status, response.statusText);
         throw new Error(`Ошибка при обновлении данных профиля: ${response.status} ${response.statusText}`);
       }
-
-      // Refresh profile data after successful update
       await fetchData();
       console.log('Profile: onSubmit - form submitted successfully');
     } catch (error) {
