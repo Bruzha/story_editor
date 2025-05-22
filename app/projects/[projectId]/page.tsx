@@ -21,11 +21,6 @@ interface IProjectData {
 interface IProjectInfo {
   [key: string]: { title: string; value: any; placeholder: string; removable: boolean };
 }
-
-function saveProject() {
-  console.log('Сохранение изменений');
-}
-
 export default function ProjectInfo() {
   const { projectId } = useParams();
   const [project, setProject] = useState<IProjectData | null>(null);
@@ -82,10 +77,10 @@ export default function ProjectInfo() {
   };
 
   const option = [
-    { value: '1', label: 'Запланирован' },
-    { value: '2', label: 'В процессе' },
-    { value: '3', label: 'Завершен' },
-    { value: '4', label: 'Приостановлен' },
+    { value: 'запланирован', label: 'Запланирован' },
+    { value: 'в процессе', label: 'В процессе' },
+    { value: 'завершен', label: 'Завершен' },
+    { value: 'приостановлен', label: 'Приостановлен' },
   ];
 
   // Определение желаемого порядка ключей
@@ -110,6 +105,10 @@ export default function ProjectInfo() {
 
   // Сортировка project.info
   const sortedProjectInfo = project.info ? sortProjectInfo(project.info, orderedKeys) : {};
+
+  const saveProject = () => {
+    console.log('Сохранение изменений');
+  };
 
   return (
     <div>

@@ -1,9 +1,8 @@
 'use client';
-import CardsPageMaket from '../components/sections/cards-page-maket/Cards-page-maket';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { parseCookies } from 'nookies';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../../AuthContext';
 
 interface ItemsData {
   id: number;
@@ -12,7 +11,11 @@ interface ItemsData {
   markColor?: string;
 }
 
-export default function Projects() {
+interface GetDataCardProps {
+  apiUrl: string;
+}
+
+export default function GetDataCard({ apiUrl }: GetDataCardProps) {
   const [items, setItems] = useState<ItemsData[]>([]);
   const router = useRouter();
   const { isAuthenticated } = useAuth();
@@ -28,7 +31,7 @@ export default function Projects() {
           return;
         }
 
-        const response = await fetch('http://localhost:3001/auth/projects', {
+        const response = await fetch(apiUrl, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -52,15 +55,7 @@ export default function Projects() {
     } else {
       router.push('/auth/autorisation');
     }
-  }, [isAuthenticated, router]);
-  return (
-    <CardsPageMaket
-      typeSidebar="profile"
-      typeCard="project"
-      title="ПРОЕКТЫ"
-      subtitle="Ruzhastik"
-      masItems={items}
-      createPageUrl="/projects/create"
-    />
-  );
+  }, [isAuthenticated, router, apiUrl]);
+
+  return items;
 }

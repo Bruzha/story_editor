@@ -60,7 +60,11 @@ export const getIdeas = async (req: Request, res: Response, next: NextFunction) 
       const info = idea.info;
       return {
         id: idea.id,
-        data: [info?.['title'] || 'Идея ' + idea.id, info?.['description'] || '', idea.createdAt.toLocaleDateString()],
+        data: [
+          info?.name?.value || 'Идея ' + idea.id,
+          info?.description?.value || '',
+          idea.createdAt.toLocaleDateString(),
+        ],
         markColor: idea.markerColor,
       };
     });

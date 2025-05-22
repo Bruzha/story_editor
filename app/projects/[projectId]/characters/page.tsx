@@ -1,24 +1,24 @@
 'use client';
-import CardsPageMaket from '../components/sections/cards-page-maket/Cards-page-maket';
+import CardsPageMaket from '../../../components/sections/cards-page-maket/Cards-page-maket';
 import React, { useState, useEffect } from 'react';
 import { parseCookies } from 'nookies';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../../../AuthContext';
 
-interface IdeaData {
+interface ItemsData {
   id: number;
   src?: string;
   data: string[];
   markColor?: string;
 }
 
-export default function Ideas() {
-  const [ideas, setIdeas] = useState<IdeaData[]>([]);
+export default function Characters() {
+  const [items, setItems] = useState<ItemsData[]>([]);
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const fetchIdeas = async () => {
+    const fetchItems = async () => {
       try {
         const cookies = parseCookies();
         const token = cookies['jwt'];
@@ -28,7 +28,7 @@ export default function Ideas() {
           return;
         }
 
-        const response = await fetch('http://localhost:3001/auth/ideas', {
+        const response = await fetch('http://localhost:3001/auth/projects', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -37,18 +37,18 @@ export default function Ideas() {
         });
 
         if (!response.ok) {
-          throw new Error(`Ideas: Error fetching ideas: ${response.status} ${response.statusText}`);
+          throw new Error(`Projects: Error fetching projects: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-        setIdeas(data);
+        setItems(data);
       } catch (error) {
-        console.error('Ideas: Error fetching ideas:', error);
+        console.error('Projects: Error fetching projects:', error);
       }
     };
 
     if (isAuthenticated) {
-      fetchIdeas();
+      fetchItems();
     } else {
       router.push('/auth/autorisation');
     }
@@ -56,12 +56,12 @@ export default function Ideas() {
 
   return (
     <CardsPageMaket
-      typeCard="idea"
-      typeSidebar="profile"
-      title="ИДЕИ"
-      subtitle="Ruzhastik"
-      masItems={ideas}
-      createPageUrl="/ideas/create"
+      typeSidebar="project"
+      title="ПЕРСОНАЖИ"
+      subtitle="Проект 1"
+      masItems={items}
+      createPageUrl="/projects/project/characters/create/base"
+      typeCard={'character'}
     />
   );
 }

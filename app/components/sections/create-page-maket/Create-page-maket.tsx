@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import './style.scss';
 
 interface IProps {
-  typeSidebar: 'project' | 'profile' | 'timeline' | 'help';
+  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character';
   title: string;
   subtitle: string;
   masItems: {
