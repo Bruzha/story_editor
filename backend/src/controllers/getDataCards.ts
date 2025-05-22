@@ -27,9 +27,9 @@ export const getProjects = async (req: Request, res: Response, next: NextFunctio
         id: project.id,
         src: '.',
         data: [
-          info?.['Название'] || 'Проект ' + project.id,
-          info?.['Аннотация'] || '',
-          info?.['Жанр'] || '',
+          info?.name?.value || 'Проект ' + project.id,
+          info?.annotation?.value || '',
+          info?.genre?.value || '',
           project.createdAt.toLocaleDateString(),
           project.status,
         ],

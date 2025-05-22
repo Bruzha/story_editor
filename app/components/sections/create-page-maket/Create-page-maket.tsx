@@ -8,13 +8,20 @@ import Textarea from '../../ui/textarea/Textarea';
 import Label from '../../ui/label/Label';
 import Select from '../../ui/select/Select';
 import { useForm, SubmitHandler, useFieldArray } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import './style.scss';
 
 interface IProps {
   typeSidebar: 'project' | 'profile' | 'timeline' | 'help';
   title: string;
   subtitle: string;
-  masItems: { label: string; value: any }[]; // Updated type
+  masItems: {
+    key: string;
+    title: string;
+    value?: any;
+    placeholder?: string;
+    removable?: boolean;
+  }[];
   markerColor?: string;
   children?: React.ReactNode;
   showImageInput?: boolean;
@@ -22,7 +29,7 @@ interface IProps {
   showCancelButton?: boolean;
   showSaveExitButton?: boolean;
   handleCancelClick?: () => void;
-  onSubmit: SubmitHandler<any>; //  Pass onSubmit from parent
+  onSubmit: SubmitHandler<any>;
 }
 
 interface LabelProps {
@@ -36,7 +43,7 @@ export default function CreatePageMaket({
   title,
   subtitle,
   masItems,
-  markerColor,
+  markerColor = '#4682B4',
   children,
   showImageInput = false,
   showMarkerColorInput = true,
@@ -46,7 +53,7 @@ export default function CreatePageMaket({
   onSubmit,
 }: IProps) {
   const [, setSelectedFile] = useState<File | null>(null);
-
+  const router = useRouter();
   const {
     handleSubmit,
     control,
@@ -60,6 +67,10 @@ export default function CreatePageMaket({
     control,
     name: 'dynamicFields',
   });
+
+  handleCancelClick = () => {
+    router.back();
+  };
 
   // Функция выбора миниатюры
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,10 +97,9 @@ export default function CreatePageMaket({
 
   useEffect(() => {
     const options = masItems.map((item) => ({
-      value: `item_${item.label}`,
-      label: item.label,
+      value: `item_${item.key}`,
+      label: item.title,
     }));
-
     React.Children.forEach(children, (child) => {
       if (React.isValidElement(child) && child.type === Label) {
         const labelElement = child as React.ReactElement<LabelProps>;
@@ -172,30 +182,27 @@ export default function CreatePageMaket({
               <div className="create__line" style={{ backgroundColor: markerColor }}></div>
             </div>
             {masItems.map((item) => (
-              <Label key={item.label} text={item.label} id={`item_${item.label}`}>
+              <Label key={item.key} text={item.title} id={`item_${item.key}`}>
                 <div className="create__textarea-container">
-                  <Textarea
-                    key={item.label}
-                    name={item.label} //  Add a name prop
-                    defaultValue={item.value} // Set the value prop
-                    placeholder={`Введите ${item.label}`}
-                  />
+                  <Textarea key={item.key} name={item.title} defaultValue={item.value} placeholder={item.placeholder} />
                   <div>
-                    {/* <input
+                    <input
                       title="Добавить поле ниже"
                       className="create__button-textarea"
                       type="image"
                       src="/icons/add.svg"
                       alt="Добавить поле ниже"
                     />
-                    <input
-                      title="Удалить поле"
-                      className="create__button-textarea"
-                      type="image"
-                      src="/icons/delete.svg"
-                      alt="Удалить поле"
-                      onClick={() => handleDeleteItem(item.id)}
-                    />
+                    {!item.removable && (
+                      <input
+                        title="Удалить поле"
+                        className="create__button-textarea"
+                        type="image"
+                        src="/icons/delete.svg"
+                        alt="Удалить поле"
+                      />
+                    )}
+                    {/*
                     <input
                       title="Перетащить поле"
                       className="create__button-textarea"
@@ -210,7 +217,7 @@ export default function CreatePageMaket({
             {children}
             {showImageInput && (
               <Label text={'Миниатюра'} id="item_miniature">
-                <Input readOnly id="miniature_text" />
+                <Input readOnly id="miniature_text" placeholder="Название выбранного файла" />
                 <div className="create__input-file">
                   <Input type="file" isFileType={true} onChange={handleFileChange} />
                 </div>

@@ -24,7 +24,7 @@ const Input: React.FC<IProps> = ({ iconSrc, readOnly, isFileType, ...props }) =>
 
   if (isFileType) {
     return (
-      <div className={wrapperClassName}>
+      <div className="input__fileType">
         <label className="button" onClick={handleLabelClick}>
           Загрузить файл
         </label>

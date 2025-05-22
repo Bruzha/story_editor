@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { parseCookies } from 'nookies';
 
-interface ProjectData {
+interface IProjectData {
   id: number;
   userId: number;
   info: any;
@@ -18,18 +18,21 @@ interface ProjectData {
   miniature: any;
   markerColor: string;
 }
-function F1() {
+interface IProjectInfo {
+  [key: string]: { title: string; value: any; placeholder: string; removable: boolean };
+}
+
+function saveProject() {
   console.log('Сохранение изменений');
 }
+
 export default function ProjectInfo() {
   const { projectId } = useParams();
-  console.log('ProjectInfo: projectId:', projectId);
-  const [project, setProject] = useState<ProjectData | null>(null);
+  const [project, setProject] = useState<IProjectData | null>(null);
 
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        console.log(`ProjectInfo: Fetching project with ID: ${projectId}`);
         const cookies = parseCookies();
         const token = cookies['jwt'];
 
@@ -52,7 +55,6 @@ export default function ProjectInfo() {
         }
 
         const data = await response.json();
-        console.log('ProjectInfo: Data received:', data);
         setProject(data);
       } catch (error) {
         console.error('ProjectInfo: Error fetching project:', error);
@@ -63,9 +65,21 @@ export default function ProjectInfo() {
       fetchProject();
     }
   }, [projectId]);
+
   if (!project) {
     return <div>Loading...</div>;
   }
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
   const option = [
     { value: '1', label: 'Запланирован' },
@@ -73,29 +87,56 @@ export default function ProjectInfo() {
     { value: '3', label: 'Завершен' },
     { value: '4', label: 'Приостановлен' },
   ];
+
+  // Определение желаемого порядка ключей
+  const orderedKeys = ['name', 'author', 'annotation', 'genre', 'synopsis', 'fabula', 'setting'];
+  // Сортировка объекта info
+  const sortProjectInfo = (info: IProjectInfo, keys: string[]): IProjectInfo => {
+    const orderedInfo: IProjectInfo = {};
+    keys.forEach((key) => {
+      if (info && info.hasOwnProperty(key)) {
+        orderedInfo[key] = info[key];
+      }
+    });
+
+    // Ключи, которых нет в orderedKeys
+    Object.keys(info).forEach((key) => {
+      if (!orderedKeys.includes(key)) {
+        orderedInfo[key] = info[key];
+      }
+    });
+    return orderedInfo;
+  };
+
+  // Сортировка project.info
+  const sortedProjectInfo = project.info ? sortProjectInfo(project.info, orderedKeys) : {};
+
   return (
     <div>
       <CreatePageMaket
         typeSidebar="project"
         title="ДАННЫЕ ПРОЕКТА"
-        subtitle={project.info?.Название}
-        masItems={Object.entries(project.info).map(([key, value]) => ({
-          label: key,
-          value: value,
+        subtitle={project.info?.name.value}
+        masItems={Object.entries(sortedProjectInfo).map(([key, value]) => ({
+          key: key,
+          title: value.title,
+          value: value.value,
+          placeholder: value.placeholder,
+          removable: value.removable,
         }))}
         markerColor={project.markerColor}
         showCancelButton={false}
         showImageInput={true}
-        onSubmit={F1}
+        onSubmit={saveProject}
       >
         <Label text={'Статус'} id="status">
           <Select options={option} defaultValue={project.status} />
         </Label>
         <Label text={'Дата создания'} id="created_date">
-          <Input readOnly value={project.createdAt} />
+          <Input readOnly value={formatDate(project.createdAt)} />
         </Label>
-        <Label text={'Дата обновления'} id="created_date">
-          <Input readOnly value={project.updatedAt} />
+        <Label text={'Дата обновления'} id="updated_date">
+          <Input readOnly value={formatDate(project.updatedAt)} />
         </Label>
       </CreatePageMaket>
     </div>

@@ -22,7 +22,7 @@
     align-items: center;
   }
 
-  &:focus {
+  &:focus, &:hover {
     outline: 3px solid var(--secondary-color);
   }
 }
