@@ -1,6 +1,6 @@
 import express, { Router, Request, Response, NextFunction } from 'express';
 import { register, login, reset_password, check_email, getProfile, updateProfile } from '../controllers/authController';
-import { getProjects, getIdeas, getPlotlines, getProjectById } from '../controllers/getDataCards';
+import { getProjects, getIdeas, getPlotlines, getProjectById, deleteProject } from '../controllers/getDataCards';
 import { protect } from '../middleware/authMiddleware';
 import { UserInstance } from '../models/User';
 
@@ -73,13 +73,33 @@ router.get('/ideas', protect as ProtectMiddleware, (req: Request, res: Response,
 });
 
 //Маршрут для получения сюжетных линий
-router.get('/plotlines', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
-  getPlotlines(req as AuthRequest, res, next);
-});
+router.get(
+  '/projects/:projectId/plotlines',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getPlotlines(req as AuthRequest, res, next);
+  }
+);
 
 //Маршрут для получения информации по проекту
 router.get('/projects/:projectId', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
   getProjectById(req as AuthRequest, res, next);
+});
+
+//Маршрут для получения персонажей
+router.get(
+  '/projects/:projectId/character',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getProjectById(req as AuthRequest, res, next);
+  }
+);
+
+//Маршрут для удаления проекта
+router.delete('/projects/delete', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  const projectId = req.query.projectId; // Получаем ID из параметров запроса
+  // Далее используйте projectId для удаления
+  deleteProject(req as AuthRequest, res, next, projectId); // Измените deleteProject, чтобы принимать projectId
 });
 
 export default router;

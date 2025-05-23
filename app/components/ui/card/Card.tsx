@@ -1,16 +1,18 @@
 'use client';
 
 import './style.scss';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { deleteCard } from '../../../store/thunks/deleteCard';
+import { AppDispatch } from '@/app/store';
 
 interface IProps {
   id: number;
-  type: 'project' | 'character' | 'idea' | string; //  Add a 'type' prop
+  type: 'project' | 'character' | 'idea' | string;
   src?: string;
   data: string[];
   markColor?: string;
   showDeleteButton?: boolean;
-  onDelete?: () => void;
 }
 
 function getColorBrightness(hexColor: string): number {
@@ -22,7 +24,7 @@ function getColorBrightness(hexColor: string): number {
   return brightness;
 }
 
-export default function Card({ id, type, src, data, markColor, showDeleteButton = true, onDelete }: IProps) {
+export default function Card({ id, type, src, data, markColor, showDeleteButton = true }: IProps) {
   const actualMarkColor = markColor || '#4682B4';
   const isLightColor = getColorBrightness(actualMarkColor) > 128;
   const textColor = isLightColor ? '#333333' : '#FFFFFF';
@@ -41,10 +43,16 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
     filter: textColor === '#FFFFFF' ? 'invert(1)' : 'none',
   };
 
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
+  const dispatch: AppDispatch = useDispatch();
 
   const handleClick = () => {
-    router.push(`/${type}s/${id}`); //  Navigate to the dynamic page
+    router.push(`/${type}s/${id}`); //  Перевод на страницу карточки
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Остановить распространение события click
+    dispatch(deleteCard(id, type)); // Отправка thunk
   };
 
   return (
@@ -65,7 +73,7 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
               src="/icons/delete.svg"
               alt="удалить"
               style={filterStyle}
-              onClick={onDelete}
+              onClick={handleDelete}
             />
           )}
         </div>

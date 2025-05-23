@@ -8,17 +8,18 @@ import React from 'react'; // Removed useEffect and useRouter
 // import { parseCookies } from 'nookies'; // Removed
 
 interface IProps {
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character';
+  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
   title: string;
   children: React.ReactNode;
   subtitle: string;
   lineColor?: string;
+  projectId: string;
 }
 
-export default function Maket({ typeSidebar, title, subtitle, children, lineColor }: IProps) {
+export default function Maket({ typeSidebar, title, subtitle, children, lineColor, projectId }: IProps) {
   return (
     <div className="maket">
-      <Sidebar type={typeSidebar} />
+      <Sidebar projectId={projectId} type={typeSidebar} />
       <div className="maket__window">
         <Title text={title} />
         <div className="maket__subtitle-container">

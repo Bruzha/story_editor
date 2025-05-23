@@ -5,16 +5,20 @@ import './style.scss';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../AuthContext';
 import { destroyCookie } from 'nookies';
+import { useDispatch } from 'react-redux';
+import { resetCardsState } from '../../../store/actions';
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault(); // Предотвращаем перенаправление
-    destroyCookie(null, 'my-token', { path: '/' }); // Удаляем Cookie
+    e.preventDefault();
+    destroyCookie(null, 'jwt', { path: '/' });
+    dispatch(resetCardsState());
     logout();
-    router.push('/'); // Перенаправляем на главную страницу
+    router.push('/');
   };
 
   return (

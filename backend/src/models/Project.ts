@@ -21,7 +21,6 @@ export interface ProjectInstance extends Model<ProjectAttributes>, ProjectAttrib
   createdAt: Date;
   updatedAt: Date;
   getUser: () => Promise<UserInstance>;
-  // user?: UserInstance; //  <-- Add this line
 }
 
 export interface ProjectModel extends ModelStatic<ProjectInstance> {

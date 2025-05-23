@@ -6,10 +6,11 @@ import Search from '../../sections/search/Search';
 import Pagination from '../../ui/pagination/Pagination';
 
 interface IProps {
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character';
+  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
   title: string;
   subtitle: string;
   typeCard: 'project' | 'character' | 'idea' | string;
+  projectId: string;
   masItems: {
     id: number;
     src?: string;
@@ -27,6 +28,7 @@ export default function CardsPageMaket({
   typeCard,
   subtitle,
   masItems,
+  projectId,
   showDeleteButton = true,
   showCreateButton = true,
   createPageUrl = '/create_project',
@@ -43,7 +45,7 @@ export default function CardsPageMaket({
   const currentItems = masItems.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
-    <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle}>
+    <Maket projectId={projectId} typeSidebar={typeSidebar} title={title} subtitle={subtitle}>
       <Search showCreateButton={showCreateButton} createPageUrl={createPageUrl} />
       {currentItems.map((item) => (
         <Card

@@ -3,6 +3,8 @@
 import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { parseCookies, destroyCookie, setCookie } from 'nookies';
 import { useRouter } from 'next/navigation';
+import { Provider } from 'react-redux';
+import { store } from './store';
 
 interface AuthContextProps {
   isAuthenticated: boolean;
@@ -49,7 +51,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  return <AuthContext.Provider value={{ isAuthenticated, login, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <Provider store={store}>
+      <AuthContext.Provider value={{ isAuthenticated, login, logout }}>{children}</AuthContext.Provider>
+    </Provider>
+  );
 };
 
 export const useAuth = () => useContext(AuthContext);

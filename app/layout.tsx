@@ -49,9 +49,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         className={`${merriweather.variable} ${openSans.variable}`}
       >
         <AuthProvider>
-          <Header /> {/* Render Header here */}
+          <Header />
           {children}
-          <Footer /> {/* Render Footer here */}
+          <Footer />
         </AuthProvider>
       </body>
     </html>
