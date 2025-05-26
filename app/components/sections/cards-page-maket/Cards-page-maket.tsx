@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState } from 'react';
 import Maket from '../maket/Maket';
 import Card from '../../ui/card/Card';
@@ -10,7 +11,6 @@ interface IProps {
   title: string;
   subtitle: string;
   typeCard: 'project' | 'character' | 'idea' | string;
-  projectId: string;
   masItems: {
     id: number;
     src?: string;
@@ -28,7 +28,6 @@ export default function CardsPageMaket({
   typeCard,
   subtitle,
   masItems,
-  projectId,
   showDeleteButton = true,
   showCreateButton = true,
   createPageUrl = '/create_project',
@@ -43,9 +42,8 @@ export default function CardsPageMaket({
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = masItems.slice(indexOfFirstItem, indexOfLastItem);
-
   return (
-    <Maket projectId={projectId} typeSidebar={typeSidebar} title={title} subtitle={subtitle}>
+    <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle}>
       <Search showCreateButton={showCreateButton} createPageUrl={createPageUrl} />
       {currentItems.map((item) => (
         <Card

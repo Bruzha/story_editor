@@ -7,6 +7,7 @@ import Input from '@/app/components/ui/input/Input';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { parseCookies } from 'nookies';
+import { useDispatch } from 'react-redux';
 
 interface IProjectData {
   id: number;
@@ -18,12 +19,17 @@ interface IProjectData {
   miniature: any;
   markerColor: string;
 }
+
 interface IProjectInfo {
   [key: string]: { title: string; value: any; placeholder: string; removable: boolean };
 }
-export default function ProjectInfo() {
-  const { projectId } = useParams();
+
+export default function ProjectInfo({ params }: any) {
+  console.log('1: ', params);
+  const { projectId } = useParams<{ projectId: string }>();
+  console.log('projectId: ' + projectId);
   const [project, setProject] = useState<IProjectData | null>(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -59,7 +65,7 @@ export default function ProjectInfo() {
     if (projectId) {
       fetchProject();
     }
-  }, [projectId]);
+  }, [projectId, dispatch]);
 
   if (!project) {
     return <div>Loading...</div>;

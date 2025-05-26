@@ -3,20 +3,19 @@ import { parseCookies } from 'nookies';
 import { AppDispatch } from '../index';
 import { RootState } from '../../types/types';
 
-export const fetchCards = (slug: string) => {
+export const fetchCards = (slug: string[], projectId?: string) => {
   return async (dispatch: AppDispatch, getState: () => RootState) => {
     const { cachedData } = getState().posts;
-
-    // Проверяем, есть ли данные в кэше
-    if (cachedData[slug]) {
-      // Если есть, используем кэшированные данные
-      const { items, typeSidebar, typeCard, title, subtitle, createPageUrl } = cachedData[slug]!;
-      dispatch(fetchCardsSuccess({ masItems: items, typeSidebar, typeCard, title, subtitle, createPageUrl, slug })); // Передаем slug
+    const cacheKey = slug.join('/');
+    console.log('Fetch projectId: ' + projectId);
+    if (cachedData[cacheKey]) {
+      const { items, typeSidebar, typeCard, title, subtitle, createPageUrl } = cachedData[cacheKey]!;
+      dispatch(
+        fetchCardsSuccess({ masItems: items, typeSidebar, typeCard, title, subtitle, createPageUrl, slug: cacheKey })
+      );
       return;
     }
-
     dispatch(fetchCardsRequest());
-
     try {
       const cookies = parseCookies();
       const token = cookies['jwt'];
@@ -25,7 +24,8 @@ export const fetchCards = (slug: string) => {
         throw new Error('No token found');
       }
 
-      const apiUrl = `http://localhost:3001/auth/${slug}`;
+      const SlugToString = slug.join('/');
+      const apiUrl = `http://localhost:3001/auth/${SlugToString}`;
 
       const response = await fetch(apiUrl, {
         method: 'GET',
@@ -34,13 +34,12 @@ export const fetchCards = (slug: string) => {
           Authorization: `Bearer ${token}`,
         },
       });
-
       if (!response.ok) {
-        throw new Error(`Error fetching ${slug}: ${response.status} ${response.statusText}`);
+        throw new Error(`Error fetching ${SlugToString}: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      dispatch(fetchCardsSuccess({ ...data, slug })); // Передаем весь объект data
+      dispatch(fetchCardsSuccess({ ...data, slug: cacheKey }));
     } catch (error: any) {
       dispatch(fetchCardsFailure(error.message));
     }

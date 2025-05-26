@@ -75,5 +75,12 @@ export const ProjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes
     });
   };
 
+  Project.associate = (models: any) => {
+    Project.hasMany(models.Character, {
+      foreignKey: 'projectId',
+      as: 'characters',
+    });
+  };
+
   return Project;
 };

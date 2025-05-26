@@ -1,3 +1,4 @@
+'use client';
 import { useRouter } from 'next/navigation';
 import './style.scss';
 import Input from '../../ui/input/Input';

@@ -2,9 +2,10 @@ import { deleteCardRequest, deleteCardSuccess, deleteCardFailure } from '../acti
 import { parseCookies } from 'nookies';
 import { AppDispatch } from '../index';
 import { fetchCards } from './fetchCards';
+import { RootState } from '../../types/types';
 
 export const deleteCard = (id: number, type: string) => {
-  return async (dispatch: AppDispatch) => {
+  return async (dispatch: AppDispatch, getState: () => RootState) => {
     dispatch(deleteCardRequest());
 
     try {
@@ -15,7 +16,7 @@ export const deleteCard = (id: number, type: string) => {
         throw new Error('No token found');
       }
 
-      const apiUrl = `http://localhost:3001/auth/${type}s/delete?projectId=${id}`;
+      const apiUrl = `http://localhost:3001/auth/${type}s/delete?${type}Id=${id}`;
 
       const response = await fetch(apiUrl, {
         method: 'DELETE',
@@ -30,10 +31,10 @@ export const deleteCard = (id: number, type: string) => {
       }
 
       dispatch(deleteCardSuccess(id));
-      // После успешного удаления перезагружаем данные
-      dispatch(fetchCards(type + 's'));
+      const projectId = getState().project.projectId;
+      dispatch(fetchCards([type + 's'], projectId));
     } catch (error: any) {
-      dispatch(deleteCardFailure(error.message));
+      dispatch(deleteCardFailure(`Error deleting character: ${error.message}`));
     }
   };
 };

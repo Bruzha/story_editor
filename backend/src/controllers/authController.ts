@@ -96,7 +96,7 @@ export const register = async (req: Request, res: Response) => {
       if (parent.constraint) {
         path = parent.constraint.includes('username') ? 'login' : 'email';
       }
-      const errors: BackendError[] = [{ message, path }]; // Массив ошибок
+      const errors: BackendError[] = [{ message, path }];
       return res.status(400).json({ message: 'Ошибка регистрации', errors: errors });
     }
 

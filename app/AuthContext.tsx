@@ -12,11 +12,7 @@ interface AuthContextProps {
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextProps>({
-  isAuthenticated: false,
-  login: () => {},
-  logout: () => {},
-});
+const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -33,6 +29,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
     setIsAuthenticated(true);
     console.log('AuthContext: login() - isAuthenticated set to true');
+    router.push('/'); // Перенаправляем на главную страницу после логина
   };
 
   const logout = () => {
@@ -49,13 +46,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(true);
       console.log('AuthContext: useEffect - isAuthenticated set to true on load');
     }
-  }, []);
+  }, [router]);
+
+  const contextValue: AuthContextProps = {
+    isAuthenticated,
+    login,
+    logout,
+  };
 
   return (
     <Provider store={store}>
-      <AuthContext.Provider value={{ isAuthenticated, login, logout }}>{children}</AuthContext.Provider>
+      <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
     </Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

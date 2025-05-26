@@ -66,6 +66,11 @@ export const cardsReducer = createReducer(initialState, (builder) => {
     })
     .addCase(deleteCardSuccess, (state, action) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
+      for (const slug in state.cachedData) {
+        if (state.cachedData[slug] && state.cachedData[slug]!.items) {
+          state.cachedData[slug]!.items = state.cachedData[slug]!.items.filter((item) => item.id !== action.payload);
+        }
+      }
     })
     .addCase(deleteCardFailure, (state, action) => {
       state.error = action.payload;

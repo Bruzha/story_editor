@@ -3,9 +3,7 @@
 import './style.scss';
 import Sidebar from '../sidebar/Sidebar';
 import Title from '../../ui/title/Title';
-import React from 'react'; // Removed useEffect and useRouter
-// import { useRouter } from 'next/navigation'; // Removed
-// import { parseCookies } from 'nookies'; // Removed
+import React from 'react';
 
 interface IProps {
   typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
@@ -13,13 +11,12 @@ interface IProps {
   children: React.ReactNode;
   subtitle: string;
   lineColor?: string;
-  projectId: string;
 }
 
-export default function Maket({ typeSidebar, title, subtitle, children, lineColor, projectId }: IProps) {
+export default function Maket({ typeSidebar, title, subtitle, children, lineColor }: IProps) {
   return (
     <div className="maket">
-      <Sidebar projectId={projectId} type={typeSidebar} />
+      <Sidebar type={typeSidebar} />
       <div className="maket__window">
         <Title text={title} />
         <div className="maket__subtitle-container">

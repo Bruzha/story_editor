@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../AuthContext';
@@ -7,28 +6,21 @@ import CardsPageMaket from '../components/sections/cards-page-maket/Cards-page-m
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCards } from '../store/thunks/fetchCards';
 import { RootState, AppDispatch } from '../store';
-import { useParams } from 'next/navigation';
-
-interface ParamsId {
-  projectId: string;
-}
-
-interface Params {
-  slug: 'ideas' | 'projects';
-}
 
 interface Props {
-  params: Params;
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: { slug: string[] };
 }
 
-export default function MainThema({ params }: Props) {
-  const paramsId = useParams<ParamsId>();
-  const { projectId } = paramsId;
+export default function CardsPage({ params }: Props) {
   const { slug } = params;
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const projectId = slug && slug.length > 1 ? slug[1] : undefined;
+
+  useEffect(() => {
+    console.log({ params });
+  }, []);
 
   const { items, isLoading, error, typeSidebar, typeCard, title, subtitle, createPageUrl } = useSelector(
     (state: RootState) => state.posts
@@ -36,11 +28,12 @@ export default function MainThema({ params }: Props) {
 
   useEffect(() => {
     if (isAuthenticated) {
-      dispatch(fetchCards(slug));
+      dispatch(fetchCards(slug, projectId));
+      console.log('projectId fetchCards: ' + projectId);
     } else {
       router.push('/auth/autorisation');
     }
-  }, [isAuthenticated, router, dispatch, slug]);
+  }, [isAuthenticated, router, dispatch, slug, projectId]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -52,7 +45,6 @@ export default function MainThema({ params }: Props) {
 
   return (
     <CardsPageMaket
-      projectId={projectId}
       typeSidebar={typeSidebar}
       typeCard={typeCard}
       title={title}

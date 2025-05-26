@@ -1,3 +1,4 @@
+// components/card/Card.tsx
 'use client';
 
 import './style.scss';
@@ -5,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { deleteCard } from '../../../store/thunks/deleteCard';
 import { AppDispatch } from '@/app/store';
+import { setProjectId } from '@/app/store/reducers/projectReducer'; // Import setProjectId
+import React from 'react';
 
 interface IProps {
   id: number;
@@ -47,7 +50,8 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
   const dispatch: AppDispatch = useDispatch();
 
   const handleClick = () => {
-    router.push(`/${type}s/${id}`); //  Перевод на страницу карточки
+    dispatch(setProjectId(String(id))); // Сохраняем projectId в Redux
+    router.push(`/${type}s/${id}`); // Перевод на страницу карточки
   };
 
   const handleDelete = (e: React.MouseEvent) => {

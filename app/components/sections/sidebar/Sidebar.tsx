@@ -2,10 +2,12 @@
 import Link from '../../ui/link/Link';
 import './style.scss';
 import React, { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/app/store';
 
 interface IProps {
   type: string;
-  projectId: string;
 }
 
 interface ListItem {
@@ -14,12 +16,14 @@ interface ListItem {
   icon: string;
 }
 
-export default function Sidebar({ type, projectId }: IProps) {
+export default function Sidebar({ type }: IProps) {
+  const pathname = usePathname();
   const [currentPath, setCurrentPath] = useState('');
+  const projectId = useSelector((state: RootState) => state.project?.projectId);
 
   useEffect(() => {
-    setCurrentPath(window.location.pathname);
-  }, []);
+    setCurrentPath(pathname);
+  }, [pathname]);
 
   let masLinks: ListItem[] = [];
   if (type === 'profile') {
@@ -28,10 +32,10 @@ export default function Sidebar({ type, projectId }: IProps) {
       { name: 'Проекты', href: '/projects', icon: '/icons/project.svg' },
       { name: 'Идеи', href: '/ideas', icon: '/icons/idea.svg' },
     ];
-  } else if (type === 'project') {
+  } else if (type === 'project' && projectId) {
     masLinks = [
       { name: 'Назад', href: '/projects', icon: '/icons/back.svg' },
-      { name: 'Данные проекта', href: `/projects/${projectId}`, icon: '/icons/base.svg' }, // Используйте projectId
+      { name: 'Данные проекта', href: `/projects/${projectId}`, icon: '/icons/base.svg' },
       { name: 'Сюжетные линии', href: `/projects/${projectId}/plotlines`, icon: '/icons/plotline.svg' },
       { name: 'Персонажи', href: `/projects/${projectId}/characters`, icon: '/icons/character.svg' },
       { name: 'Локации', href: `/projects/${projectId}/locations`, icon: '/icons/location.svg' },
@@ -44,19 +48,19 @@ export default function Sidebar({ type, projectId }: IProps) {
       { name: 'Экспорт', href: `/projects/${projectId}/export`, icon: '/icons/export.svg' },
       { name: 'Советы', href: `/projects/${projectId}/advices`, icon: '/icons/help.svg' },
     ];
-  } else if (type === 'timeline') {
+  } else if (type === 'timeline' && projectId) {
     masLinks = [
       { name: 'Назад', href: `/projects/${projectId}`, icon: '/icons/back.svg' },
       { name: 'Список событий', href: `/projects/${projectId}/time_events`, icon: '/icons/timeevent.svg' },
       { name: 'Линия времени', href: `/projects/${projectId}/timeline`, icon: '/icons/timeline.svg' },
     ];
-  } else if (type === 'help') {
+  } else if (type === 'help' && projectId) {
     masLinks = [
       { name: 'Назад', href: `/projects/${projectId}`, icon: '/icons/back.svg' },
       { name: 'Советы', href: `/projects/${projectId}/advices`, icon: '/icons/help.svg' },
       { name: 'Словарь терминов', href: `/projects/${projectId}/terms`, icon: '/icons/terms.svg' },
     ];
-  } else if (type === 'create_character') {
+  } else if (type === 'create_character' && projectId) {
     masLinks = [
       { name: 'Отмена', href: `/projects/${projectId}`, icon: '/icons/cancel.svg' },
       { name: 'Основная информация', href: `/projects/${projectId}/characters/create/base`, icon: '/icons/base.svg' },
