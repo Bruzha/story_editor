@@ -4,20 +4,14 @@ import CreatePageMaket from '../../components/sections/create-page-maket/Create-
 import Label from '@/app/components/ui/label/Label';
 import Select from '@/app/components/ui/select/Select';
 import Input from '@/app/components/ui/input/Input';
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { parseCookies } from 'nookies';
+import React, { useEffect } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/app/store';
-
-interface ItemData {
-  id: number;
-  info?: any;
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
-  title: string;
-  showImageInput?: boolean;
-  [key: string]: any;
-}
+import { AppDispatch, RootState } from '@/app/store';
+import { fetchItemData } from '@/app/store/thunks/fetchItemData';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/app/AuthContext';
+import { setItemId } from '@/app/store/reducers/itemReducer';
 
 interface RouteParams {
   type: string;
@@ -27,79 +21,47 @@ interface RouteParams {
 
 export default function ItemInfoPage() {
   const { type, id } = useParams<RouteParams>();
-  const [item, setItem] = useState<ItemData | null>(null);
-  const dispatch = useDispatch();
-  const projectId = useSelector((state: RootState) => state.project.projectId);
+  const searchParams = useSearchParams();
+  const typePage = searchParams.get('typePage'); // Get typePage only when needed
+  const dispatch: AppDispatch = useDispatch();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchItem = async () => {
-      try {
-        const cookies = parseCookies();
-        const token = cookies['jwt'];
+    dispatch(setItemId(id));
+  }, [id, type, dispatch]);
 
-        if (!token) {
-          console.error('Token not found in cookies');
-          return;
-        }
+  const { item, loading, error } = useSelector((state: RootState) => state.item);
 
-        let apiUrl = `http://localhost:3001/auth/${type}/${id}`;
-
-        console.log('type: ' + type);
-        console.log('id: ' + id);
-        if (
-          type === 'characters' ||
-          type === 'locations' ||
-          type === 'objects' ||
-          type === 'groups' ||
-          type === 'chapters' ||
-          type === 'notes' ||
-          type === 'plotlines' ||
-          type === 'timelines'
-        ) {
-          if (!projectId) {
-            console.error('projectId is not available in the store');
-            return;
-          }
-          apiUrl = `http://localhost:3001/auth/projects/${projectId}/${type}/${id}`;
-        } else if (type === 'supportingMaterials') {
-          if (!projectId) {
-            console.error('projectId is not available in the store');
-            return;
-          }
-          apiUrl = `http://localhost:3001/auth/projects/${projectId}/${type}/${id}`;
-        }
-
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          console.error('Error fetching item:', response.status, response.statusText);
-          return;
-        }
-
-        const data = await response.json();
-        setItem(data);
-      } catch (error) {
-        console.error('Error fetching item:', error);
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (type === 'characters') {
+        dispatch(fetchItemData({ type, id, typePage: typePage || 'characters' }));
+      } else {
+        dispatch(fetchItemData({ type, id }));
       }
-    };
-
-    if (type && id) {
-      fetchItem();
+    } else {
+      router.push('/auth/autorisation');
     }
-  }, [type, id, dispatch, projectId]);
+  }, [type, id, typePage, dispatch, isAuthenticated, router]);
 
-  if (!item) {
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  if (loading) {
     return <div>Loading...</div>;
   }
 
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!item) {
+    return <div>No item data available.</div>;
+  }
+
   const renderCustomFields = () => {
-    // Здесь логика для отображения дополнительных полей, специфичных для каждого типа элемента
     if (type === 'projects') {
       return (
         <>
@@ -123,7 +85,6 @@ export default function ItemInfoPage() {
         </>
       );
     }
-    // Добавьте условия для других типов элементов
     return null;
   };
 

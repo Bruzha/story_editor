@@ -4,6 +4,7 @@ import { Sequelize, DataTypes } from 'sequelize';
 import { ProjectFactory } from '../models/Project';
 import { UserFactory } from '../models/User';
 import { sequelize } from '../config/database';
+import { title } from 'process';
 
 interface ModelFactory {
   (sequelize: Sequelize, dataTypes: typeof DataTypes): any;
@@ -37,9 +38,10 @@ interface Options {
 }
 
 interface AdditionalOptions {
-  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | '';
+  typeSidebar: string;
   title: string;
   showImageInput: boolean;
+  dataType?: string;
 }
 
 export const getItems = async (req: Request, res: Response, next: NextFunction, options: Options) => {
@@ -141,7 +143,7 @@ export const getItemById = async (
   itemIdParamName: string,
   modelName: string,
   modelFactory: ModelFactory,
-  additionalOptions: AdditionalOptions, // Добавляем объект с дополнительными опциями
+  additionalOptions: AdditionalOptions,
   parentModelName?: string,
   parentModelFactory?: ModelFactory,
   parentIdParamName?: string
@@ -159,15 +161,12 @@ export const getItemById = async (
       id: itemId,
     };
 
-    // Если указана родительская модель, добавляем условие для поиска по родителю
     if (parentModelName && parentModelFactory && parentIdParamName) {
       const parentId = req.params[parentIdParamName];
-
       if (!parentId) {
         return res.status(400).json({ message: `${parentModelName} ID is required` });
       }
-
-      whereClause[parentIdParamName] = parentId; // Добавляем условие для родительского ID
+      whereClause[parentIdParamName] = parentId;
     }
 
     const item = await Model.findOne({
@@ -178,9 +177,24 @@ export const getItemById = async (
       return res.status(404).json({ message: `${modelName} not found` });
     }
 
-    // Добавляем дополнительные опции в ответ
+    let info = item.info || {}; // Default info to item.info
+
+    if (modelName === 'Character' && additionalOptions.dataType) {
+      // Override info only for Character model
+      if (additionalOptions.dataType === 'info') {
+        info = item.info || {};
+      } else if (additionalOptions.dataType === 'appearance') {
+        info = item.info_appearance || {};
+      } else if (additionalOptions.dataType === 'personality') {
+        info = item.info_personality || {};
+      } else if (additionalOptions.dataType === 'social') {
+        info = item.info_social || {};
+      }
+    }
+
     const responseData = {
-      ...item.get(), // Получаем данные элемента
+      ...item.get(),
+      info: info,
       typeSidebar: additionalOptions.typeSidebar,
       title: additionalOptions.title,
       showImageInput: additionalOptions.showImageInput,

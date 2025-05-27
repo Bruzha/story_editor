@@ -20,6 +20,7 @@ export default function Sidebar({ type }: IProps) {
   const pathname = usePathname();
   const [currentPath, setCurrentPath] = useState('');
   const projectId = useSelector((state: RootState) => state.project?.projectId);
+  const characterId = useSelector((state: RootState) => state.item?.itemId);
 
   useEffect(() => {
     setCurrentPath(pathname);
@@ -62,15 +63,27 @@ export default function Sidebar({ type }: IProps) {
     ];
   } else if (type === 'create_character' && projectId) {
     masLinks = [
-      { name: 'Отмена', href: `/projects/${projectId}`, icon: '/icons/cancel.svg' },
-      { name: 'Основная информация', href: `/projects/${projectId}/characters/create/base`, icon: '/icons/base.svg' },
-      { name: 'Внешность', href: `/projects/${projectId}/characters/create/appearance`, icon: '/icons/appearance.svg' },
+      { name: 'Назад', href: `/projects/${projectId}`, icon: '/icons/back.svg' },
+      {
+        name: 'Основная информация',
+        href: `/characters/${characterId}?typePage=characters`,
+        icon: '/icons/base.svg',
+      },
+      {
+        name: 'Внешность',
+        href: `/characters/${characterId}?typePage=appearance`,
+        icon: '/icons/appearance.svg',
+      },
       {
         name: 'Личность',
-        href: `/projects/${projectId}/characters/create/personality`,
+        href: `/characters/${characterId}?typePage=personality`,
         icon: '/icons/personality.svg',
       },
-      { name: 'Социальные связи', href: `/projects/${projectId}/characters/create/social`, icon: '/icons/social.svg' },
+      {
+        name: 'Социальные связи',
+        href: `/characters/${characterId}?typePage=social`,
+        icon: '/icons/social.svg',
+      },
     ];
   }
   if (!masLinks || masLinks.length === 0) {

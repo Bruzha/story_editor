@@ -366,11 +366,12 @@ router.get('/ideas/:ideaId', protect as ProtectMiddleware, (req: Request, res: R
   });
 });
 
-// Маршрут для получения данных о персонаже
 router.get(
   '/projects/:projectId/characters/:characterId',
   protect as ProtectMiddleware,
   (req: Request, res: Response, next: NextFunction) => {
+    const { typePage } = req.query; // Get typePage from query parameters
+
     getItemById(
       req,
       res,
@@ -382,6 +383,7 @@ router.get(
         typeSidebar: 'create_character',
         title: 'ДАННЫЕ ПЕРСОНАЖА',
         showImageInput: true,
+        dataType: typePage as string,
       },
       'Project',
       ProjectFactory,
@@ -534,7 +536,7 @@ router.get(
   }
 );
 
-// Маршрут для получения данных о заметке
+// Маршрут для получения данных о событии на линии времени
 router.get(
   '/projects/:projectId/timelines/:timelineId',
   protect as ProtectMiddleware,
@@ -615,7 +617,7 @@ router.delete(
   '/time_events/delete',
   protect as ProtectMiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    const timelineId = req.query.timelineId;
+    const timelineId = req.query.time_lineId;
     deleteItem(req as AuthRequest, res, next, timelineId, 'TimelineEvent', TimelineEventFactory);
   }
 );
