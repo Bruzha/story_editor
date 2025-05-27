@@ -108,8 +108,6 @@ export default function ProjectInfo({ params }: any) {
     });
     return orderedInfo;
   };
-
-  // Сортировка project.info
   const sortedProjectInfo = project.info ? sortProjectInfo(project.info, orderedKeys) : {};
 
   const saveProject = () => {

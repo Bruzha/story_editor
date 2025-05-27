@@ -5,7 +5,7 @@ import { ProjectInstance } from './Project';
 interface CharacterAttributes {
   id?: number;
   projectId: number;
-  info_basic: any;
+  info: any;
   info_appearance: any;
   info_personality: any;
   info_social: any;
@@ -40,7 +40,7 @@ export const CharacterFactory = (sequelize: Sequelize, dataTypes: typeof DataTyp
           key: 'id',
         },
       },
-      info_basic: {
+      info: {
         type: dataTypes.JSONB,
         allowNull: true,
       },
@@ -72,9 +72,9 @@ export const CharacterFactory = (sequelize: Sequelize, dataTypes: typeof DataTyp
 
   Character.associate = (models: any) => {
     Character.belongsTo(models.Project, {
-      // Добавляем связь с Project
       foreignKey: 'projectId',
       as: 'project',
+      onDelete: 'CASCADE',
     });
   };
 

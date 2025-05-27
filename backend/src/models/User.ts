@@ -1,7 +1,7 @@
 import { Sequelize, DataTypes, Model, ModelStatic } from 'sequelize';
 
 interface UserAttributes {
-  id?: number; // Теперь id необязателен, так как автоинкрементный
+  id?: number;
   username: string;
   email: string;
   password: string;
@@ -11,12 +11,11 @@ interface UserAttributes {
 }
 
 export interface UserInstance extends Model<UserAttributes>, UserAttributes {
-  createdAt: Date; // Add createdAt
-  updatedAt: Date; // Add updatedAt
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export const UserFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes): ModelStatic<UserInstance> => {
-  // Исправлен тип возврата
   const User = sequelize.define<UserInstance>(
     'User',
     {
@@ -56,7 +55,7 @@ export const UserFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes): 
       },
     },
     {
-      tableName: 'Users', // Укажите имя таблицы
+      tableName: 'Users',
     }
   );
 

@@ -34,7 +34,7 @@ export const deleteCard = (id: number, type: string) => {
       const projectId = getState().project.projectId;
       dispatch(fetchCards([type + 's'], projectId));
     } catch (error: any) {
-      dispatch(deleteCardFailure(`Error deleting character: ${error.message}`));
+      dispatch(deleteCardFailure(`Error deleting: ${error.message}`));
     }
   };
 };

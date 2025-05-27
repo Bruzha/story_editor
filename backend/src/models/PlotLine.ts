@@ -65,6 +65,7 @@ export const PlotLineFactory = (sequelize: Sequelize, dataTypes: typeof DataType
     PlotLine.belongsTo(models.Project, {
       foreignKey: 'projectId',
       as: 'project',
+      onDelete: 'CASCADE',
     });
   };
 

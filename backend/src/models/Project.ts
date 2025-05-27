@@ -72,13 +72,7 @@ export const ProjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes
     Project.belongsTo(models.User, {
       foreignKey: 'userId',
       as: 'user',
-    });
-  };
-
-  Project.associate = (models: any) => {
-    Project.hasMany(models.Character, {
-      foreignKey: 'projectId',
-      as: 'characters',
+      onDelete: 'CASCADE',
     });
   };
 

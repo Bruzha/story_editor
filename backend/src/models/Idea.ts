@@ -53,6 +53,7 @@ export const IdeaFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes): 
     Idea.belongsTo(models.User, {
       foreignKey: 'userId',
       as: 'user',
+      onDelete: 'CASCADE',
     });
   };
 
