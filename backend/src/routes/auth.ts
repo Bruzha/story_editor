@@ -348,10 +348,215 @@ router.get(
 ///
 ///
 
-//Маршрут для получения информации по проекту
+// Маршрут для получения данных о проекте
 router.get('/projects/:projectId', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
-  getItemById(req, res, next, 'projectId', 'Project', ProjectFactory);
+  getItemById(req, res, next, 'projectId', 'Project', ProjectFactory, {
+    typeSidebar: 'project',
+    title: 'ДАННЫЕ ПРОЕКТА',
+    showImageInput: true,
+  });
 });
+
+// Маршрут для получения данных о идее
+router.get('/ideas/:ideaId', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  getItemById(req, res, next, 'ideaId', 'Idea', IdeaFactory, {
+    typeSidebar: 'profile',
+    title: 'ДАННЫЕ ИДЕИ',
+    showImageInput: false,
+  });
+});
+
+// Маршрут для получения данных о персонаже
+router.get(
+  '/projects/:projectId/characters/:characterId',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getItemById(
+      req,
+      res,
+      next,
+      'characterId',
+      'Character',
+      CharacterFactory,
+      {
+        typeSidebar: 'create_character',
+        title: 'ДАННЫЕ ПЕРСОНАЖА',
+        showImageInput: true,
+      },
+      'Project',
+      ProjectFactory,
+      'projectId'
+    );
+  }
+);
+
+// Маршрут для получения данных о локации
+router.get(
+  '/projects/:projectId/locations/:locationId',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getItemById(
+      req,
+      res,
+      next,
+      'locationId',
+      'Location',
+      LocationFactory,
+      {
+        typeSidebar: 'project',
+        title: 'ДАННЫЕ ЛОКАЦИИ',
+        showImageInput: true,
+      },
+      'Project',
+      ProjectFactory,
+      'projectId'
+    );
+  }
+);
+
+// Маршрут для получения данных об объекте
+router.get(
+  '/projects/:projectId/objects/:objectId',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getItemById(
+      req,
+      res,
+      next,
+      'objectId',
+      'Object',
+      ObjectFactory,
+      {
+        typeSidebar: 'project',
+        title: 'ДАННЫЕ ОБЪЕКТА',
+        showImageInput: true,
+      },
+      'Project',
+      ProjectFactory,
+      'projectId'
+    );
+  }
+);
+
+// Маршрут для получения данных о сюжетных линиях
+router.get(
+  '/projects/:projectId/plotlines/:plotlineId',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getItemById(
+      req,
+      res,
+      next,
+      'plotlineId',
+      'Plotline',
+      PlotLineFactory,
+      {
+        typeSidebar: 'project',
+        title: 'ДАННЫЕ СЮЖЕТНОЙ ЛИНИИ',
+        showImageInput: false,
+      },
+      'Project',
+      ProjectFactory,
+      'projectId'
+    );
+  }
+);
+
+// Маршрут для получения данных о группах
+router.get(
+  '/projects/:projectId/groups/:groupId',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getItemById(
+      req,
+      res,
+      next,
+      'groupId',
+      'Group',
+      GroupFactory,
+      {
+        typeSidebar: 'project',
+        title: 'ДАННЫЕ ГРУППЫ',
+        showImageInput: false,
+      },
+      'Project',
+      ProjectFactory,
+      'projectId'
+    );
+  }
+);
+
+// Маршрут для получения данных о главе
+router.get(
+  '/projects/:projectId/chapters/:chapterId',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getItemById(
+      req,
+      res,
+      next,
+      'chapterId',
+      'Chapter',
+      ChapterFactory,
+      {
+        typeSidebar: 'project',
+        title: 'ДАННЫЕ ГЛАВЫ',
+        showImageInput: true,
+      },
+      'Project',
+      ProjectFactory,
+      'projectId'
+    );
+  }
+);
+
+// Маршрут для получения данных о заметке
+router.get(
+  '/projects/:projectId/notes/:noteId',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getItemById(
+      req,
+      res,
+      next,
+      'noteId',
+      'Note',
+      NoteFactory,
+      {
+        typeSidebar: 'project',
+        title: 'ДАННЫЕ ЗАМЕТКИ',
+        showImageInput: false,
+      },
+      'Project',
+      ProjectFactory,
+      'projectId'
+    );
+  }
+);
+
+// Маршрут для получения данных о заметке
+router.get(
+  '/projects/:projectId/timelines/:timelineId',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getItemById(
+      req,
+      res,
+      next,
+      'timelineId',
+      'Timeline',
+      TimelineEventFactory,
+      {
+        typeSidebar: 'project',
+        title: 'ДАННЫЕ СОБЫТИЯ',
+        showImageInput: true,
+      },
+      'Project',
+      ProjectFactory,
+      'projectId'
+    );
+  }
+);
 
 ///
 ///
@@ -410,7 +615,7 @@ router.delete(
   '/time_events/delete',
   protect as ProtectMiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    const timelineId = req.query.time_lineId;
+    const timelineId = req.query.timelineId;
     deleteItem(req as AuthRequest, res, next, timelineId, 'TimelineEvent', TimelineEventFactory);
   }
 );

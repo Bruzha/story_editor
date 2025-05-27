@@ -1,4 +1,3 @@
-// components/card/Card.tsx
 'use client';
 
 import './style.scss';
@@ -50,8 +49,10 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
   const dispatch: AppDispatch = useDispatch();
 
   const handleClick = () => {
-    dispatch(setProjectId(String(id))); // Сохраняем projectId в Redux
-    router.push(`/${type}s/${id}`); // Перевод на страницу карточки
+    if (type === 'project') {
+      dispatch(setProjectId(String(id)));
+    }
+    router.push(`/${type}s/${id}`);
   };
 
   const handleDelete = (e: React.MouseEvent) => {

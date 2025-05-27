@@ -25,7 +25,7 @@ interface Options {
   modelFactory: ModelFactory;
   title: string;
   subtitleSource: 'user' | 'project';
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help';
+  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
   typeCard: string;
   createPageUrl: string;
   infoFields?: InfoFieldDefinition[];
@@ -34,6 +34,12 @@ interface Options {
   userIdField?: string;
   projectIdRequired?: boolean;
   where?: any;
+}
+
+interface AdditionalOptions {
+  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | '';
+  title: string;
+  showImageInput: boolean;
 }
 
 export const getItems = async (req: Request, res: Response, next: NextFunction, options: Options) => {
@@ -134,7 +140,11 @@ export const getItemById = async (
   next: NextFunction,
   itemIdParamName: string,
   modelName: string,
-  modelFactory: ModelFactory
+  modelFactory: ModelFactory,
+  additionalOptions: AdditionalOptions, // Добавляем объект с дополнительными опциями
+  parentModelName?: string,
+  parentModelFactory?: ModelFactory,
+  parentIdParamName?: string
 ) => {
   try {
     const itemId = req.params[itemIdParamName];
@@ -145,13 +155,38 @@ export const getItemById = async (
 
     const Model = modelFactory(sequelize, DataTypes) as any;
 
-    const item = await Model.findByPk(itemId);
+    const whereClause: any = {
+      id: itemId,
+    };
+
+    // Если указана родительская модель, добавляем условие для поиска по родителю
+    if (parentModelName && parentModelFactory && parentIdParamName) {
+      const parentId = req.params[parentIdParamName];
+
+      if (!parentId) {
+        return res.status(400).json({ message: `${parentModelName} ID is required` });
+      }
+
+      whereClause[parentIdParamName] = parentId; // Добавляем условие для родительского ID
+    }
+
+    const item = await Model.findOne({
+      where: whereClause,
+    });
 
     if (!item) {
       return res.status(404).json({ message: `${modelName} not found` });
     }
 
-    res.status(200).json(item);
+    // Добавляем дополнительные опции в ответ
+    const responseData = {
+      ...item.get(), // Получаем данные элемента
+      typeSidebar: additionalOptions.typeSidebar,
+      title: additionalOptions.title,
+      showImageInput: additionalOptions.showImageInput,
+    };
+
+    res.status(200).json(responseData);
   } catch (error) {
     console.error(`Error fetching ${modelName} by ID:`, error);
     res.status(500).json({ message: 'Internal Server Error' });

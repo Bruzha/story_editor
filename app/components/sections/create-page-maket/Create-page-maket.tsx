@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import './style.scss';
 
 interface IProps {
-  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character';
+  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | '';
   title: string;
   subtitle: string;
   masItems: {
@@ -231,7 +231,7 @@ export default function CreatePageMaket({
           </div>
           <div className="create__button">
             <Button type="submit" name={'Сохранить'} />
-            {showCancelButton && <Button name={'Отмена'} onClick={handleCancelClick} />}
+            {showCancelButton && <Button name={'Назад'} onClick={handleCancelClick} />}
             {showSaveExitButton && <Button name={'Сохранить и выйти'} />}
           </div>
         </div>
