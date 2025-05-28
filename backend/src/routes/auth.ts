@@ -14,6 +14,7 @@ import { ChapterFactory } from '../models/Chapter';
 import { NoteFactory } from '../models/Note';
 import { TimelineEventFactory } from '../models/TimelineEvent';
 import { SupportingMaterialFactory, enum_supportingmaterials_type } from '../models/SupportingMaterial';
+import createPageData from '../data/createPageData';
 
 const router: Router = express.Router();
 
@@ -621,5 +622,28 @@ router.delete(
     deleteItem(req as AuthRequest, res, next, timelineId, 'TimelineEvent', TimelineEventFactory);
   }
 );
+
+///
+///
+///
+
+router.get('/create-page-data/:type', protect as ProtectMiddleware, (req: Request, res: Response) => {
+  const { type } = req.params;
+
+  console.log('Type create-page: ' + type);
+
+  const pageData = createPageData.find((item) => item.type === type);
+
+  if (pageData) {
+    res.status(200).json(pageData);
+  } else {
+    res.status(404).json({ message: 'Create page data not found' });
+    return;
+  }
+});
+
+///
+///
+///
 
 export default router;

@@ -1,4 +1,4 @@
-const masTitle = [
+const masTitleProject = [
   {
     key: 'name',
     title: 'Название',
@@ -38,4 +38,4 @@ const masTitle = [
   },
 ];
 
-export default masTitle;
+export default masTitleProject;

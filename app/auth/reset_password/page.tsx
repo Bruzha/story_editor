@@ -80,7 +80,6 @@ export default function ResetPassword() {
         body: JSON.stringify({ email: data.email }),
       });
       const result: ResetPasswordResponse = await response.json();
-      console.log(JSON.stringify({ email: data.email }));
       if (response.ok) {
         console.log('Email check success:', result);
         setEmail(data.email);

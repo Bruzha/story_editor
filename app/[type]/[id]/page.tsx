@@ -22,7 +22,7 @@ interface RouteParams {
 export default function ItemInfoPage() {
   const { type, id } = useParams<RouteParams>();
   const searchParams = useSearchParams();
-  const typePage = searchParams.get('typePage'); // Get typePage only when needed
+  const typePage = searchParams.get('typePage');
   const dispatch: AppDispatch = useDispatch();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function ItemInfoPage() {
     dispatch(setItemId(id));
   }, [id, type, dispatch]);
 
-  const { item, loading, error } = useSelector((state: RootState) => state.item);
+  const { item, loading, error, characterName } = useSelector((state: RootState) => state.item);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -85,6 +85,18 @@ export default function ItemInfoPage() {
         </>
       );
     }
+    if (type === 'ideas') {
+      return (
+        <>
+          <Label text={'Дата создания'} id="created_date">
+            <Input readOnly value={formatDate(item.createdAt)} />
+          </Label>
+          <Label text={'Дата обновления'} id="updated_date">
+            <Input readOnly value={formatDate(item.updatedAt)} />
+          </Label>
+        </>
+      );
+    }
     return null;
   };
 
@@ -107,6 +119,9 @@ export default function ItemInfoPage() {
         return item.info.order.value + '. ' + item.info.title.value;
       }
       return item.info.title.value;
+    }
+    if (typePage === 'appearance' || typePage === 'personality' || typePage === 'social') {
+      return characterName || 'Информация о персонаже';
     }
     return `Информация о ${type.slice(0, -1)}`;
   };

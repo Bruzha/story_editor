@@ -4,7 +4,7 @@ import { Sequelize, DataTypes } from 'sequelize';
 import { ProjectFactory } from '../models/Project';
 import { UserFactory } from '../models/User';
 import { sequelize } from '../config/database';
-import { title } from 'process';
+import createPageData from '../data/createPageData';
 
 interface ModelFactory {
   (sequelize: Sequelize, dataTypes: typeof DataTypes): any;
@@ -177,10 +177,13 @@ export const getItemById = async (
       return res.status(404).json({ message: `${modelName} not found` });
     }
 
-    let info = item.info || {}; // Default info to item.info
+    if ((modelName === 'Project' || modelName === 'Idea') && req.user && item.userId !== req.user.id) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    let info = item.info || {};
 
     if (modelName === 'Character' && additionalOptions.dataType) {
-      // Override info only for Character model
       if (additionalOptions.dataType === 'info') {
         info = item.info || {};
       } else if (additionalOptions.dataType === 'appearance') {
@@ -191,6 +194,41 @@ export const getItemById = async (
         info = item.info_social || {};
       }
     }
+
+    // **Находим соответствующий объект в createPageData**
+    const createPageDataItem = createPageData.find((data) => data.type === modelName.toLowerCase() + 's');
+    const masTitle = createPageDataItem?.masTitle;
+
+    let newInfo: any = {};
+    const extraInfo: any = {}; // Для хранения дополнительных полей
+
+    // **Если нашли, то перестраиваем info**
+    if (masTitle) {
+      masTitle.forEach((masTitleItem) => {
+        const key = masTitleItem.key;
+        if (info[key]) {
+          // Используем данные из БД, но берем placeholder и removable из masTitle
+          newInfo[key] = {
+            ...info[key],
+            title: masTitleItem.title,
+            placeholder: masTitleItem.placeholder, // Берем placeholder из masTitle
+            removable: masTitleItem.removable, // Берем removable из masTitle
+          };
+        }
+      });
+
+      // Собираем поля, которых нет в masTitle, в extraInfo
+      Object.keys(info).forEach((key) => {
+        if (!masTitle.find((item) => item.key === key)) {
+          extraInfo[key] = info[key];
+        }
+      });
+    } else {
+      newInfo = info; // Если masTitle не найден, используем info как есть
+    }
+
+    // Добавляем extraInfo в конец newInfo
+    info = { ...newInfo, ...extraInfo };
 
     const responseData = {
       ...item.get(),

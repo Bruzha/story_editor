@@ -64,11 +64,10 @@ export default function Autorisation() {
       const result: LoginResponse = await response.json();
 
       if (response.ok) {
-        console.log('Success:', result);
         setErrorMessage(null);
         if (result.token) {
-          login(result.token); //  Pass the token to login
-          router.push('/profile'); // Redirect after successful login
+          login(result.token);
+          router.push('/profile');
         } else {
           setErrorMessage('Token not found in response');
         }

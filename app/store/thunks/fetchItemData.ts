@@ -19,7 +19,6 @@ export const fetchItemData = createAsyncThunk(
       const { cachedItems } = state.item;
       const { projectId } = state.project;
 
-      // Construct the cache key.
       const cacheKey = `${id}-${type}${typePage ? `-${typePage}` : ''}`;
 
       if (cachedItems[cacheKey]) {
@@ -34,7 +33,6 @@ export const fetchItemData = createAsyncThunk(
 
       let apiUrl = `http://localhost:3001/auth/${type}/${id}`;
 
-      // Check if the route is for nested resources
       if (
         type === 'characters' ||
         type === 'locations' ||
@@ -52,8 +50,6 @@ export const fetchItemData = createAsyncThunk(
         }
         apiUrl = `http://localhost:3001/auth/projects/${projectId}/${type}/${id}`;
       }
-
-      // Check if the route is for characters and typePage exists to append query parameters
       if (type === 'characters' && typePage) {
         apiUrl += `?typePage=${typePage}`;
       }

@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../AuthContext';
@@ -16,7 +17,9 @@ export default function CardsPage({ params }: Props) {
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
-  const projectId = slug && slug.length > 1 ? slug[1] : undefined;
+
+  // Get projectId from Redux store
+  const projectId = useSelector((state: RootState) => state.project.projectId);
 
   useEffect(() => {
     console.log({ params });
@@ -28,7 +31,7 @@ export default function CardsPage({ params }: Props) {
 
   useEffect(() => {
     if (isAuthenticated) {
-      dispatch(fetchCards(slug, projectId));
+      dispatch(fetchCards(slug, projectId || undefined));
       console.log('projectId fetchCards: ' + projectId);
     } else {
       router.push('/auth/autorisation');
@@ -43,6 +46,12 @@ export default function CardsPage({ params }: Props) {
     return <div>Error: {error}</div>;
   }
 
+  let finalCreatePageUrl = createPageUrl;
+  if (projectId && createPageUrl) {
+    // Replace the placeholder with the actual projectId
+    finalCreatePageUrl = createPageUrl.replace('PROJECT_ID_PLACEHOLDER', projectId);
+  }
+
   return (
     <CardsPageMaket
       typeSidebar={typeSidebar}
@@ -50,7 +59,7 @@ export default function CardsPage({ params }: Props) {
       title={title}
       subtitle={subtitle}
       masItems={items}
-      createPageUrl={createPageUrl}
+      createPageUrl={finalCreatePageUrl} // Pass the updated createPageUrl
     />
   );
 }

@@ -1,4 +1,3 @@
-// store/slices/itemSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { fetchItemData } from '../thunks/fetchItemData';
 
@@ -8,7 +7,6 @@ interface ItemData {
   typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
   title: string;
   showImageInput?: boolean;
-  markerColor?: string;
   [key: string]: any;
 }
 
@@ -18,6 +16,7 @@ interface ItemState {
   error: string | null;
   cachedItems: { [key: string]: ItemData };
   itemId: string | null;
+  characterName: string | null;
 }
 
 const initialState: ItemState = {
@@ -26,6 +25,7 @@ const initialState: ItemState = {
   error: null,
   cachedItems: {},
   itemId: null,
+  characterName: null,
 };
 
 const itemSlice = createSlice({
@@ -40,6 +40,9 @@ const itemSlice = createSlice({
     setItemId: (state, action: PayloadAction<string>) => {
       state.itemId = action.payload;
     },
+    setCharacterName: (state, action: PayloadAction<string | null>) => {
+      state.characterName = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -50,7 +53,9 @@ const itemSlice = createSlice({
       .addCase(fetchItemData.fulfilled, (state, action: PayloadAction<ItemData>) => {
         state.loading = false;
         state.item = action.payload;
-        // Cache the item data
+        if (action.payload.info && action.payload.info.name && action.payload.info.name.value) {
+          state.characterName = action.payload.info.name.value;
+        }
         state.cachedItems[`${action.payload.id}-${action.payload.type}`] = action.payload;
       })
       .addCase(fetchItemData.rejected, (state, action) => {
@@ -61,5 +66,5 @@ const itemSlice = createSlice({
   },
 });
 
-export const { setItemFromCache, setItemId } = itemSlice.actions;
+export const { setItemFromCache, setItemId, setCharacterName } = itemSlice.actions;
 export default itemSlice.reducer;

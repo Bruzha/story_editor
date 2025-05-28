@@ -64,10 +64,9 @@ export default function Registration() {
       const result: RegistrationResponse = await response.json();
 
       if (response.ok) {
-        console.log('Success:', result);
         setErrorMessage(null);
         if (result.token) {
-          login(result.token); // Login and pass the token
+          login(result.token);
           router.push('/profile');
         } else {
           setErrorMessage('Token not found in response');
