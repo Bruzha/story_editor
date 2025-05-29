@@ -6,7 +6,7 @@ import { IdeaFactory } from '../models/Idea';
 import { PlotLineFactory } from '../models/PlotLine';
 import { CharacterFactory } from '../models/Character';
 import { ProjectFactory } from '../models/Project';
-import { deleteItem, getItemById, getItems } from '../controllers/commonController';
+import { createItem, deleteItem, getItemById, getItems, updateItem } from '../controllers/commonController';
 import { LocationFactory } from '../models/Location';
 import { ObjectFactory } from '../models/Object';
 import { GroupFactory } from '../models/Group';
@@ -645,5 +645,25 @@ router.get('/create-page-data/:type', protect as ProtectMiddleware, (req: Reques
 ///
 ///
 ///
+
+router.post('/create_item/projects', protect as ProtectMiddleware, (req, res, next) => {
+  console.log('Начало /create_item/projects');
+  createItem(req, res, next, 'Project', ProjectFactory).catch(next);
+  console.log('Конец /create_item/projects');
+});
+
+///
+///
+///
+
+router.patch(
+  '/update/projects/:id',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    console.log(`Начало обновления проекта с ID: ${req.params.id}`);
+    updateItem(req, res, next, 'Project', ProjectFactory).catch(next);
+    console.log(`Конец обновления проекта с ID: ${req.params.id}`);
+  }
+);
 
 export default router;

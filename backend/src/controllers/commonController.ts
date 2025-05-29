@@ -281,3 +281,71 @@ export const deleteItem = async (
     next(error);
   }
 };
+
+export const createItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+  modelName: string,
+  modelFactory: ModelFactory
+) => {
+  try {
+    const { info, status, miniature, markerColor, type } = req.body;
+    const userId = req.user?.id; // Получаем ID пользователя из req.user
+    console.log('req.body:', req.body);
+    // Валидация (здесь должна быть более подробная валидация)
+    if (!info) {
+      return res.status(400).json({ message: 'Info is required' });
+    }
+
+    const Model = modelFactory(sequelize, DataTypes) as any;
+
+    const newItem = await Model.create({
+      userId: userId, //Устанавливаем ID пользователя
+      info: info,
+      status: status || 'запланирован',
+      type: type || 'главная',
+      miniature: miniature || null,
+      markerColor: markerColor || '#4682B4',
+    });
+
+    res.status(201).json(newItem);
+  } catch (error) {
+    console.error(`Error creating ${modelName}:`, error);
+    res.status(500).json({ message: 'Internal Server Error' });
+    next(error);
+  }
+};
+
+export const updateItem = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+  modelName: string,
+  modelFactory: ModelFactory
+) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const Model = modelFactory(sequelize, DataTypes) as any;
+    // Найти элемент по ID
+    const item = await Model.findByPk(id);
+
+    if (!item) {
+      return res.status(404).json({ message: `${modelName} not found` });
+    }
+
+    // Обновить элемент
+    await item.update(updateData);
+
+    // Получить обновленный элемент
+    const updatedItem = await Model.findByPk(id);
+
+    res.json(updatedItem);
+  } catch (error) {
+    console.error(`Error updating ${modelName}:`, error);
+    res.status(500).json({ message: `Error updating ${modelName}` });
+    next(error);
+  }
+};

@@ -1,16 +1,19 @@
+// app/[type]/[id]/page.tsx
 'use client';
 
-import CreatePageMaket from '../../components/sections/create-page-maket/Create-page-maket';
-import Label from '@/app/components/ui/label/Label';
-import Select from '@/app/components/ui/select/Select';
-import Input from '@/app/components/ui/input/Input';
-import React, { useEffect } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import CreatePageMaket from '@/app/components/sections/create-page-maket/Create-page-maket';
+import { useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/app/store';
-import { fetchItemData } from '@/app/store/thunks/fetchItemData';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/AuthContext';
+import { fetchItemData } from '@/app/store/thunks/fetchItemData';
+import Label from '@/app/components/ui/label/Label';
+import Select from '@/app/components/ui/select/Select';
+import Input from '@/app/components/ui/input/Input'; // Import the Input component
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { useSearchParams } from 'next/navigation';
+import { parseCookies } from 'nookies';
 import { setItemId } from '@/app/store/reducers/itemReducer';
 
 interface RouteParams {
@@ -27,11 +30,16 @@ export default function ItemInfoPage() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
+  const { register, handleSubmit, setValue, reset } = useForm(); // Moved useForm outside the conditional block
+  const { item, loading, error, characterName } = useSelector((state: RootState) => state.item);
+
   useEffect(() => {
     dispatch(setItemId(id));
   }, [id, type, dispatch]);
 
-  const { item, loading, error, characterName } = useSelector((state: RootState) => state.item);
+  useEffect(() => {
+    reset();
+  }, [item]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -73,14 +81,10 @@ export default function ItemInfoPage() {
                 { value: 'завершен', label: 'Завершен' },
                 { value: 'приостановлен', label: 'Приостановлен' },
               ]}
-              defaultValue={item.status}
+              value={item.status}
+              {...register('status')}
+              onChange={(e) => setValue('status', e.target.value)}
             />
-          </Label>
-          <Label text={'Дата создания'} id="created_date">
-            <Input readOnly value={formatDate(item.createdAt)} />
-          </Label>
-          <Label text={'Дата обновления'} id="updated_date">
-            <Input readOnly value={formatDate(item.updatedAt)} />
           </Label>
         </>
       );
@@ -126,29 +130,70 @@ export default function ItemInfoPage() {
     return `Информация о ${type.slice(0, -1)}`;
   };
 
+  const onSubmit: SubmitHandler<any> = async (data: any) => {
+    console.log('Data submitted:', data);
+    const cookies = parseCookies(); // Get cookies
+    const jwtToken = cookies['jwt']; // Get token from cookies
+    console.log('JWT Token:', jwtToken); // Log token
+    const apiUrl = `http://localhost:3001/auth/update/${type}/${id}`;
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwtToken}`, // Send token in header
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const updatedItem = await response.json();
+      console.log('Success:', updatedItem);
+      // Обновите данные в Redux store или выполните другие действия, необходимые для обновления UI
+    } catch (error) {
+      console.error('Error updating item:', error);
+    }
+  };
+
   return (
     <div>
       <CreatePageMaket
+        key={id} // Add key prop
         typeSidebar={item.typeSidebar}
         title={item.title}
         subtitle={getItemTitle()}
         masItems={
           item.info
-            ? Object.entries(item.info).map(([key, value]) => ({
-                key: key,
-                title: (value as any)?.title,
-                value: (value as any)?.value,
-                placeholder: (value as any)?.placeholder,
-                removable: (value as any)?.removable,
-              }))
+            ? Object.entries(item.info).map(([key, value]) => {
+                console.log('key:', key, 'value:', value);
+                return {
+                  key: key,
+                  title: (value as any)?.title,
+                  value: (value as any)?.value,
+                  placeholder: (value as any)?.placeholder,
+                  removable: (value as any)?.removable,
+                };
+              })
             : []
         }
-        markerColor={item.markerColor}
+        markerColor={item.markerColor || '#4682B4'} // Set initial markerColor
         showCancelButton={true}
         showImageInput={item.showImageInput}
-        onSubmit={() => console.log('Сохранение изменений')}
+        register={register}
+        setValue={setValue}
+        onSubmit={handleSubmit(onSubmit)}
       >
         {renderCustomFields()}
+        <Label text={'Дата создания'} id="created_date">
+          <Input readOnly value={formatDate(item.createdAt)} />
+        </Label>
+        <Label text={'Дата обновления'} id="updated_date">
+          <Input readOnly value={formatDate(item.updatedAt)} />
+        </Label>
       </CreatePageMaket>
     </div>
   );

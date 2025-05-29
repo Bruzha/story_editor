@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import bodyParser from 'body-parser';
 import { sequelize } from './config/database';
 import authRoutes from './routes/auth';
 import cookieParser from 'cookie-parser';
@@ -12,6 +13,9 @@ const port = process.env.PORT || 3001;
 
 // Cookie parser middleware
 app.use(cookieParser());
+
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // Настраиваем CORS
 app.use(

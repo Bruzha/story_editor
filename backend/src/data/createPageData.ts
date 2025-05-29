@@ -7,6 +7,8 @@ import masTitleObject from './masData/object';
 import masTitleGroup from './masData/group';
 import masTitleChapter from './masData/chapter';
 import masTitleNote from './masData/note';
+import masTitleTimeEvent from './masData/timeevent';
+import masTitleCharacter from './masData/character';
 
 interface MasTitleItem {
   key: string;
@@ -73,6 +75,18 @@ const createPageData: CreatePageDataType[] = [
     title: 'СОЗДАНИЕ ЗАМЕТКИ',
     masTitle: masTitleNote,
     typeSidebar: 'project',
+  },
+  {
+    type: 'time_events',
+    title: 'СОЗДАНИЕ СОБЫТИЯ',
+    masTitle: masTitleTimeEvent,
+    typeSidebar: 'timeline',
+  },
+  {
+    type: 'characters',
+    title: 'СОЗДАНИЕ ПЕРСОНАЖА',
+    masTitle: masTitleCharacter,
+    typeSidebar: 'create_character',
   },
   // ... add more types
 ];

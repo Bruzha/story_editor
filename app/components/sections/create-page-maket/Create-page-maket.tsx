@@ -1,5 +1,6 @@
+// components/sections/create-page-maket/Create-page-maket.tsx
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Maket from '../maket/Maket';
 import Form from '../../ui/form/Form';
 import Button from '../../ui/button/Button';
@@ -7,9 +8,16 @@ import Input from '../../ui/input/Input';
 import Textarea from '../../ui/textarea/Textarea';
 import Label from '../../ui/label/Label';
 import Select from '../../ui/select/Select';
-import { useForm, SubmitHandler, useFieldArray } from 'react-hook-form';
+import { SubmitHandler, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import './style.scss';
+import { ChangeEvent } from 'react';
+
+interface LabelProps {
+  text: string;
+  id?: string;
+  children?: React.ReactNode;
+}
 
 interface IProps {
   typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | '';
@@ -29,13 +37,9 @@ interface IProps {
   showCancelButton?: boolean;
   showSaveExitButton?: boolean;
   handleCancelClick?: () => void;
+  register: UseFormRegister<any>;
+  setValue: UseFormSetValue<any>;
   onSubmit: SubmitHandler<any>;
-}
-
-interface LabelProps {
-  text: string;
-  id?: string;
-  children?: React.ReactNode;
 }
 
 export default function CreatePageMaket({
@@ -43,57 +47,26 @@ export default function CreatePageMaket({
   title,
   subtitle,
   masItems,
-  markerColor = '#4682B4',
+  markerColor: initialMarkerColor = '#4682B4',
   children,
   showImageInput = false,
   showMarkerColorInput = true,
   showCancelButton = false,
   showSaveExitButton = false,
   handleCancelClick,
+  register,
+  setValue,
   onSubmit,
 }: IProps) {
-  const [, setSelectedFile] = useState<File | null>(null);
   const router = useRouter();
-  const {
-    handleSubmit,
-    control,
-    formState: {},
-    setValue,
-  } = useForm({
-    mode: 'onBlur',
-  });
-
-  const {} = useFieldArray({
-    control,
-    name: 'dynamicFields',
-  });
 
   handleCancelClick = () => {
     router.back();
   };
 
-  // Функция выбора миниатюры
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files && event.target.files[0];
-    setSelectedFile(file || null);
-    setValue('miniature', file); // Set the file value in react-hook-form
-    if (file) {
-      if (file.type.startsWith('image/')) {
-        console.log('Выбранный файл:', file);
-        // Получаем элемент по id, нужно указать, что он Input
-        const miniatureText = document.getElementById('miniature_text') as HTMLInputElement;
-        if (miniatureText) {
-          miniatureText.value = file.name;
-        }
-      } else {
-        alert('Пожалуйста, выберите изображение.'); // Выводим сообщение об ошибке
-        const fileInput = event.target as HTMLInputElement;
-        fileInput.value = '';
-      }
-    }
-  };
-
   const [selectOptions, setSelectOptions] = useState<{ label: string; value: string }[]>([]);
+  const [selectedFileName, setSelectedFileName] = useState<string>(''); // Add state for selected file name
+  const [markerColor, setMarkerColor] = useState<string>(initialMarkerColor);
 
   useEffect(() => {
     const options = masItems.map((item) => ({
@@ -120,7 +93,6 @@ export default function CreatePageMaket({
     setSelectOptions(options);
   }, [masItems, children, showImageInput, showMarkerColorInput]);
 
-  // Функция для прокрутки с учетом смещения
   const scrollToElement = (targetId: string) => {
     const element = document.getElementById(targetId);
     if (element) {
@@ -163,9 +135,35 @@ export default function CreatePageMaket({
     }
   };
 
+  const handleFileChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files && event.target.files[0];
+      if (file) {
+        setValue('miniature', file); // Set the file value using setValue
+        setSelectedFileName(file.name); // Update the selected file name
+      } else {
+        setSelectedFileName(''); // Clear the selected file name if no file is selected
+      }
+    },
+    [setValue, setSelectedFileName]
+  );
+
+  useEffect(() => {
+    masItems.forEach((item) => {
+      if (item.value) {
+        setValue(item.key, item.value);
+      }
+    });
+  }, [masItems, setValue]);
+
+  const handleColorChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setMarkerColor(e.target.value);
+    setValue('markerColor', e.target.value);
+  };
+
   return (
     <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle} lineColor={markerColor}>
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <Form onSubmit={onSubmit}>
         <div className="create">
           <div className="create__items">
             <div className="create__select">
@@ -184,7 +182,11 @@ export default function CreatePageMaket({
             {masItems.map((item) => (
               <Label key={item.key} text={item.title} id={`item_${item.key}`}>
                 <div className="create__textarea-container">
-                  <Textarea key={item.key} name={item.title} defaultValue={item.value} placeholder={item.placeholder} />
+                  <Textarea
+                    key={item.key}
+                    placeholder={item.placeholder}
+                    {...register(item.key)} // Use register here
+                  />
                   <div>
                     <input
                       title="Добавить поле ниже"
@@ -202,14 +204,6 @@ export default function CreatePageMaket({
                         alt="Удалить поле"
                       />
                     )}
-                    {/*
-                    <input
-                      title="Перетащить поле"
-                      className="create__button-textarea"
-                      type="image"
-                      src="/icons/move.svg"
-                      alt="Перетащить поле"
-                    /> */}
                   </div>
                 </div>
               </Label>
@@ -217,7 +211,12 @@ export default function CreatePageMaket({
             {children}
             {showImageInput && (
               <Label text={'Миниатюра'} id="item_miniature">
-                <Input readOnly id="miniature_text" placeholder="Название выбранного файла" />
+                <Input
+                  readOnly
+                  id="miniature_text"
+                  placeholder="Название выбранного файла"
+                  value={selectedFileName} // Display the selected file name
+                />
                 <div className="create__input-file">
                   <Input type="file" isFileType={true} onChange={handleFileChange} />
                 </div>
@@ -225,7 +224,7 @@ export default function CreatePageMaket({
             )}
             {showMarkerColorInput && (
               <Label text={'Маркерный цвет'} id="item_marker_color">
-                <Input type="color" defaultValue={markerColor} />
+                <Input type="color" value={markerColor} {...register('markerColor')} onChange={handleColorChange} />
               </Label>
             )}
           </div>

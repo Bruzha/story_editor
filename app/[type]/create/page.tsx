@@ -10,6 +10,8 @@ import { useAuth } from '@/app/AuthContext';
 import { fetchCreatePageData } from '@/app/store/thunks/fetchCreatePageData';
 import Label from '@/app/components/ui/label/Label';
 import Select from '@/app/components/ui/select/Select';
+import { useForm, SubmitHandler } from 'react-hook-form'; // Import useForm
+import { parseCookies } from 'nookies';
 
 interface RouteParams {
   type?: string;
@@ -22,8 +24,10 @@ export default function CreateItemPage() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
-  const { createPageData, loading, error } = useSelector((state: RootState) => state.createPage);
+  const { createPageData, loading } = useSelector((state: RootState) => state.createPage);
   const subtitle = useSelector((state: RootState) => state.posts.subtitle);
+
+  const { register, handleSubmit, setValue } = useForm(); // Moved useForm outside the conditional block
 
   useEffect(() => {
     if (isAuthenticated && type) {
@@ -33,38 +37,53 @@ export default function CreateItemPage() {
     }
   }, [type, dispatch, isAuthenticated, router]);
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!createPageData) {
-    return <div>No create page data available.</div>;
-  }
-
-  const handleSubmit = async (formData: any) => {
+  const handleFormSubmit: SubmitHandler<any> = async (data: any) => {
     if (!type) return;
 
-    console.log('Form Data:', formData);
-    console.log('Type:', type);
+    console.log('Form data:', data); // Log the form data
+    console.log('createPageData:', createPageData); // Log createPageData
 
-    const apiUrl = `http://localhost:3001/auth/${type}s`;
+    // Соберите данные из всех полей, включая Textarea
+    const formData =
+      createPageData?.masTitle?.reduce((acc: any, item) => {
+        acc[item.key] = { value: data[item.key] || '' };
+        return acc;
+      }, {}) || {};
+    let customFields = {};
+    if (type === 'projects') {
+      customFields = { status: data.status };
+    }
+    if (type === 'plotlines') {
+      customFields = { type: data.plotline_type }; // Assuming 'plotline_type' is the name of the select field
+    }
+    // Добавьте маркерный цвет
+    const markerColor = data.markerColor || '#4682B4';
+    // Добавьте миниатюру (если есть)
+    let miniatureData = null;
+    console.log('data.miniature:', data.miniature);
+    if (data.miniature) {
+      miniatureData = await convertFileToByteArray(data.miniature); // Function to convert file to bytea
+    }
+    const payload = {
+      info: formData,
+      ...customFields,
+      markerColor: markerColor,
+      miniature: miniatureData,
+    };
+    console.log('Payload:', payload); // Log the payload before sending
+    const cookies = parseCookies();
+    const jwtToken = cookies['jwt'];
+    console.log('Sending token:', jwtToken);
+    const apiUrl = `http://localhost:3001/auth/create_item/${type}`;
 
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+          Authorization: `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -74,11 +93,36 @@ export default function CreateItemPage() {
       const data = await response.json();
       console.log('Success:', data);
 
-      const redirectUrl = `/${type}s/${data.id}`;
+      const redirectUrl = `/${type}/${data.id}`;
       router.push(redirectUrl);
     } catch (error) {
       console.error('Error creating item:', error);
     }
+  };
+
+  // Function to convert File to byte array
+  const convertFileToByteArray = (file: File): Promise<number[]> => {
+    return new Promise((resolve, reject) => {
+      try {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          if (event.target && event.target.result) {
+            const arrayBuffer = event.target.result as ArrayBuffer;
+            const byteArray = Array.from(new Uint8Array(arrayBuffer));
+            resolve(byteArray);
+          } else {
+            reject(new Error('File reading error'));
+          }
+        };
+        reader.onerror = function (error) {
+          reject(error);
+        };
+        reader.readAsArrayBuffer(file);
+      } catch (e) {
+        console.error('convertFileToByteArray', e);
+        reject(e);
+      }
+    });
   };
 
   const renderCustomFields = () => {
@@ -93,6 +137,7 @@ export default function CreateItemPage() {
                 { value: 'завершен', label: 'Завершен' },
                 { value: 'приостановлен', label: 'Приостановлен' },
               ]}
+              {...register('status')}
             />
           </Label>
         </>
@@ -108,6 +153,7 @@ export default function CreateItemPage() {
                 { value: 'второстепенная', label: 'Второстепенная' },
                 { value: 'равнозначная', label: 'Равнозначная' },
               ]}
+              {...register('plotline_type')}
             />
           </Label>
         </>
@@ -117,16 +163,24 @@ export default function CreateItemPage() {
   };
 
   return (
-    <CreatePageMaket
-      typeSidebar={createPageData.typeSidebar}
-      title={createPageData.title}
-      subtitle={subtitle}
-      masItems={createPageData.masTitle}
-      showImageInput={createPageData.showImageInput}
-      showCancelButton={true}
-      onSubmit={handleSubmit}
-    >
-      {renderCustomFields()}
-    </CreatePageMaket>
+    <div>
+      {isAuthenticated && type && createPageData ? ( // Render CreatePageMaket only if authenticated, type is available, and createPageData is loaded
+        <CreatePageMaket
+          typeSidebar={createPageData.typeSidebar}
+          title={createPageData.title}
+          subtitle={subtitle}
+          masItems={createPageData.masTitle}
+          showImageInput={createPageData.showImageInput}
+          showCancelButton={true}
+          register={register} // Pass the register function
+          setValue={setValue}
+          onSubmit={handleSubmit(handleFormSubmit)} // Pass the handleSubmit function
+        >
+          {renderCustomFields()}
+        </CreatePageMaket>
+      ) : (
+        <div>{loading ? 'Loading...' : 'Not authorized or no data'}</div>
+      )}
+    </div>
   );
 }

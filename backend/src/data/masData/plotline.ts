@@ -1,6 +1,6 @@
 const masTitlPlotline = [
   {
-    key: 'title',
+    key: 'name',
     title: 'Название',
     placeholder: 'Должно отражать суть сюжетной линии в лаконичной форме',
     removable: true,

@@ -1,3 +1,4 @@
+// backend/src/models/Project.ts
 import { Sequelize, DataTypes, Model, ModelStatic } from 'sequelize';
 import { UserInstance } from './User';
 
@@ -65,6 +66,7 @@ export const ProjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes
     },
     {
       tableName: 'Projects',
+      timestamps: true, // Add this line
     }
   ) as ProjectModel;
 

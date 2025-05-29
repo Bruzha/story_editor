@@ -28,13 +28,7 @@ const Input: React.FC<IProps> = ({ iconSrc, readOnly, isFileType, ...props }) =>
         <label className="button" onClick={handleLabelClick}>
           Загрузить файл
         </label>
-        <input
-          type="file"
-          style={{ display: 'none' }}
-          ref={fileInputRef}
-          accept="image/*" // Ограничение по типу файла
-          {...props}
-        />
+        <input type="file" style={{ display: 'none' }} ref={fileInputRef} accept="image/*" {...props} />
       </div>
     );
   }
