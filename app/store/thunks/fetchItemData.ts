@@ -31,7 +31,7 @@ export const fetchItemData = createAsyncThunk(
         return thunkAPI.rejectWithValue('No token found in cookies');
       }
 
-      let apiUrl = `http://localhost:3001/auth/${type}/${id}`;
+      let apiUrl = `http://localhost:3001/getItem/${type}/${id}`;
 
       if (
         type === 'characters' ||
@@ -48,7 +48,7 @@ export const fetchItemData = createAsyncThunk(
           console.error('projectId is not available in the store');
           return thunkAPI.rejectWithValue('projectId is not available in the store');
         }
-        apiUrl = `http://localhost:3001/auth/projects/${projectId}/${type}/${id}`;
+        apiUrl = `http://localhost:3001/getItem/projects/${projectId}/${type}/${id}`;
       }
       if (type === 'characters' && typePage) {
         apiUrl += `?typePage=${typePage}`;

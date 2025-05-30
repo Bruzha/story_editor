@@ -100,8 +100,12 @@ export const getItems = async (req: Request, res: Response, next: NextFunction, 
         markColor: item.markerColor,
       };
 
-      if (options.src) {
-        itemData.src = '.';
+      if (options.src && item.miniature) {
+        const byteArray = item.miniature;
+        const base64String = Buffer.from(byteArray).toString('base64');
+        itemData.src = `data:image/png;base64,${base64String}`;
+      } else {
+        itemData.src = null;
       }
 
       return itemData;
@@ -230,12 +234,20 @@ export const getItemById = async (
     // Добавляем extraInfo в конец newInfo
     info = { ...newInfo, ...extraInfo };
 
+    let src: string | null = null;
+    if (item.miniature) {
+      const byteArray = item.miniature;
+      const base64String = Buffer.from(byteArray).toString('base64');
+      src = `data:image/png;base64,${base64String}`;
+    }
+
     const responseData = {
       ...item.get(),
       info: info,
       typeSidebar: additionalOptions.typeSidebar,
       title: additionalOptions.title,
       showImageInput: additionalOptions.showImageInput,
+      src: src, // Pass the src
     };
 
     res.status(200).json(responseData);
@@ -290,24 +302,43 @@ export const createItem = async (
   modelFactory: ModelFactory
 ) => {
   try {
-    const { info, status, miniature, markerColor, type } = req.body;
-    const userId = req.user?.id; // Получаем ID пользователя из req.user
-    console.log('req.body:', req.body);
-    // Валидация (здесь должна быть более подробная валидация)
-    if (!info) {
-      return res.status(400).json({ message: 'Info is required' });
-    }
+    const { info, status, miniature, markerColor, type, projectId, userId, content, sceneStructure } = req.body;
+    const currentUserId = (req as any).user?.id; // Получаем ID пользователя из req.user
 
     const Model = modelFactory(sequelize, DataTypes) as any;
+    const ModelAttributes = Model.rawAttributes;
 
-    const newItem = await Model.create({
-      userId: userId, //Устанавливаем ID пользователя
-      info: info,
-      status: status || 'запланирован',
-      type: type || 'главная',
-      miniature: miniature || null,
-      markerColor: markerColor || '#4682B4',
-    });
+    const createData: any = {};
+
+    // Добавляем поля, общие для большинства моделей
+    createData.info = info;
+    createData.markerColor = markerColor || '#4682B4';
+
+    // Добавляем специфичные поля, если они есть в модели
+    if (ModelAttributes.userId) {
+      createData.userId = userId || currentUserId;
+    }
+    if (ModelAttributes.projectId) {
+      createData.projectId = projectId;
+    }
+    if (ModelAttributes.status) {
+      createData.status = status || 'запланирован';
+    }
+    if (ModelAttributes.type) {
+      createData.type = type || 'главная';
+    }
+    if (ModelAttributes.miniature) {
+      createData.miniature = miniature || null;
+    }
+    if (ModelAttributes.content) {
+      createData.content = content;
+    }
+    if (ModelAttributes.sceneStructure) {
+      createData.sceneStructure = sceneStructure;
+    }
+
+    console.log('createData:', createData);
+    const newItem = await Model.create(createData);
 
     res.status(201).json(newItem);
   } catch (error) {
@@ -326,7 +357,7 @@ export const updateItem = async (
 ) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const { info, status, miniature, markerColor } = req.body;
 
     const Model = modelFactory(sequelize, DataTypes) as any;
     // Найти элемент по ID
@@ -337,7 +368,12 @@ export const updateItem = async (
     }
 
     // Обновить элемент
-    await item.update(updateData);
+    await item.update({
+      info: info,
+      status: status,
+      miniature: miniature,
+      markerColor: markerColor,
+    });
 
     // Получить обновленный элемент
     const updatedItem = await Model.findByPk(id);

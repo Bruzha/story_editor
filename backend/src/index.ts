@@ -4,6 +4,11 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import { sequelize } from './config/database';
 import authRoutes from './routes/auth';
+import deleteRoutes from './routes/delete';
+import createRoutes from './routes/create';
+import updateRoutes from './routes/update';
+import getCardsRoutes from './routes/getCards';
+import getItemRoutes from './routes/getItem';
 import cookieParser from 'cookie-parser';
 
 dotenv.config({ path: '../.env' });
@@ -27,8 +32,13 @@ app.use(
 
 app.use(express.json()); // Используем middleware для обработки JSON-запросов
 
-// Подключаем маршруты аутентификации
+// Подключаем маршруты
 app.use('/auth', authRoutes);
+app.use('/delete', deleteRoutes);
+app.use('/create', createRoutes);
+app.use('/update', updateRoutes);
+app.use('/getCards', getCardsRoutes);
+app.use('/getItem', getItemRoutes);
 
 // Функция для проверки подключения к базе данных
 async function testConnection() {

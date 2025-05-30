@@ -1,3 +1,4 @@
+// app/store/reducers/itemReducer.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { fetchItemData } from '../thunks/fetchItemData';
 
@@ -43,6 +44,13 @@ const itemSlice = createSlice({
     setCharacterName: (state, action: PayloadAction<string | null>) => {
       state.characterName = action.payload;
     },
+    updateItemSuccess: (state, action: PayloadAction<ItemData>) => {
+      state.item = { ...state.item, ...action.payload };
+      state.cachedItems[`${action.payload.id}-${action.payload.type}`] = {
+        ...state.cachedItems[`${action.payload.id}-${action.payload.type}`],
+        ...action.payload,
+      };
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -66,5 +74,5 @@ const itemSlice = createSlice({
   },
 });
 
-export const { setItemFromCache, setItemId, setCharacterName } = itemSlice.actions;
+export const { setItemFromCache, setItemId, setCharacterName, updateItemSuccess } = itemSlice.actions;
 export default itemSlice.reducer;

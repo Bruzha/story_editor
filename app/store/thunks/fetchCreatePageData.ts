@@ -33,7 +33,7 @@ export const fetchCreatePageData = createAsyncThunk<CreatePageData, FetchCreateP
         return thunkAPI.rejectWithValue('Token not found');
       }
 
-      const apiUrl = `http://localhost:3001/auth/create-page-data/${type}`;
+      const apiUrl = `http://localhost:3001/create/create-page-data/${type}`;
 
       const response = await fetch(apiUrl, {
         method: 'GET',

@@ -10,11 +10,15 @@ import { useAuth } from '@/app/AuthContext';
 import { fetchItemData } from '@/app/store/thunks/fetchItemData';
 import Label from '@/app/components/ui/label/Label';
 import Select from '@/app/components/ui/select/Select';
-import Input from '@/app/components/ui/input/Input'; // Import the Input component
+import Input from '@/app/components/ui/input/Input';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { useSearchParams } from 'next/navigation';
 import { parseCookies } from 'nookies';
 import { setItemId } from '@/app/store/reducers/itemReducer';
+import { updateItemSuccess } from '@/app/store/reducers/itemReducer';
+import Loading from '@/app/components/ui/loading/Loading';
+import Message from '@/app/components/ui/message/Message';
+import { updateCard } from '@/app/store/reducers/cardsReducer';
 
 interface RouteParams {
   type: string;
@@ -58,15 +62,15 @@ export default function ItemInfoPage() {
   }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <Message title="ОШИБКА" message={error} />;
   }
 
   if (!item) {
-    return <div>No item data available.</div>;
+    return <Message title="СООБЩЕНИЕ" message={'Данные по выбранному элементу отсутствуют.'} />;
   }
 
   const renderCustomFields = () => {
@@ -83,7 +87,10 @@ export default function ItemInfoPage() {
               ]}
               value={item.status}
               {...register('status')}
-              onChange={(e) => setValue('status', e.target.value)}
+              onChange={(e) => {
+                setValue('status', e.target.value);
+                dispatch(updateItemSuccess({ ...item, status: e.target.value })); // Update Redux store
+              }}
             />
           </Label>
         </>
@@ -132,19 +139,38 @@ export default function ItemInfoPage() {
 
   const onSubmit: SubmitHandler<any> = async (data: any) => {
     console.log('Data submitted:', data);
-    const cookies = parseCookies(); // Get cookies
-    const jwtToken = cookies['jwt']; // Get token from cookies
-    console.log('JWT Token:', jwtToken); // Log token
-    const apiUrl = `http://localhost:3001/auth/update/${type}/${id}`;
+    const cookies = parseCookies();
+    const jwtToken = cookies['jwt'];
+    console.log('JWT Token:', jwtToken);
+    const apiUrl = `http://localhost:3001/update/update/${type}/${id}`;
+
+    const masItemsData: any = item.info
+      ? Object.keys(item.info).reduce((acc: any, key) => {
+          acc[key] = { value: data[key] !== undefined ? data[key] : '' };
+          return acc;
+        }, {})
+      : {};
+
+    const payload: any = {
+      info: masItemsData,
+      status: data.status,
+      markerColor: data.markerColor,
+    };
+
+    // Check if miniature was changed
+    if (data.miniature) {
+      const miniatureData = await convertFileToByteArray(data.miniature);
+      payload.miniature = miniatureData;
+    }
 
     try {
       const response = await fetch(apiUrl, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwtToken}`, // Send token in header
+          Authorization: `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -152,17 +178,56 @@ export default function ItemInfoPage() {
       }
 
       const updatedItem = await response.json();
+      console.log('updatedItem:', updatedItem);
       console.log('Success:', updatedItem);
-      // Обновите данные в Redux store или выполните другие действия, необходимые для обновления UI
+
+      dispatch(updateItemSuccess(updatedItem));
+
+      // Dispatch action to update the card in cardsReducer
+      const updatedCard = {
+        id: updatedItem.id,
+        data: Object.values(updatedItem.info).map((info: any) => info.value), // Extract data for the card
+        markColor: updatedItem.markerColor,
+        src: updatedItem.miniature
+          ? `data:image/png;base64,${Buffer.from(updatedItem.miniature).toString('base64')}`
+          : null,
+      };
+      dispatch(updateCard(updatedCard));
+
+      dispatch(fetchItemData({ type, id }));
     } catch (error) {
       console.error('Error updating item:', error);
     }
   };
 
+  const convertFileToByteArray = (file: File): Promise<number[]> => {
+    return new Promise((resolve, reject) => {
+      try {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          if (event.target && event.target.result) {
+            const arrayBuffer = event.target.result as ArrayBuffer;
+            const byteArray = Array.from(new Uint8Array(arrayBuffer));
+            resolve(byteArray);
+          } else {
+            reject(new Error('File reading error'));
+          }
+        };
+        reader.onerror = function (error) {
+          reject(error);
+        };
+        reader.readAsArrayBuffer(file);
+      } catch (e) {
+        console.error('convertFileToByteArray', e);
+        reject(e);
+      }
+    });
+  };
+
   return (
     <div>
       <CreatePageMaket
-        key={id} // Add key prop
+        key={id}
         typeSidebar={item.typeSidebar}
         title={item.title}
         subtitle={getItemTitle()}
@@ -180,12 +245,13 @@ export default function ItemInfoPage() {
               })
             : []
         }
-        markerColor={item.markerColor || '#4682B4'} // Set initial markerColor
+        markerColor={item.markerColor || '#4682B4'}
         showCancelButton={true}
         showImageInput={item.showImageInput}
         register={register}
         setValue={setValue}
         onSubmit={handleSubmit(onSubmit)}
+        src={item.src}
       >
         {renderCustomFields()}
         <Label text={'Дата создания'} id="created_date">

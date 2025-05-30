@@ -40,6 +40,7 @@ interface IProps {
   register: UseFormRegister<any>;
   setValue: UseFormSetValue<any>;
   onSubmit: SubmitHandler<any>;
+  src?: string | null;
 }
 
 export default function CreatePageMaket({
@@ -57,6 +58,7 @@ export default function CreatePageMaket({
   register,
   setValue,
   onSubmit,
+  src: initialSrc = null,
 }: IProps) {
   const router = useRouter();
 
@@ -65,14 +67,23 @@ export default function CreatePageMaket({
   };
 
   const [selectOptions, setSelectOptions] = useState<{ label: string; value: string }[]>([]);
-  const [selectedFileName, setSelectedFileName] = useState<string>(''); // Add state for selected file name
+  const [, setSelectedFileName] = useState<string>(''); // Add state for selected file name
   const [markerColor, setMarkerColor] = useState<string>(initialMarkerColor);
+  const [src, setSrc] = useState<string | null>(initialSrc);
 
   useEffect(() => {
-    const options = masItems.map((item) => ({
+    const options: { label: string; value: string }[] = [];
+
+    if (showImageInput) {
+      options.push({ label: 'Миниатюра', value: 'item_miniature' });
+    }
+
+    const masItemsOptions = masItems.map((item) => ({
       value: `item_${item.key}`,
       label: item.title,
     }));
+
+    options.push(...masItemsOptions);
     React.Children.forEach(children, (child) => {
       if (React.isValidElement(child) && child.type === Label) {
         const labelElement = child as React.ReactElement<LabelProps>;
@@ -81,11 +92,6 @@ export default function CreatePageMaket({
         options.push({ label: labelText, value: labelId });
       }
     });
-
-    if (showImageInput) {
-      options.push({ label: 'Миниатюра', value: 'item_miniature' });
-    }
-
     if (showMarkerColorInput) {
       options.push({ label: 'Маркерный цвет', value: 'item_marker_color' });
     }
@@ -141,11 +147,19 @@ export default function CreatePageMaket({
       if (file) {
         setValue('miniature', file); // Set the file value using setValue
         setSelectedFileName(file.name); // Update the selected file name
+        // Convert file to base64
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSrc(reader.result as string); // Set the src state
+        };
+        reader.readAsDataURL(file);
       } else {
+        setValue('miniature', null);
         setSelectedFileName(''); // Clear the selected file name if no file is selected
+        setSrc(null); // Clear the src state
       }
     },
-    [setValue, setSelectedFileName]
+    [setValue, setSelectedFileName, setSrc]
   );
 
   useEffect(() => {
@@ -179,6 +193,14 @@ export default function CreatePageMaket({
               </Label>
               <div className="create__line" style={{ backgroundColor: markerColor }}></div>
             </div>
+            {showImageInput && (
+              <Label text={'Миниатюра'} id="item_miniature">
+                <div className="create__miniature-container">
+                  <div>{src && <img className="create__miniatire-img" src={src} alt="Миниатюра" />}</div>
+                  <Input type="file" isFileType={true} onChange={handleFileChange} />
+                </div>
+              </Label>
+            )}
             {masItems.map((item) => (
               <Label key={item.key} text={item.title} id={`item_${item.key}`}>
                 <div className="create__textarea-container">
@@ -209,19 +231,6 @@ export default function CreatePageMaket({
               </Label>
             ))}
             {children}
-            {showImageInput && (
-              <Label text={'Миниатюра'} id="item_miniature">
-                <Input
-                  readOnly
-                  id="miniature_text"
-                  placeholder="Название выбранного файла"
-                  value={selectedFileName} // Display the selected file name
-                />
-                <div className="create__input-file">
-                  <Input type="file" isFileType={true} onChange={handleFileChange} />
-                </div>
-              </Label>
-            )}
             {showMarkerColorInput && (
               <Label text={'Маркерный цвет'} id="item_marker_color">
                 <Input type="color" value={markerColor} {...register('markerColor')} onChange={handleColorChange} />

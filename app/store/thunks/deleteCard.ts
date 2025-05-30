@@ -16,7 +16,7 @@ export const deleteCard = (id: number, type: string) => {
         throw new Error('No token found');
       }
 
-      const apiUrl = `http://localhost:3001/auth/${type}s/delete?${type}Id=${id}`;
+      const apiUrl = `http://localhost:3001/delete/${type}s/delete?${type}Id=${id}`;
 
       const response = await fetch(apiUrl, {
         method: 'DELETE',

@@ -10,8 +10,13 @@ import { useAuth } from '@/app/AuthContext';
 import { fetchCreatePageData } from '@/app/store/thunks/fetchCreatePageData';
 import Label from '@/app/components/ui/label/Label';
 import Select from '@/app/components/ui/select/Select';
-import { useForm, SubmitHandler } from 'react-hook-form'; // Import useForm
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { parseCookies } from 'nookies';
+import Message from '@/app/components/ui/message/Message';
+import Loading from '@/app/components/ui/loading/Loading';
+import { addCard } from '@/app/store/reducers/cardsReducer';
+import { ItemsData } from '@/app/types/types';
+import { fetchItemData } from '@/app/store/thunks/fetchItemData';
 
 interface RouteParams {
   type?: string;
@@ -26,6 +31,7 @@ export default function CreateItemPage() {
 
   const { createPageData, loading } = useSelector((state: RootState) => state.createPage);
   const subtitle = useSelector((state: RootState) => state.posts.subtitle);
+  const projectId = useSelector((state: RootState) => state.project.projectId);
 
   const { register, handleSubmit, setValue } = useForm(); // Moved useForm outside the conditional block
 
@@ -40,8 +46,8 @@ export default function CreateItemPage() {
   const handleFormSubmit: SubmitHandler<any> = async (data: any) => {
     if (!type) return;
 
-    console.log('Form data:', data); // Log the form data
-    console.log('createPageData:', createPageData); // Log createPageData
+    console.log('Form data:', data);
+    console.log('createPageData:', createPageData);
 
     // Соберите данные из всех полей, включая Textarea
     const formData =
@@ -49,6 +55,7 @@ export default function CreateItemPage() {
         acc[item.key] = { value: data[item.key] || '' };
         return acc;
       }, {}) || {};
+
     let customFields = {};
     if (type === 'projects') {
       customFields = { status: data.status };
@@ -56,25 +63,31 @@ export default function CreateItemPage() {
     if (type === 'plotlines') {
       customFields = { type: data.plotline_type }; // Assuming 'plotline_type' is the name of the select field
     }
+
     // Добавьте маркерный цвет
     const markerColor = data.markerColor || '#4682B4';
+
     // Добавьте миниатюру (если есть)
     let miniatureData = null;
     console.log('data.miniature:', data.miniature);
     if (data.miniature) {
       miniatureData = await convertFileToByteArray(data.miniature); // Function to convert file to bytea
     }
+
     const payload = {
       info: formData,
       ...customFields,
       markerColor: markerColor,
       miniature: miniatureData,
+      projectId: projectId, // Добавьте projectId
     };
-    console.log('Payload:', payload); // Log the payload before sending
+
+    console.log('Payload:', payload);
+
     const cookies = parseCookies();
     const jwtToken = cookies['jwt'];
     console.log('Sending token:', jwtToken);
-    const apiUrl = `http://localhost:3001/auth/create_item/${type}`;
+    const apiUrl = `http://localhost:3001/create/create_item/${type}`;
 
     try {
       const response = await fetch(apiUrl, {
@@ -90,13 +103,25 @@ export default function CreateItemPage() {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log('Success:', data);
+      const newItem = await response.json();
+      console.log('Success:', newItem);
 
-      const redirectUrl = `/${type}/${data.id}`;
+      // Dispatch action to add the card in cardsReducer
+      const newCard: ItemsData = {
+        id: newItem.id,
+        src: newItem.miniature ? `data:image/png;base64,${Buffer.from(newItem.miniature).toString('base64')}` : null,
+        data: Object.values(newItem.info).map((info: any) => info.value), // Extract data for the card
+        markColor: newItem.markerColor,
+      };
+      dispatch(addCard(newCard));
+
+      dispatch(fetchItemData({ type, id: newItem.id })); // Dispatch fetchItemData after creating the item
+
+      const redirectUrl = `/${type}/${newItem.id}`; // Use newItem.id
       router.push(redirectUrl);
     } catch (error) {
       console.error('Error creating item:', error);
+      return <Message title={'ОШИБКА'} message={`Ошибка создания элемента: ${error}`} />; // Return Message component
     }
   };
 
@@ -179,7 +204,13 @@ export default function CreateItemPage() {
           {renderCustomFields()}
         </CreatePageMaket>
       ) : (
-        <div>{loading ? 'Loading...' : 'Not authorized or no data'}</div>
+        <div>
+          {loading ? (
+            <Loading />
+          ) : (
+            <Message title={'СООБЩЕНИЕ'} message={'Вы не авторизованы или нет подходящих данных'} />
+          )}
+        </div>
       )}
     </div>
   );

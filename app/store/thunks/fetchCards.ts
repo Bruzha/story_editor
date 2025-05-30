@@ -25,7 +25,7 @@ export const fetchCards = (slug: string[], projectId?: string) => {
       }
 
       const SlugToString = slug.join('/');
-      const apiUrl = `http://localhost:3001/auth/${SlugToString}`;
+      const apiUrl = `http://localhost:3001/getCards/${SlugToString}`;
 
       const response = await fetch(apiUrl, {
         method: 'GET',

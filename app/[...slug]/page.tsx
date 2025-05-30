@@ -7,6 +7,8 @@ import CardsPageMaket from '../components/sections/cards-page-maket/Cards-page-m
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCards } from '../store/thunks/fetchCards';
 import { RootState, AppDispatch } from '../store';
+import Loading from '../components/ui/loading/Loading';
+import Message from '../components/ui/message/Message';
 
 interface Props {
   params: { slug: string[] };
@@ -39,11 +41,11 @@ export default function CardsPage({ params }: Props) {
   }, [isAuthenticated, router, dispatch, slug, projectId]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <Message title={'ОШИБКА'} message={error} />;
   }
 
   let finalCreatePageUrl = createPageUrl;

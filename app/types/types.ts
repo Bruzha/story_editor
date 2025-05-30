@@ -1,6 +1,6 @@
 export interface ItemsData {
   id: number;
-  src?: string;
+  src?: string | null;
   data: string[];
   markColor?: string;
 }
