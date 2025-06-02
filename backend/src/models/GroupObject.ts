@@ -42,8 +42,8 @@ export const GroupObjectFactory = (sequelize: Sequelize, dataTypes: typeof DataT
   ) as GroupObjectModel;
 
   GroupObject.associate = (models: any) => {
-    GroupObject.belongsTo(models.Group, { foreignKey: 'groupId', as: 'group' });
-    GroupObject.belongsTo(models.Object, { foreignKey: 'objectId', as: 'object' });
+    GroupObject.belongsTo(models.Group, { foreignKey: 'groupId', as: 'group', onDelete: 'CASCADE' });
+    GroupObject.belongsTo(models.Object, { foreignKey: 'objectId', as: 'object', onDelete: 'CASCADE' });
   };
 
   return GroupObject;

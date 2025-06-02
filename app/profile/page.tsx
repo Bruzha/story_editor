@@ -12,6 +12,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema, { ValidationSchemaType } from './validation';
 import './style.scss';
+import Loading from '../components/ui/loading/Loading';
 
 interface ProfileData {
   email: string;
@@ -132,7 +133,7 @@ export default function Profile() {
   }
 
   if (!profileData) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   return (

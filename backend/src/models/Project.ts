@@ -76,6 +76,38 @@ export const ProjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes
       as: 'user',
       onDelete: 'CASCADE',
     });
+    Project.hasMany(models.Object, {
+      foreignKey: 'projectId',
+      onDelete: 'CASCADE',
+    });
+    Project.hasMany(models.Character, {
+      foreignKey: 'projectId',
+      onDelete: 'CASCADE',
+    });
+    Project.hasMany(models.PlotLine, {
+      foreignKey: 'projectId',
+      onDelete: 'CASCADE',
+    });
+    Project.hasMany(models.Chapter, {
+      foreignKey: 'projectId',
+      onDelete: 'CASCADE',
+    });
+    Project.hasMany(models.Group, {
+      foreignKey: 'projectId',
+      onDelete: 'CASCADE',
+    });
+    Project.hasMany(models.Location, {
+      foreignKey: 'projectId',
+      onDelete: 'CASCADE',
+    });
+    Project.hasMany(models.Note, {
+      foreignKey: 'projectId',
+      onDelete: 'CASCADE',
+    });
+    Project.hasMany(models.TimelineEvent, {
+      foreignKey: 'projectId',
+      onDelete: 'CASCADE',
+    });
   };
 
   return Project;

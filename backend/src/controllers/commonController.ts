@@ -267,27 +267,62 @@ export const deleteItem = async (
   modelFactory: ModelFactory,
   userIdField?: string
 ) => {
+  const transaction = await sequelize.transaction(); //  Начинаем транзакцию
   try {
     if (!itemId) {
       return res.status(400).json({ message: `${modelName} ID is required` });
     }
     const userId = req.user!.id;
-    const Model = modelFactory(sequelize, DataTypes) as any;
+    const Model = modelFactory(sequelize, DataTypes) as any; //  Получаем модель
     const whereClause: any = {
       id: itemId,
     };
     if (userIdField) {
       whereClause[userIdField] = userId;
     }
-    const item = await Model.findOne({
-      where: whereClause,
-    });
+
+    const item = await Model.findOne({ where: whereClause, transaction }); //  Добавляем transaction
     if (!item) {
       return res.status(404).json({ message: `${modelName} not found or unauthorized` });
     }
-    await item.destroy();
+
+    // Получаем все связи для данной модели
+    const associations = Object.keys(Model.associations);
+
+    // Проходимся по всем связям и удаляем связанные записи
+    for (const associationName of associations) {
+      const association = Model.associations[associationName];
+
+      // Проверяем, что связь типа hasMany
+      if (association.associationType === 'HasMany') {
+        const TargetModel = association.target; // Получаем целевую модель
+        const targetTableName = TargetModel.tableName;
+
+        // Формируем условие для удаления связанных записей
+        const whereClauseForDelete: any = {};
+        whereClauseForDelete[association.foreignKey] = itemId;
+
+        console.log(`Удаление связанных записей из таблицы ${targetTableName}`, { whereClauseForDelete }); // Добавлено логирование
+
+        // Удаляем связанные записи
+        try {
+          const deleteResult = await TargetModel.destroy({ where: whereClauseForDelete, transaction });
+          console.log(`Удалено ${deleteResult} записей из таблицы ${targetTableName}`); // Добавлено логирование
+        } catch (deleteError) {
+          console.error(`Ошибка при удалении записей из таблицы ${targetTableName}:`, deleteError); // Добавлено логирование
+          throw deleteError; //  Пробрасываем ошибку, чтобы транзакция откатилась
+        }
+      }
+    }
+
+    // Удаляем основной объект
+    console.log(`Удаление основного объекта из таблицы ${Model.tableName}`, { itemId }); // Добавлено логирование
+    await item.destroy({ transaction });
+    await transaction.commit(); //  Подтверждаем транзакцию
+
     res.status(200).json({ message: `${modelName} deleted successfully` });
   } catch (error) {
+    await transaction.rollback(); //  Откатываем транзакцию
     console.error(`Ошибка при удалении ${modelName}:`, error);
     res.status(500).json({ message: 'Internal Server Error' });
     next(error);

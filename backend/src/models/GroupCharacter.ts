@@ -42,8 +42,8 @@ export const GroupCharacterFactory = (sequelize: Sequelize, dataTypes: typeof Da
   ) as GroupCharacterModel;
 
   GroupCharacter.associate = (models: any) => {
-    GroupCharacter.belongsTo(models.Group, { foreignKey: 'groupId', as: 'group' });
-    GroupCharacter.belongsTo(models.Character, { foreignKey: 'characterId', as: 'character' });
+    GroupCharacter.belongsTo(models.Group, { foreignKey: 'groupId', as: 'group', onDelete: 'CASCADE' });
+    GroupCharacter.belongsTo(models.Character, { foreignKey: 'characterId', as: 'character', onDelete: 'CASCADE' });
   };
 
   return GroupCharacter;

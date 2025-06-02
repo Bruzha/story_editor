@@ -42,8 +42,8 @@ export const GroupLocationFactory = (sequelize: Sequelize, dataTypes: typeof Dat
   ) as GroupLocationModel;
 
   GroupLocation.associate = (models: any) => {
-    GroupLocation.belongsTo(models.Group, { foreignKey: 'groupId', as: 'group' });
-    GroupLocation.belongsTo(models.Location, { foreignKey: 'locationId', as: 'location' });
+    GroupLocation.belongsTo(models.Group, { foreignKey: 'groupId', as: 'group', onDelete: 'CASCADE' });
+    GroupLocation.belongsTo(models.Location, { foreignKey: 'locationId', as: 'location', onDelete: 'CASCADE' });
   };
 
   return GroupLocation;
