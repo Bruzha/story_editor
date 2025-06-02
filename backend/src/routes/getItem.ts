@@ -206,6 +206,30 @@ router.get(
 
 // Маршрут для получения данных о событии на линии времени
 router.get(
+  '/projects/:projectId/time_events/:timelineId',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    getItemById(
+      req,
+      res,
+      next,
+      'timelineId',
+      'TimelineEvent',
+      TimelineEventFactory,
+      {
+        typeSidebar: 'project',
+        title: 'ДАННЫЕ СОБЫТИЯ',
+        showImageInput: true,
+      },
+      'Project',
+      ProjectFactory,
+      'projectId'
+    );
+  }
+);
+
+// Маршрут для получения данных о событии на линии времени
+router.get(
   '/projects/:projectId/timelines/:timelineId',
   protect as ProtectMiddleware,
   (req: Request, res: Response, next: NextFunction) => {
@@ -214,7 +238,7 @@ router.get(
       res,
       next,
       'timelineId',
-      'Timeline',
+      'TimelineEvent',
       TimelineEventFactory,
       {
         typeSidebar: 'project',

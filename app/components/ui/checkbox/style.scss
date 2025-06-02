@@ -1,0 +1,55 @@
+@import "/app/mixins.scss";
+
+.checkbox {
+  &__label {
+    font-family: var(--font-open-sans);
+    color: var(--text-color);
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  &__wrapper {
+    display: inline-block;
+    margin-right: 8px;
+  }
+
+  &__input-hidden {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    cursor: pointer;
+  }
+
+  &__custom {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: none;
+    box-shadow: 0px 0px 10px -6px var(--secondary-color);
+    border-radius: 5px;
+    background-color: white;
+    vertical-align: middle;
+
+    &:focus, &:hover {
+      outline: 3px solid var(--secondary-color);
+    }
+  }
+
+    @include media-breakpoint-down(sm){
+        &__label{
+            font-size: 16px;
+        }
+    }
+    @include media-breakpoint-up(sm){
+        &__label{
+            font-size: 22px;
+        }
+    }
+}
+
+.checkbox__custom--checked {
+    background-color: var(--secondary-color);
+  }

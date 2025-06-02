@@ -1,20 +1,20 @@
+// src/store/thunks/fetchCards.ts
 import { fetchCardsRequest, fetchCardsSuccess, fetchCardsFailure } from '../actions';
 import { parseCookies } from 'nookies';
 import { AppDispatch } from '../index';
-import { RootState } from '../../types/types';
 
 export const fetchCards = (slug: string[], projectId?: string) => {
-  return async (dispatch: AppDispatch, getState: () => RootState) => {
-    const { cachedData } = getState().posts;
+  return async (dispatch: AppDispatch) => {
+    // const { cachedData } = getState().posts;  // Remove cachedData
     const cacheKey = slug.join('/');
     console.log('Fetch projectId: ' + projectId);
-    if (cachedData[cacheKey]) {
-      const { items, typeSidebar, typeCard, title, subtitle, createPageUrl } = cachedData[cacheKey]!;
-      dispatch(
-        fetchCardsSuccess({ masItems: items, typeSidebar, typeCard, title, subtitle, createPageUrl, slug: cacheKey })
-      );
-      return;
-    }
+    // if (cachedData[cacheKey]) {  // Remove cache check
+    //   const { items, typeSidebar, typeCard, title, subtitle, createPageUrl } = cachedData[cacheKey]!;
+    //   dispatch(
+    //     fetchCardsSuccess({ masItems: items, typeSidebar, typeCard, title, subtitle, createPageUrl, slug: cacheKey })
+    //   );
+    //   return;
+    // }
     dispatch(fetchCardsRequest());
     try {
       const cookies = parseCookies();

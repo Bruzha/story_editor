@@ -41,6 +41,7 @@ export const fetchItemData = createAsyncThunk(
         type === 'chapters' ||
         type === 'notes' ||
         type === 'plotlines' ||
+        type === 'time_events' ||
         type === 'timelines' ||
         type === 'supportingMaterials'
       ) {

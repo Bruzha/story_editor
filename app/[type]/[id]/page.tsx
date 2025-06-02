@@ -18,7 +18,6 @@ import { setItemId } from '@/app/store/reducers/itemReducer';
 import { updateItemSuccess } from '@/app/store/reducers/itemReducer';
 import Loading from '@/app/components/ui/loading/Loading';
 import Message from '@/app/components/ui/message/Message';
-import { updateCard } from '@/app/store/reducers/cardsReducer';
 
 interface RouteParams {
   type: string;
@@ -141,7 +140,6 @@ export default function ItemInfoPage() {
     console.log('Data submitted:', data);
     const cookies = parseCookies();
     const jwtToken = cookies['jwt'];
-    console.log('JWT Token:', jwtToken);
     const apiUrl = `http://localhost:3001/update/update/${type}/${id}`;
 
     const masItemsData: any = item.info
@@ -182,18 +180,6 @@ export default function ItemInfoPage() {
       console.log('Success:', updatedItem);
 
       dispatch(updateItemSuccess(updatedItem));
-
-      // Dispatch action to update the card in cardsReducer
-      const updatedCard = {
-        id: updatedItem.id,
-        data: Object.values(updatedItem.info).map((info: any) => info.value), // Extract data for the card
-        markColor: updatedItem.markerColor,
-        src: updatedItem.miniature
-          ? `data:image/png;base64,${Buffer.from(updatedItem.miniature).toString('base64')}`
-          : null,
-      };
-      dispatch(updateCard(updatedCard));
-
       dispatch(fetchItemData({ type, id }));
     } catch (error) {
       console.error('Error updating item:', error);

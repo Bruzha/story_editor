@@ -2,14 +2,15 @@
 
 import { readdirSync } from 'fs';
 import { basename as _basename, join } from 'path';
+import { fileURLToPath, URL } from 'url'; // Import fileURLToPath and URL
 import Sequelize, { DataTypes } from 'sequelize';
 import { env as _env } from 'process';
-import * as url from 'url';
-const __filename = url.fileURLToPath(import.meta.url);
-const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+import configJson from '../config/config.json'; // импортируем config как JSON
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const basename = _basename(__filename);
 const env = _env.NODE_ENV || 'development';
-import configJson from '../config/config.json'; // импортируем config как JSON
 const config = configJson[env];
 const db = {};
 let sequelize;
@@ -38,22 +39,41 @@ readdirSync(__dirname)
   })
   .forEach(async (file) => {
     console.log('Загрузка модели из:', join(__dirname, file)); // Log the file being loaded
-    const modelModule = await import(join(__dirname, file)); // Динамический импорт
-    if (!modelModule.default) {
-      console.warn(`Модуль ${file} не содержит export default`);
-      return;
+    try {
+      const modelModule = await import(join(__dirname, file)); // Динамический импорт
+      if (!modelModule.default || typeof modelModule.default !== 'function') {
+        console.warn(`Модуль ${file} не содержит export default или это не функция-фабрика`);
+        return;
+      }
+      const model = modelModule.default(sequelize, DataTypes); // Доступ к экспорту по умолчанию
+      console.log('Загружена модель:', model.name); // Log the model name
+      db[model.name] = model;
+    } catch (error) {
+      console.error(`Ошибка при загрузке модели из ${file}:`, error);
     }
-    const model = modelModule.default(sequelize, DataTypes); // Доступ к экспорту по умолчанию
-    console.log('Загружена модель:', model.name); // Log the model name
-    db[model.name] = model;
   });
 
-Object.keys(db).forEach((modelName) => {
-  console.log('Вызов associate для', modelName); // Log before calling associate
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
+// После загрузки всех моделей, вызываем associate
+const initializeAssociations = async () => {
+  for (const modelName in db) {
+    console.log('Вызов associate для', modelName); // Log before calling associate
+    if (db[modelName].associate) {
+      db[modelName].associate(db);
+    }
   }
-});
+};
+
+// Call initializeAssociations after all models are loaded
+// This is important to ensure all models are loaded before associations are set up
+sequelize
+  .sync() // Or use sequelize.sync({ force: true }) to drop and recreate tables (use with caution!)
+  .then(() => {
+    console.log('Database synced');
+    initializeAssociations(); // Initialize associations after sync
+  })
+  .catch((error) => {
+    console.error('Error syncing database:', error);
+  });
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

@@ -11,7 +11,7 @@ import React from 'react';
 interface IProps {
   id: number;
   type: 'project' | 'character' | 'idea' | string;
-  src?: string;
+  src?: string | null;
   data: string[];
   markColor?: string;
   showDeleteButton?: boolean;

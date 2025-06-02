@@ -5,18 +5,14 @@ import Maket from '../maket/Maket';
 import Card from '../../ui/card/Card';
 import Search from '../../sections/search/Search';
 import Pagination from '../../ui/pagination/Pagination';
+import { ItemsData } from '@/app/types/types';
 
 interface IProps {
   typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
   title: string;
   subtitle: string;
   typeCard: 'project' | 'character' | 'idea' | string;
-  masItems: {
-    id: number;
-    src?: string;
-    data: string[];
-    markColor?: string;
-  }[];
+  masItems: ItemsData[]; // Use ItemsData[]
   showDeleteButton?: boolean;
   showCreateButton?: boolean;
   createPageUrl?: string;
