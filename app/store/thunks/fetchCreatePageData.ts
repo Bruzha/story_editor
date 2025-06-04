@@ -14,16 +14,20 @@ interface CreatePageData {
   title: string;
   masTitle: MasTitleItem[];
   showImageInput?: boolean;
-  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | '';
+  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | 'create_new_character' | '';
+  projectId?: string;
+  typePage?: 'characters' | 'appearance' | 'personality' | 'social';
 }
 
 interface FetchCreatePageParams {
   type: string;
+  typePage?: string; // Добавляем typePage
 }
 
 export const fetchCreatePageData = createAsyncThunk<CreatePageData, FetchCreatePageParams>(
   'createPage/fetchCreatePageData',
-  async ({ type }: FetchCreatePageParams, thunkAPI) => {
+  async ({ type, typePage }: FetchCreatePageParams, thunkAPI) => {
+    // Добавляем typePage
     try {
       const cookies = parseCookies();
       const token = cookies['jwt'];
@@ -33,7 +37,10 @@ export const fetchCreatePageData = createAsyncThunk<CreatePageData, FetchCreateP
         return thunkAPI.rejectWithValue('Token not found');
       }
 
-      const apiUrl = `http://localhost:3001/create/create-page-data/${type}`;
+      let apiUrl = `http://localhost:3001/create/create-page-data/${type}`; // Строим базовый URL
+      if (typePage) {
+        apiUrl += `?typePage=${typePage}`; // Добавляем typePage, если он есть
+      }
 
       const response = await fetch(apiUrl, {
         method: 'GET',

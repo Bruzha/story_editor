@@ -137,7 +137,7 @@ export default function Profile() {
   }
 
   return (
-    <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle="Ruzhastik">
+    <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle={profileData.login}>
       <div className="profile">
         <div>
           <div className="profile__info">

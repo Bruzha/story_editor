@@ -5,7 +5,9 @@ interface TimelineEventAttributes {
   id?: number;
   projectId: number;
   info: any;
+  miniature: Buffer | null;
   markerColor: string | null;
+  eventDate: Date;
 }
 
 export interface TimelineEventInstance extends Model<TimelineEventAttributes>, TimelineEventAttributes {
@@ -39,9 +41,17 @@ export const TimelineEventFactory = (sequelize: Sequelize, dataTypes: typeof Dat
         type: dataTypes.JSONB,
         allowNull: true,
       },
+      miniature: {
+        type: dataTypes.BLOB('long'),
+        allowNull: true,
+      },
       markerColor: {
         type: dataTypes.STRING(7),
         allowNull: true,
+      },
+      eventDate: {
+        type: dataTypes.DATE,
+        allowNull: false,
       },
     },
     {

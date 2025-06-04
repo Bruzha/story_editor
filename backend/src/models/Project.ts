@@ -25,7 +25,17 @@ export interface ProjectInstance extends Model<ProjectAttributes>, ProjectAttrib
 }
 
 export interface ProjectModel extends ModelStatic<ProjectInstance> {
-  associate: (models: any) => void;
+  associate: (models: {
+    User: any;
+    Object: any;
+    Character: any;
+    PlotLine: any;
+    Chapter: any;
+    Group: any;
+    Location: any;
+    Note: any;
+    TimelineEvent: any;
+  }) => void;
 }
 
 export const ProjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes): ProjectModel => {
@@ -70,7 +80,17 @@ export const ProjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes
     }
   ) as ProjectModel;
 
-  Project.associate = (models: any) => {
+  Project.associate = (models: {
+    User: any;
+    Object: any;
+    Character: any;
+    PlotLine: any;
+    Chapter: any;
+    Group: any;
+    Location: any;
+    Note: any;
+    TimelineEvent: any;
+  }) => {
     Project.belongsTo(models.User, {
       foreignKey: 'userId',
       as: 'user',

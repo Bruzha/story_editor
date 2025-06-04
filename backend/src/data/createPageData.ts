@@ -8,7 +8,12 @@ import masTitleGroup from './masData/group';
 import masTitleChapter from './masData/chapter';
 import masTitleNote from './masData/note';
 import masTitleTimeEvent from './masData/timeevent';
-import masTitleCharacter from './masData/character';
+import {
+  masTitleCharacter,
+  masTitleCharacterAppearance,
+  masTitleCharacterPersonality,
+  masTitleCharacterSocial,
+} from './masData/character';
 
 interface MasTitleItem {
   key: string;
@@ -22,8 +27,9 @@ interface CreatePageDataType {
   title: string;
   masTitle: MasTitleItem[];
   showImageInput?: boolean;
-  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | '';
+  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | 'create_new_character' | '';
   projectId?: string;
+  typePage?: 'characters' | 'appearance' | 'personality' | 'social';
 }
 
 const createPageData: CreatePageDataType[] = [
@@ -49,12 +55,14 @@ const createPageData: CreatePageDataType[] = [
   {
     type: 'locations',
     title: 'СОЗДАНИЕ ЛОКАЦИИ',
+    showImageInput: true,
     masTitle: masTitleLocation,
     typeSidebar: 'project',
   },
   {
     type: 'objects',
     title: 'СОЗДАНИЕ ОБЪЕКТА',
+    showImageInput: true,
     masTitle: masTitleObject,
     typeSidebar: 'project',
   },
@@ -67,6 +75,7 @@ const createPageData: CreatePageDataType[] = [
   {
     type: 'chapters',
     title: 'СОЗДАНИЕ ГЛАВЫ',
+    showImageInput: true,
     masTitle: masTitleChapter,
     typeSidebar: 'project',
   },
@@ -79,16 +88,42 @@ const createPageData: CreatePageDataType[] = [
   {
     type: 'time_events',
     title: 'СОЗДАНИЕ СОБЫТИЯ',
+    showImageInput: true,
     masTitle: masTitleTimeEvent,
     typeSidebar: 'timeline',
   },
   {
-    type: 'characters',
-    title: 'СОЗДАНИЕ ПЕРСОНАЖА',
+    type: 'characters', // Общий type для всех этапов персонажа
+    title: 'Основная информация',
     masTitle: masTitleCharacter,
-    typeSidebar: 'create_character',
+    showImageInput: true,
+    typeSidebar: 'create_new_character',
+    typePage: 'characters', // Указываем typePage
   },
-  // ... add more types
+  {
+    type: 'characters', // Общий type для всех этапов персонажа
+    title: 'Внешность',
+    masTitle: masTitleCharacterAppearance,
+    showImageInput: true,
+    typeSidebar: 'create_new_character',
+    typePage: 'appearance', // Указываем typePage
+  },
+  {
+    type: 'characters', // Общий type для всех этапов персонажа
+    title: 'Личность',
+    masTitle: masTitleCharacterPersonality,
+    showImageInput: true,
+    typeSidebar: 'create_new_character',
+    typePage: 'personality', // Указываем typePage
+  },
+  {
+    type: 'characters', // Общий type для всех этапов персонажа
+    title: 'Социальные связи',
+    masTitle: masTitleCharacterSocial,
+    showImageInput: true,
+    typeSidebar: 'create_new_character',
+    typePage: 'social', // Указываем typePage
+  },
 ];
 
 export default createPageData;

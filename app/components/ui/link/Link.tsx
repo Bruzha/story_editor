@@ -1,21 +1,31 @@
-'use clients';
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 import './style.scss';
 
-interface IProps {
-  name: string;
+interface MyLinkProps {
   href: string;
+  name: string;
   className?: string;
   children?: React.ReactNode;
-  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void; // Добавляем onClick
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-export default function MyLink({ name, href, className, children, onClick }: IProps) {
+const MyLink: React.FC<MyLinkProps> = ({ href, name, className, children, onClick }) => {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+  const isWhiteLink = className?.includes('white-link');
+
+  const linkClass = `link ${className || ''} ${isActive && isWhiteLink ? 'active-link' : ''}`.trim();
+
   return (
-    <Link href={href} className={`link ${className || ''}`} onClick={onClick}>
+    <Link href={href} className={linkClass} onClick={onClick}>
       {children}
       {name}
     </Link>
   );
-}
+};
+
+export default MyLink;

@@ -5,6 +5,7 @@ interface ObjectAttributes {
   id?: number;
   projectId: number;
   info: any;
+  miniature: Buffer | null;
   markerColor: string | null;
 }
 
@@ -15,7 +16,7 @@ export interface ObjectInstance extends Model<ObjectAttributes>, ObjectAttribute
 }
 
 export interface ObjectModel extends ModelStatic<ObjectInstance> {
-  associate: (models: any) => void;
+  associate: (models: { Project: any }) => void;
 }
 
 export const ObjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes): ObjectModel => {
@@ -39,6 +40,10 @@ export const ObjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes)
         type: dataTypes.JSONB,
         allowNull: true,
       },
+      miniature: {
+        type: dataTypes.BLOB('long'),
+        allowNull: true,
+      },
       markerColor: {
         type: dataTypes.STRING(7),
         allowNull: true,
@@ -46,10 +51,11 @@ export const ObjectFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes)
     },
     {
       tableName: 'Objects',
+      timestamps: true, // Добавляем timestamps
     }
   ) as ObjectModel;
 
-  Object.associate = (models: any) => {
+  Object.associate = (models: { Project: any }) => {
     Object.belongsTo(models.Project, {
       foreignKey: 'projectId',
       as: 'project',

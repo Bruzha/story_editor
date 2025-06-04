@@ -88,21 +88,18 @@ export default function ItemInfoPage() {
               {...register('status')}
               onChange={(e) => {
                 setValue('status', e.target.value);
-                dispatch(updateItemSuccess({ ...item, status: e.target.value })); // Update Redux store
+                dispatch(updateItemSuccess({ ...item, status: e.target.value }));
               }}
             />
           </Label>
         </>
       );
     }
-    if (type === 'ideas') {
+    if (type === 'time_events' || type === 'timelines') {
       return (
         <>
-          <Label text={'Дата создания'} id="created_date">
-            <Input readOnly value={formatDate(item.createdAt)} />
-          </Label>
-          <Label text={'Дата обновления'} id="updated_date">
-            <Input readOnly value={formatDate(item.updatedAt)} />
+          <Label text={'Дата события'} id="time_events_eventDate">
+            <Input type="datetime-local" value={item.eventDate} {...register('time_events_eventDate')} />
           </Label>
         </>
       );
@@ -133,7 +130,7 @@ export default function ItemInfoPage() {
     if (typePage === 'appearance' || typePage === 'personality' || typePage === 'social') {
       return characterName || 'Информация о персонаже';
     }
-    return `Информация о ${type.slice(0, -1)}`;
+    return 'Информация об элементе';
   };
 
   const onSubmit: SubmitHandler<any> = async (data: any) => {
@@ -155,7 +152,6 @@ export default function ItemInfoPage() {
       markerColor: data.markerColor,
     };
 
-    // Check if miniature was changed
     if (data.miniature) {
       const miniatureData = await convertFileToByteArray(data.miniature);
       payload.miniature = miniatureData;

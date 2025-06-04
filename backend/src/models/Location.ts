@@ -5,6 +5,7 @@ interface LocationAttributes {
   id?: number;
   projectId: number;
   info: any;
+  miniature: Buffer | null;
   markerColor: string | null;
 }
 
@@ -37,6 +38,10 @@ export const LocationFactory = (sequelize: Sequelize, dataTypes: typeof DataType
       },
       info: {
         type: dataTypes.JSONB,
+        allowNull: true,
+      },
+      miniature: {
+        type: dataTypes.BLOB('long'),
         allowNull: true,
       },
       markerColor: {

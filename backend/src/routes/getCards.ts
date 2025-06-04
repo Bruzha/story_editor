@@ -33,7 +33,7 @@ router.get('/projects', protect as ProtectMiddleware, (req: Request, res: Respon
       { fieldName: 'genre', optional: true, defaultValue: '' },
     ],
     otherFields: [
-      { fieldName: 'createdAt', format: (date) => new Date(date).toLocaleDateString() },
+      { fieldName: 'createdAt', format: (date) => new Date(date).toLocaleString() },
       { fieldName: 'status' },
     ],
     src: true,
@@ -55,7 +55,7 @@ router.get('/ideas', protect as ProtectMiddleware, (req: Request, res: Response,
       { fieldName: 'name', optional: true, defaultValue: 'Идея' },
       { fieldName: 'description', optional: true, defaultValue: '' },
     ],
-    otherFields: [{ fieldName: 'createdAt', format: (date) => new Date(date).toLocaleDateString() }],
+    otherFields: [{ fieldName: 'createdAt', format: (date) => new Date(date).toLocaleString() }],
     userIdField: 'userId',
   });
 });
@@ -242,8 +242,8 @@ router.get(
       infoFields: [
         { fieldName: 'name', optional: true, defaultValue: '' },
         { fieldName: '', optional: true, defaultValue: '' },
-        { fieldName: 'date', optional: true, defaultValue: '' },
       ],
+      otherFields: [{ fieldName: 'eventDate', format: (date) => new Date(date).toLocaleString() }],
       projectIdRequired: true,
       src: true,
     });

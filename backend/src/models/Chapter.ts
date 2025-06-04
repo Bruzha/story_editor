@@ -12,8 +12,6 @@ interface ChapterAttributes {
   id?: number;
   projectId: number;
   info: any;
-  content: string | null;
-  sceneStructure: any;
   status: enum_chapters_status;
   markerColor: string | null;
   miniature: Buffer | null;
@@ -47,14 +45,6 @@ export const ChapterFactory = (sequelize: Sequelize, dataTypes: typeof DataTypes
         },
       },
       info: {
-        type: dataTypes.JSONB,
-        allowNull: true,
-      },
-      content: {
-        type: dataTypes.TEXT,
-        allowNull: true,
-      },
-      sceneStructure: {
         type: dataTypes.JSONB,
         allowNull: true,
       },

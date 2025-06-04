@@ -20,7 +20,6 @@ export default function CardsPage({ params }: Props) {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
-  // Get projectId from Redux store
   const projectId = useSelector((state: RootState) => state.project.projectId);
 
   useEffect(() => {

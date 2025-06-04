@@ -9,7 +9,7 @@ interface CharacterAttributes {
   info_appearance: any;
   info_personality: any;
   info_social: any;
-  miniature: Buffer | null; // Тип Buffer для хранения двоичных данных (BYTEA)
+  miniature: Buffer | null;
   markerColor: string | null;
 }
 

@@ -1,71 +1,99 @@
 @import "/app/mixins.scss";
 
-.footer{
+.footer {
+  @include media-breakpoint-down(sm) {
 
-    @include media-breakpoint-down(sm){
-        height: 90px;
-
-        &__name > p{
-            font-size: 16px;
-        }
-
-        img{
-            font-size: 12px;
-        }
+    &__name > p {
+      font-size: 16px;
     }
 
-    @include media-breakpoint-up(sm){
-        &__name > p{
-            font-size: 28px;
-        }
-
-        img{
-            font-size: 22px;
-        }
+    img {
+      font-size: 14px;
     }
 
-    @include media-breakpoint-between(sm, md){
-        height: 110px;
+    &__links {
+      font-size: 14px;
     }
 
-    @include media-breakpoint-between(md, xxxl){
-        height: 130px;
+    &__social {
+      justify-content: center;
     }
 
-    @include media-breakpoint-down(xxxl){
-        &__links{
-            display: none;
-        }
-        padding: 0 20px;
-    } 
+    &__description {
+      font-size: 12px;
+      text-align: center;
+    }
+  }
 
-    @include media-breakpoint-up(xxxl){
-        height: 150px;
-        padding: 0 230px 0 240px;
-
-        &__links{
-            font-size: 22px;
-            width: 350px;
-            display: flex;
-            justify-content: space-between;
-        }
+  @include media-breakpoint-up(sm) {
+    &__name > p {
+      font-size: 28px;
     }
 
+    img, &__links {
+      font-size: 22px;
+    }
+    &__description {
+      font-size: 20px;
+    }
+  }
+
+  @include media-breakpoint-down(md) {
+    padding: 40px 20px;
+    &__links {
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+  }
+   @include media-breakpoint-up(md) {
+    &__links {
+      justify-content: space-between;
+      gap: 20px;
+    }
+   }
+
+   @include media-breakpoint-between(md, xxxl){
+    padding: 60px 20px;
+   }
+
+  @include media-breakpoint-up(xxxl) {
+    padding: 75px 230px;
+
+    &__social {
+      justify-content: flex-end;
+      align-items: center;
+    }
+  }
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  font-family: var(--font-open-sans), sans-serif;
+  background-color: var(--primary-color);
+  color: var(--secondary-text-color);
+
+  &__name {
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
+    gap: 20px;
     align-items: center;
-    font-family: var(--font-open-sans), sans-serif;
-    background-color: var(--primary-color);
-    color: var(--secondary-text-color);
+    padding: 10px;
+  }
+   &__description, &__social{
+    padding: 10px;
+   }
 
-    &__name{
-        display: flex;
-        flex-direction: row;
-        gap: 20px;
-        align-items: center;
-    }
-    
-    &__name > p{
-        font-family: var(--font-merriweather), serif;
-    }
+  &__name > p {
+    font-family: var(--font-merriweather), serif;
+  }
+  &__links{
+    display: flex;
+  }
+  &__social{
+    gap: 30px;
+    display: flex;
+  }
 }

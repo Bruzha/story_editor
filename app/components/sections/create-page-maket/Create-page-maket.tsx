@@ -67,9 +67,11 @@ export default function CreatePageMaket({
   };
 
   const [selectOptions, setSelectOptions] = useState<{ label: string; value: string }[]>([]);
-  const [, setSelectedFileName] = useState<string>(''); // Add state for selected file name
+  const [, setSelectedFileName] = useState<string>('');
   const [markerColor, setMarkerColor] = useState<string>(initialMarkerColor);
   const [src, setSrc] = useState<string | null>(initialSrc);
+
+  // const [masItems, setMasItems] = useState(initialMasItems);
 
   useEffect(() => {
     const options: { label: string; value: string }[] = [];
@@ -140,23 +142,21 @@ export default function CreatePageMaket({
       });
     }
   };
-
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files && event.target.files[0];
       if (file) {
-        setValue('miniature', file); // Set the file value using setValue
-        setSelectedFileName(file.name); // Update the selected file name
-        // Convert file to base64
+        setValue('miniature', file);
+        setSelectedFileName(file.name);
         const reader = new FileReader();
         reader.onloadend = () => {
-          setSrc(reader.result as string); // Set the src state
+          setSrc(reader.result as string);
         };
         reader.readAsDataURL(file);
       } else {
         setValue('miniature', null);
-        setSelectedFileName(''); // Clear the selected file name if no file is selected
-        setSrc(null); // Clear the src state
+        setSelectedFileName('');
+        setSrc(null);
       }
     },
     [setValue, setSelectedFileName, setSrc]
@@ -217,15 +217,16 @@ export default function CreatePageMaket({
                       src="/icons/add.svg"
                       alt="Добавить поле ниже"
                     />
-                    {!item.removable && (
+                    {/* {!item.removable && (
                       <input
                         title="Удалить поле"
                         className="create__button-textarea"
                         type="image"
                         src="/icons/delete.svg"
                         alt="Удалить поле"
+                        onClick={() => removeItem(item.key)}
                       />
-                    )}
+                    )} */}
                   </div>
                 </div>
               </Label>

@@ -5,16 +5,8 @@ import { AppDispatch } from '../index';
 
 export const fetchCards = (slug: string[], projectId?: string) => {
   return async (dispatch: AppDispatch) => {
-    // const { cachedData } = getState().posts;  // Remove cachedData
     const cacheKey = slug.join('/');
     console.log('Fetch projectId: ' + projectId);
-    // if (cachedData[cacheKey]) {  // Remove cache check
-    //   const { items, typeSidebar, typeCard, title, subtitle, createPageUrl } = cachedData[cacheKey]!;
-    //   dispatch(
-    //     fetchCardsSuccess({ masItems: items, typeSidebar, typeCard, title, subtitle, createPageUrl, slug: cacheKey })
-    //   );
-    //   return;
-    // }
     dispatch(fetchCardsRequest());
     try {
       const cookies = parseCookies();

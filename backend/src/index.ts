@@ -10,6 +10,7 @@ import updateRoutes from './routes/update';
 import getCardsRoutes from './routes/getCards';
 import getItemRoutes from './routes/getItem';
 import cookieParser from 'cookie-parser';
+import addRelationship from './routes/addRelationship';
 
 dotenv.config({ path: '../.env' });
 
@@ -39,6 +40,7 @@ app.use('/create', createRoutes);
 app.use('/update', updateRoutes);
 app.use('/getCards', getCardsRoutes);
 app.use('/getItem', getItemRoutes);
+app.use('/addRelationship', addRelationship);
 
 // Функция для проверки подключения к базе данных
 async function testConnection() {

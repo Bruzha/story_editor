@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import AuthRequest from '../middleware/AuthRequest';
-import { Sequelize, DataTypes } from 'sequelize';
+import { Sequelize, DataTypes, ModelStatic } from 'sequelize';
 import { ProjectFactory } from '../models/Project';
 import { UserFactory } from '../models/User';
 import { sequelize } from '../config/database';
@@ -267,13 +267,12 @@ export const deleteItem = async (
   modelFactory: ModelFactory,
   userIdField?: string
 ) => {
-  const transaction = await sequelize.transaction(); //  Начинаем транзакцию
   try {
     if (!itemId) {
       return res.status(400).json({ message: `${modelName} ID is required` });
     }
     const userId = req.user!.id;
-    const Model = modelFactory(sequelize, DataTypes) as any; //  Получаем модель
+    const Model = modelFactory(sequelize, DataTypes) as ModelStatic<any>;
     const whereClause: any = {
       id: itemId,
     };
@@ -281,48 +280,33 @@ export const deleteItem = async (
       whereClause[userIdField] = userId;
     }
 
-    const item = await Model.findOne({ where: whereClause, transaction }); //  Добавляем transaction
+    const item = await Model.findOne({
+      where: whereClause,
+    });
     if (!item) {
       return res.status(404).json({ message: `${modelName} not found or unauthorized` });
     }
 
-    // Получаем все связи для данной модели
-    const associations = Object.keys(Model.associations);
-
-    // Проходимся по всем связям и удаляем связанные записи
-    for (const associationName of associations) {
-      const association = Model.associations[associationName];
-
-      // Проверяем, что связь типа hasMany
-      if (association.associationType === 'HasMany') {
-        const TargetModel = association.target; // Получаем целевую модель
-        const targetTableName = TargetModel.tableName;
-
-        // Формируем условие для удаления связанных записей
-        const whereClauseForDelete: any = {};
-        whereClauseForDelete[association.foreignKey] = itemId;
-
-        console.log(`Удаление связанных записей из таблицы ${targetTableName}`, { whereClauseForDelete }); // Добавлено логирование
-
-        // Удаляем связанные записи
-        try {
-          const deleteResult = await TargetModel.destroy({ where: whereClauseForDelete, transaction });
-          console.log(`Удалено ${deleteResult} записей из таблицы ${targetTableName}`); // Добавлено логирование
-        } catch (deleteError) {
-          console.error(`Ошибка при удалении записей из таблицы ${targetTableName}:`, deleteError); // Добавлено логирование
-          throw deleteError; //  Пробрасываем ошибку, чтобы транзакция откатилась
+    const sequelizeInstance = Model.sequelize as Sequelize;
+    const queryInterface = sequelizeInstance.getQueryInterface();
+    const tables = await queryInterface.showAllTables();
+    for (const table of tables) {
+      try {
+        const columns = await queryInterface.describeTable(table);
+        if (columns && columns.projectId) {
+          console.log(`Удаление связанных записей из таблицы ${table}`, { projectId: itemId });
+          await queryInterface.bulkDelete(table, { projectId: itemId });
+          console.log(`Удалены связанные записи из таблицы ${table}`);
         }
+      } catch (error: any) {
+        console.warn(`Ошибка при обработке таблицы ${table}:`, error.message);
       }
     }
 
     // Удаляем основной объект
-    console.log(`Удаление основного объекта из таблицы ${Model.tableName}`, { itemId }); // Добавлено логирование
-    await item.destroy({ transaction });
-    await transaction.commit(); //  Подтверждаем транзакцию
-
+    await item.destroy();
     res.status(200).json({ message: `${modelName} deleted successfully` });
-  } catch (error) {
-    await transaction.rollback(); //  Откатываем транзакцию
+  } catch (error: any) {
     console.error(`Ошибка при удалении ${modelName}:`, error);
     res.status(500).json({ message: 'Internal Server Error' });
     next(error);
@@ -337,7 +321,8 @@ export const createItem = async (
   modelFactory: ModelFactory
 ) => {
   try {
-    const { info, status, miniature, markerColor, type, projectId, userId, content, sceneStructure } = req.body;
+    const { info, status, miniature, markerColor, type, eventDate, projectId, userId, content, sceneStructure } =
+      req.body;
     const currentUserId = (req as any).user?.id; // Получаем ID пользователя из req.user
 
     const Model = modelFactory(sequelize, DataTypes) as any;
@@ -357,10 +342,14 @@ export const createItem = async (
       createData.projectId = projectId;
     }
     if (ModelAttributes.status) {
-      createData.status = status || 'запланирован';
+      if (modelName === 'Project') createData.status = status || 'запланирован';
+      if (modelName === 'Chapter') createData.status = status || 'запланирована';
     }
     if (ModelAttributes.type) {
       createData.type = type || 'главная';
+    }
+    if (ModelAttributes.eventDate) {
+      createData.eventDate = eventDate || new Date();
     }
     if (ModelAttributes.miniature) {
       createData.miniature = miniature || null;

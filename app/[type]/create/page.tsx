@@ -3,19 +3,23 @@
 
 import CreatePageMaket from '@/app/components/sections/create-page-maket/Create-page-maket';
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/app/store';
 import { useAuth } from '@/app/AuthContext';
 import { fetchCreatePageData } from '@/app/store/thunks/fetchCreatePageData';
+import { createItem } from '@/app/store/thunks/createItem';
+import { createGroupRelationships } from '@/app/store/thunks/createGroupRelationships';
+import { fetchRelatedData } from '@/app/store/thunks/fetchRelatedData';
+import { convertFileToByteArray } from '@/app/store/thunks/convertFileToByteArray';
 import Label from '@/app/components/ui/label/Label';
 import Select from '@/app/components/ui/select/Select';
-import Checkbox from '@/app/components/ui/checkbox/Checkbox'; // Импортируем компонент чекбокса
+import Checkbox from '@/app/components/ui/checkbox/Checkbox';
 import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
-import { parseCookies } from 'nookies';
 import Message from '@/app/components/ui/message/Message';
 import Loading from '@/app/components/ui/loading/Loading';
 import { setProjectId } from '@/app/store/reducers/projectReducer';
+import Input from '@/app/components/ui/input/Input';
 
 interface RouteParams {
   type?: string;
@@ -23,17 +27,27 @@ interface RouteParams {
 }
 
 interface Item {
-  id: string; // Убедитесь, что тип ID соответствует вашим данным
-  title: string; // или name, в зависимости от ваших данных
+  id: string;
+  title: string;
 }
 
 interface FormValues {
-  [key: string]: any; // Или более конкретные типы, если известно
+  [key: string]: any;
   characterIds?: string[];
   locationIds?: string[];
   objectIds?: string[];
-  // Другие поля формы
-  miniature?: File; //  Укажите тип File
+  eventIds?: string[];
+  miniature?: File;
+  status?: string;
+  plotline_type?: string;
+  markerColor?: string;
+}
+
+interface RelatedDataState {
+  characters: Item[];
+  locations: Item[];
+  objects: Item[];
+  time_events: Item[];
 }
 
 export default function CreateItemPage() {
@@ -41,37 +55,53 @@ export default function CreateItemPage() {
   const dispatch: AppDispatch = useDispatch();
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-
-  const { createPageData, loading } = useSelector((state: RootState) => state.createPage);
-  const subtitle = useSelector((state: RootState) => state.posts.subtitle);
-  // const posts = useSelector((state: RootState) => state.posts); // Удалено, так как не используется
-  const projectId = useSelector((state: RootState) => state.project.projectId);
-
-  // Добавим состояния для хранения данных
-  const [characters, setCharacters] = useState<Item[]>([]);
-  const [locations, setLocations] = useState<Item[]>([]);
-  const [objects, setObjects] = useState<Item[]>([]);
+  const searchParams = useSearchParams();
+  const typePage = searchParams.get('typePage');
 
   const {
-    register,
-    handleSubmit,
-    setValue,
-    reset,
-    getValues,
-    formState: { defaultValues },
-  } = useForm<FormValues>({
+    createPageData,
+    loading: createPageLoading,
+    error: createPageError,
+  } = useSelector((state: RootState) => state.createPage);
+  console.log(
+    'state.createPage: ',
+    useSelector((state: RootState) => state.createPage)
+  );
+  const subtitle = useSelector((state: RootState) => state.posts.subtitle);
+  const projectId = useSelector((state: RootState) => state.project.projectId);
+
+  const [relatedData, setRelatedData] = useState<RelatedDataState>({
+    characters: [],
+    locations: [],
+    objects: [],
+    time_events: [],
+  });
+  const formMethods = useForm<FormValues>({
     defaultValues: {
       characterIds: [],
       locationIds: [],
       objectIds: [],
+      eventIds: [],
     },
   });
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: {},
+  } = formMethods;
 
   useEffect(() => {
     const fetchData = async () => {
-      if (isAuthenticated && type && projectId) {
-        dispatch(fetchCreatePageData({ type: type }));
-        await fetchRelatedData();
+      if (isAuthenticated && type) {
+        if (type === 'characters') {
+          await dispatch(fetchCreatePageData({ type: type, typePage: typePage || 'characters' }));
+        } else {
+          await dispatch(fetchCreatePageData({ type: type }));
+        }
+        if (projectId) {
+          await dispatch(fetchRelatedData({ type, projectId }));
+        }
       } else if (!isAuthenticated) {
         router.push('/auth/autorisation');
       }
@@ -79,191 +109,94 @@ export default function CreateItemPage() {
     fetchData();
   }, [type, dispatch, isAuthenticated, router, projectId]);
 
-  // Функция для получения данных из БД
-  const fetchRelatedData = async () => {
-    if (!projectId || !type) return;
-    try {
-      const token = parseCookies()['jwt'];
-      const headers = {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      };
-
-      const charactersResponse = await fetch(`http://localhost:3001/getCards/projects/${projectId}/characters`, {
-        headers,
-      });
-      const locationsResponse = await fetch(`http://localhost:3001/getCards/projects/${projectId}/locations`, {
-        headers,
-      });
-      const objectsResponse = await fetch(`http://localhost:3001/getCards/projects/${projectId}/objects`, { headers });
-
-      if (!charactersResponse.ok || !locationsResponse.ok || !objectsResponse.ok) {
-        throw new Error('Failed to fetch related data');
+  useEffect(() => {
+    const updateRelatedData = async () => {
+      if (projectId && type) {
+        const result = await dispatch(fetchRelatedData({ type, projectId }));
+        if (fetchRelatedData.fulfilled.match(result)) {
+          setRelatedData({
+            characters: result.payload.characters || [],
+            locations: result.payload.locations || [],
+            objects: result.payload.objects || [],
+            time_events: result.payload.timeEvents || [],
+          });
+        } else {
+          console.error('Failed to fetch related data:', result.payload);
+        }
       }
-
-      const charactersData = await charactersResponse.json();
-      const locationsData = await locationsResponse.json();
-      const objectsData = await objectsResponse.json();
-
-      // Преобразуем данные, извлекая только id и title
-      const charactersForCheckboxes = charactersData.masItems.map((item: any) => ({
-        id: item.id,
-        title: item.data[0], //  Предполагается, что title находится в data[0]
-      }));
-      const locationsForCheckboxes = locationsData.masItems.map((item: any) => ({
-        id: item.id,
-        title: item.data[0], //  Предполагается, что title находится в data[0]
-      }));
-      const objectsForCheckboxes = objectsData.masItems.map((item: any) => ({
-        id: item.id,
-        title: item.data[0], //  Предполагается, что title находится в data[0]
-      }));
-
-      setCharacters(charactersForCheckboxes);
-      setLocations(locationsForCheckboxes);
-      setObjects(objectsForCheckboxes);
-    } catch (error) {
-      console.error('Error fetching related data:', error);
-      // Обработайте ошибку (например, установите сообщение об ошибке)
-    }
-  };
+    };
+    updateRelatedData();
+  }, [dispatch, projectId, type]);
 
   const handleFormSubmit: SubmitHandler<FormValues> = async (data: FormValues) => {
     if (!type) return;
 
     const formData =
-      createPageData?.masTitle?.reduce((acc: any, item) => {
+      createPageData?.masTitle?.reduce((acc: any, item: { key: string | number }) => {
         acc[item.key] = { value: data[item.key] || '' };
         return acc;
       }, {}) || {};
 
     let customFields = {};
-    if (type === 'projects') {
+    if (type === 'projects' || type === 'chapters') {
       customFields = { status: data.status };
     }
     if (type === 'plotlines') {
-      customFields = { type: data.plotline_type }; // Assuming 'plotline_type' is the name of the select field
+      customFields = { type: data.plotline_type };
+    }
+    if (type === 'time_events') {
+      customFields = { eventDate: data.time_events_eventDate };
     }
 
     const markerColor = data.markerColor || '#4682B4';
 
-    let miniatureData = null;
+    let miniatureData: number[] | null = null;
     if (data.miniature) {
-      miniatureData = await convertFileToByteArray(data.miniature);
+      console.log('data.miniature: ', data.miniature);
+      const byteArrayResult = await dispatch(convertFileToByteArray({ file: data.miniature }));
+      console.log('data.miniaturebyteArrayResult: ', byteArrayResult);
+      if (convertFileToByteArray.fulfilled.match(byteArrayResult)) {
+        console.log('data.miniature startByte: ', data.miniature);
+        miniatureData = byteArrayResult.payload;
+        console.log('data.miniature endByte: ', miniatureData);
+      } else {
+        console.error('Error converting file to byte array', byteArrayResult.error);
+        return;
+      }
     }
-
     const payload = {
       info: formData,
       ...customFields,
       markerColor: markerColor,
       miniature: miniatureData,
       projectId: projectId,
-      // Добавляем выбранные элементы в payload
       characterIds: data.characterIds,
       locationIds: data.locationIds,
       objectIds: data.objectIds,
+      eventIds: data.eventIds,
     };
 
-    const cookies = parseCookies();
-    const jwtToken = cookies['jwt'];
+    console.log('payload: ', payload);
 
-    const apiUrl = `http://localhost:3001/create/create_item/${type}`;
+    const createItemResult = await dispatch(createItem({ type, payload }));
+    if (createItem.fulfilled.match(createItemResult)) {
+      const newItem = createItemResult.payload;
 
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwtToken}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      const createRelationshipsResult = await dispatch(
+        createGroupRelationships({ itemId: String(newItem.id), type: type, data })
+      );
+      if (!createGroupRelationships.fulfilled.match(createRelationshipsResult)) {
+        console.error('Error creating relationships', createRelationshipsResult.error);
       }
-
-      const newItem = await response.json();
-
-      // Создаем связи в связующих таблицах после успешного создания Group
-      await createGroupRelationships(newItem.id, data);
 
       if (type === 'projects') {
         dispatch(setProjectId(String(newItem.id)));
       }
       const redirectUrl = `/${type}/${newItem.id}`;
       router.push(redirectUrl);
-    } catch (error: any) {
-      console.error('Error creating item:', error);
-      // Обработайте ошибку (например, установите сообщение об ошибке)
-      return <Message title={'ОШИБКА'} message={`Ошибка создания элемента: ${error.message}`} />;
+    } else {
+      console.error('Error creating item', createItemResult.error);
     }
-  };
-  const createGroupRelationships = async (groupId: string, data: FormValues) => {
-    const token = parseCookies()['jwt'];
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    };
-
-    // Создаем запросы для добавления связей
-    const characterPromises =
-      data.characterIds?.map((characterId: string) =>
-        fetch('http://localhost:3001/create/groups/add-character', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ groupId, characterId }),
-        })
-      ) || [];
-
-    const locationPromises =
-      data.locationIds?.map((locationId: string) =>
-        fetch('http://localhost:3001/create/groups/add-location', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ groupId, locationId }),
-        })
-      ) || [];
-
-    const objectPromises =
-      data.objectIds?.map((objectId: string) =>
-        fetch('http://localhost:3001/create/groups/add-object', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ groupId, objectId }),
-        })
-      ) || [];
-
-    try {
-      await Promise.all([...characterPromises, ...locationPromises, ...objectPromises]);
-      console.log('Relationships created successfully');
-    } catch (error) {
-      console.error('Error creating relationships:', error);
-    }
-  };
-  // Function to convert File to byte array
-  const convertFileToByteArray = (file: File): Promise<number[]> => {
-    return new Promise((resolve, reject) => {
-      try {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          if (event.target && event.target.result) {
-            const arrayBuffer = event.target.result as ArrayBuffer;
-            const byteArray = Array.from(new Uint8Array(arrayBuffer));
-            resolve(byteArray);
-          } else {
-            reject(new Error('File reading error'));
-          }
-        };
-        reader.onerror = function (error) {
-          reject(error);
-        };
-        reader.readAsArrayBuffer(file);
-      } catch (e) {
-        console.error('convertFileToByteArray', e);
-        reject(e);
-      }
-    });
   };
 
   const renderCustomFields = () => {
@@ -300,15 +233,46 @@ export default function CreateItemPage() {
         </>
       );
     }
+    if (type === 'time_events') {
+      return (
+        <>
+          <Label text={'Дата события'} id="time_events_eventDate">
+            <Input type="datetime-local" {...register('time_events_eventDate')} />
+          </Label>
+        </>
+      );
+    }
+    if (type === 'chapters') {
+      return (
+        <>
+          <Label text={'Статус'} id="status">
+            <Select
+              options={[
+                { value: 'запланирована', label: 'Запланирована' },
+                { value: 'в процессе', label: 'В процессе' },
+                { value: 'завершена', label: 'Завершена' },
+                { value: 'приостановлена', label: 'Приостановлена' },
+              ]}
+              {...register('status')}
+            />
+          </Label>
+        </>
+      );
+    }
     return null;
   };
 
   const renderCheckboxes = () => {
-    if (type === 'groups' && characters.length > 0 && locations.length > 0 && objects.length > 0) {
+    if (
+      (type === 'groups' || type === 'time_events') &&
+      relatedData.characters.length > 0 &&
+      relatedData.locations.length > 0 &&
+      relatedData.objects.length > 0
+    ) {
       return (
         <>
           <Label text="Персонажи">
-            {characters.map((character) => (
+            {relatedData.characters.map((character) => (
               <Checkbox
                 key={character.id}
                 label={character.title}
@@ -318,7 +282,7 @@ export default function CreateItemPage() {
             ))}
           </Label>
           <Label text="Локации">
-            {locations.map((location) => (
+            {relatedData.locations.map((location) => (
               <Checkbox
                 key={location.id}
                 label={location.title}
@@ -328,7 +292,7 @@ export default function CreateItemPage() {
             ))}
           </Label>
           <Label text="Объекты">
-            {objects.map((object) => (
+            {relatedData.objects.map((object) => (
               <Checkbox
                 key={object.id}
                 label={object.title}
@@ -340,11 +304,26 @@ export default function CreateItemPage() {
         </>
       );
     }
+    if (type === 'chapters' && relatedData.time_events.length > 0) {
+      return (
+        <>
+          <Label text="События линии времени, входящие в главу">
+            {relatedData.time_events.map((event) => (
+              <Checkbox key={event.id} label={event.title} register={register('eventIds')} value={String(event.id)} />
+            ))}
+          </Label>
+        </>
+      );
+    }
     return null;
   };
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
-    <FormProvider {...{ register, handleSubmit, setValue, reset, defaultValues, getValues }}>
+    <FormProvider {...formMethods}>
       <div>
         {isAuthenticated && type && createPageData ? (
           <CreatePageMaket
@@ -363,8 +342,10 @@ export default function CreateItemPage() {
           </CreatePageMaket>
         ) : (
           <div>
-            {loading ? (
+            {createPageLoading ? (
               <Loading />
+            ) : createPageError ? (
+              <Message title={'ОШИБКА'} message={createPageError} />
             ) : (
               <Message title={'СООБЩЕНИЕ'} message={'Вы не авторизованы или нет подходящих данных'} />
             )}

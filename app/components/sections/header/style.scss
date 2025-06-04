@@ -1,76 +1,110 @@
 @import "/app/mixins.scss";
 
-.header{
+.header {
+  @include media-breakpoint-down(sm) {
+    height: 90px;
 
-    @include media-breakpoint-down(sm){
-        height: 90px;
-
-        h1{
-            font-size: 16px;
-        }
-
-        img{
-            font-size: 12px;
-        }
+    h1 {
+      font-size: 16px;
     }
 
-    @include media-breakpoint-up(sm){
-        h1{
-            font-size: 28px;
-        }
+    img,
+    &__links {
+      font-size: 14px;
+    }
+  }
 
-        img{
-            font-size: 22px;
-        }
+  @include media-breakpoint-up(sm) {
+    h1 {
+      font-size: 28px;
     }
 
-    @include media-breakpoint-between(sm, md){
-        height: 110px;
+    img,
+    &__links {
+      font-size: 22px;
+    }
+  }
+
+  @include media-breakpoint-between(sm, md) {
+    height: 110px;
+  }
+
+  @include media-breakpoint-between(md, xxxl) {
+    height: 130px;
+  }
+
+  @include media-breakpoint-down(xl) {
+    position: relative;
+
+    &__links {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: var(--primary-color);
+      width: calc(100% - 40px);
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      gap: 10px;
+      z-index: 100;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     }
 
-    @include media-breakpoint-between(md, xxxl){
-        height: 130px;
-    }
-    @include media-breakpoint-down(xl){
-        &__links{
-            display: none;
-        }
-    }
-    @include media-breakpoint-up(xl){
-        &__links{
-            font-size: 22px;
-            
-            display: flex;
-            gap: 20px;
-            justify-content: space-between;
-        }
+    &__links--open {
+      display: flex;
     }
 
-    @include media-breakpoint-down(xxxl){
-        padding: 0 20px;
-    } 
+    &__menu-icon {
+      display: block;
+      font-size: 35px !important; /* Увеличиваем размер шрифта */
+      cursor: pointer;
+      background: none;
+      color: inherit;
+      border: none;
+      padding: 0;
+      font: inherit;
+      outline: none;
+    }
+  }
 
-    @include media-breakpoint-up(xxxl){
-        height: 150px;
-        padding: 0 230px 0 240px;
+  @include media-breakpoint-up(xl) {
+    &__links {
+      display: flex;
+      gap: 20px;
+      justify-content: space-between;
     }
 
+    &__menu-icon {
+      display: none;
+    }
+  }
+
+  @include media-breakpoint-down(xxxl) {
+    padding: 0 20px;
+  }
+
+  @include media-breakpoint-up(xxxl) {
+    height: 150px;
+    padding: 0 230px 0 240px;
+  }
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-open-sans), sans-serif;
+  background-color: var(--primary-color);
+  color: var(--secondary-text-color);
+
+  &__name {
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
+    gap: 20px;
     align-items: center;
-    font-family: var(--font-open-sans), sans-serif;
-    background-color: var(--primary-color);
-    color: var(--secondary-text-color);
+  }
 
-    &__name{
-        display: flex;
-        flex-direction: row;
-        gap: 20px;
-        align-items: center;
-    }
-    
-    h1{
-        font-family: var(--font-merriweather), serif;
-        font-weight: 400;
-    }
+  h1 {
+    font-family: var(--font-merriweather), serif;
+    font-weight: 400;
+  }
 }

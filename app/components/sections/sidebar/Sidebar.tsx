@@ -85,6 +85,30 @@ export default function Sidebar({ type }: IProps) {
         icon: '/icons/social.svg',
       },
     ];
+  } else if (type === 'create_new_character' && projectId) {
+    masLinks = [
+      { name: 'Назад', href: `/projects/${projectId}/characters`, icon: '/icons/back.svg' },
+      {
+        name: 'Основная информация',
+        href: `/characters/create?typePage=characters`,
+        icon: '/icons/base.svg',
+      },
+      {
+        name: 'Внешность',
+        href: `/characters/create?typePage=appearance`,
+        icon: '/icons/appearance.svg',
+      },
+      {
+        name: 'Личность',
+        href: `/characters/create?typePage=personality`,
+        icon: '/icons/personality.svg',
+      },
+      {
+        name: 'Социальные связи',
+        href: `/characters/create?typePage=social`,
+        icon: '/icons/social.svg',
+      },
+    ];
   }
   if (!masLinks || masLinks.length === 0) {
     return (
