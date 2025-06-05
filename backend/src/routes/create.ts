@@ -12,14 +12,16 @@ import { ChapterFactory } from '../models/Chapter';
 import { GroupFactory } from '../models/Group';
 import { NoteFactory } from '../models/Note';
 import { PlotLineFactory } from '../models/PlotLine';
+import { sequelize } from '../config/database';
+import { DataTypes } from 'sequelize';
 
 const router: Router = express.Router();
 
 type ProtectMiddleware = (req: Request, res: Response, next: NextFunction) => void;
 
-router.get('/create/create-page-data/:type', protect as ProtectMiddleware, (req: Request, res: Response) => {
+router.get('/create-page-data/:type', protect as ProtectMiddleware, (req: Request, res: Response) => {
   const { type } = req.params;
-  const { typePage } = req.query; // Получаем typePage из query
+  const { typePage } = req.query;
 
   console.log('Type create-page: ' + type, 'Type page:', typePage);
 
@@ -50,9 +52,6 @@ router.post('/create_item/locations', protect as ProtectMiddleware, (req, res, n
 router.post('/create_item/objects', protect as ProtectMiddleware, (req, res, next) => {
   createItem(req, res, next, 'Object', ObjectFactory).catch(next);
 });
-router.post('/create_item/characters', protect as ProtectMiddleware, (req, res, next) => {
-  createItem(req, res, next, 'Character', CharacterFactory).catch(next);
-});
 router.post('/create_item/time_events', protect as ProtectMiddleware, (req, res, next) => {
   createItem(req, res, next, 'TimelineEvent', TimelineEventFactory).catch(next);
 });
@@ -67,6 +66,25 @@ router.post('/create_item/notes', protect as ProtectMiddleware, (req, res, next)
 });
 router.post('/create_item/plotlines', protect as ProtectMiddleware, (req, res, next) => {
   createItem(req, res, next, 'PlotLine', PlotLineFactory).catch(next);
+});
+
+router.post('/create_item/characters', protect as ProtectMiddleware, async (req, res, next) => {
+  try {
+    const { info, info_appearance, info_personality, info_social, miniature, markerColor, projectId } = req.body;
+    const newCharacter = await CharacterFactory(sequelize, DataTypes).create({
+      projectId,
+      info: info,
+      info_appearance: info_appearance,
+      info_personality: info_personality,
+      info_social: info_social,
+      miniature: miniature,
+      markerColor: markerColor,
+    });
+    res.status(201).json(newCharacter);
+  } catch (error) {
+    console.error('Error creating character:', error);
+    next(error);
+  }
 });
 
 export default router;

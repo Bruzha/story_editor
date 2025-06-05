@@ -27,6 +27,7 @@ interface CreatePageDataType {
   title: string;
   masTitle: MasTitleItem[];
   showImageInput?: boolean;
+  showMarkerColorInput?: boolean;
   typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | 'create_new_character' | '';
   projectId?: string;
   typePage?: 'characters' | 'appearance' | 'personality' | 'social';
@@ -93,36 +94,36 @@ const createPageData: CreatePageDataType[] = [
     typeSidebar: 'timeline',
   },
   {
-    type: 'characters', // Общий type для всех этапов персонажа
-    title: 'Основная информация',
+    type: 'characters',
+    title: 'СОЗДАНИЕ ПЕРСОНАЖА: основная информация',
     masTitle: masTitleCharacter,
     showImageInput: true,
     typeSidebar: 'create_new_character',
-    typePage: 'characters', // Указываем typePage
+    typePage: 'characters',
   },
   {
-    type: 'characters', // Общий type для всех этапов персонажа
-    title: 'Внешность',
+    type: 'characters',
+    title: 'СОЗДАНИЕ ПЕРСОНАЖА: внешность',
     masTitle: masTitleCharacterAppearance,
-    showImageInput: true,
+    showMarkerColorInput: false,
     typeSidebar: 'create_new_character',
-    typePage: 'appearance', // Указываем typePage
+    typePage: 'appearance',
   },
   {
-    type: 'characters', // Общий type для всех этапов персонажа
-    title: 'Личность',
+    type: 'characters',
+    title: 'СОЗДАНИЕ ПЕРСОНАЖА: личность',
     masTitle: masTitleCharacterPersonality,
-    showImageInput: true,
+    showMarkerColorInput: false,
     typeSidebar: 'create_new_character',
-    typePage: 'personality', // Указываем typePage
+    typePage: 'personality',
   },
   {
-    type: 'characters', // Общий type для всех этапов персонажа
-    title: 'Социальные связи',
+    type: 'characters',
+    title: 'СОЗДАНИЕ ПЕРСОНАЖА: социальные связи',
     masTitle: masTitleCharacterSocial,
-    showImageInput: true,
     typeSidebar: 'create_new_character',
-    typePage: 'social', // Указываем typePage
+    showMarkerColorInput: false,
+    typePage: 'social',
   },
 ];
 

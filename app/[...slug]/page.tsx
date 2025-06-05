@@ -49,18 +49,30 @@ export default function CardsPage({ params }: Props) {
 
   let finalCreatePageUrl = createPageUrl;
   if (projectId && createPageUrl) {
-    // Replace the placeholder with the actual projectId
     finalCreatePageUrl = createPageUrl.replace('PROJECT_ID_PLACEHOLDER', projectId);
   }
 
+  let showCopyButton = false;
+  let showCreateButton,
+    showDeleteButton = true;
+  if (typeSidebar === 'project' || typeSidebar === 'timeline') {
+    showCopyButton = true;
+  }
+  if (typeSidebar === 'help') {
+    showCreateButton = false;
+    showDeleteButton = false;
+  }
   return (
     <CardsPageMaket
       typeSidebar={typeSidebar}
       typeCard={typeCard}
+      showCopyButton={showCopyButton}
+      showCreateButton={showCreateButton}
+      showDeleteButton={showDeleteButton}
       title={title}
       subtitle={subtitle}
       masItems={items}
-      createPageUrl={finalCreatePageUrl} // Pass the updated createPageUrl
+      createPageUrl={finalCreatePageUrl}
     />
   );
 }

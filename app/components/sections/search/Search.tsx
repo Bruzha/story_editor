@@ -4,30 +4,37 @@ import { useState } from 'react';
 import './style.scss';
 import Input from '../../ui/input/Input';
 import Button from '../../ui/button/Button';
+import { clearCharacterData } from '@/app/store/reducers/characterReducer';
+import { AppDispatch } from '@/app/store';
+import { useDispatch } from 'react-redux';
 
 interface IProps {
   showCreateButton?: boolean;
+  showCopyButton?: boolean;
   createPageUrl?: string;
-  onSearch: (query: string) => void; // Добавим пропс для отправки запроса в родительский компонент
+  onSearch: (query: string) => void;
 }
 
-export default function Search({ showCreateButton = true, createPageUrl = '/create_project', onSearch }: IProps) {
-  // Добавим пропс onSearch
+export default function Search({
+  showCreateButton = true,
+  showCopyButton = true,
+  createPageUrl = '/create_project',
+  onSearch,
+}: IProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-
+  const dispatch: AppDispatch = useDispatch();
   const handleCreateClick = () => {
+    dispatch(clearCharacterData());
     router.push(createPageUrl);
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
-    //  В этом месте, вероятно, нужно будет запускать поиск.
   };
 
   const handleSearchClick = () => {
-    //  Обработчик нажатия на кнопку "Найти"
-    onSearch(searchQuery); //  Вызываем функцию onSearch, передавая searchQuery
+    onSearch(searchQuery);
   };
 
   return (
@@ -38,6 +45,7 @@ export default function Search({ showCreateButton = true, createPageUrl = '/crea
       <div className="search__button">
         <Button name={'Найти'} type="button" onClick={handleSearchClick} />
         {showCreateButton && <Button name={'Создать'} type="button" onClick={handleCreateClick} />}
+        {showCopyButton && <Button name={'Добавить из проекта'} type="button" onClick={handleCreateClick} />}
       </div>
     </div>
   );

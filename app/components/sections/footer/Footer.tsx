@@ -1,29 +1,27 @@
 'use client';
 
-import { useAuth } from '@/app/AuthContext'; // Импортируем useAuth
-import MyLink from '../../ui/link/Link'; // Предполагается, что у вас есть кастомный компонент Link
-import { useRouter } from 'next/navigation'; // Импортируем useRouter
-import { destroyCookie } from 'nookies'; // Если вы используете nookies для хранения токена
+import { useAuth } from '@/app/AuthContext';
+import MyLink from '../../ui/link/Link';
+import { useRouter } from 'next/navigation';
+import { destroyCookie } from 'nookies';
 import { AiFillInstagram } from 'react-icons/ai';
 import { FaPinterest, FaVk } from 'react-icons/fa';
 import './style.scss';
 
 export default function Footer() {
-  const { isAuthenticated, logout } = useAuth(); // Получаем состояние аутентификации и функцию logout
-  const router = useRouter(); // Получаем роутер
+  const { isAuthenticated, logout } = useAuth();
+  const router = useRouter();
 
   const handleLogout = () => {
-    //  Добавьте здесь логику выхода (например, удаление куки, сброс состояния Redux)
-    destroyCookie(null, 'jwt', { path: '/' }); // Удаляем куки (пример с использованием nookies)
-    // dispatch(resetUserState()); // Сбрасываем состояние пользователя в Redux (если нужно)
-    logout(); // Вызываем функцию logout из AuthContext
-    router.push('/'); // Перенаправляем на главную страницу
+    destroyCookie(null, 'jwt', { path: '/' });
+    logout();
+    router.push('/');
   };
 
   return (
     <footer className="footer">
       <div className="footer__name">
-        <img src="" alt="Логотип" /> {/* Замените "" на путь к вашему логотипу */}
+        <img src="" alt="Логотип" />
         <p>РЕДАКТОР ИСТОРИЙ</p>
       </div>
       <div className="footer__info">
@@ -34,7 +32,6 @@ export default function Footer() {
       </div>
       <div className="footer__links">
         {isAuthenticated ? (
-          // Если пользователь аутентифицирован, показываем ссылки для выхода
           <>
             <MyLink href="/" name="Главная" className="white-link footer__link">
               {''}
@@ -42,17 +39,11 @@ export default function Footer() {
             <MyLink href="/profile" name="Профиль" className="white-link footer__link">
               {''}
             </MyLink>
-            <MyLink
-              href="#" // Используем href="#" или javascript:void(0) для ссылки "Выйти"
-              name="Выйти"
-              className="white-link footer__link"
-              onClick={handleLogout} // Добавляем обработчик выхода
-            >
+            <MyLink href="#" name="Выйти" className="white-link footer__link" onClick={handleLogout}>
               {''}
             </MyLink>
           </>
         ) : (
-          // Если пользователь не аутентифицирован, показываем ссылки для входа и регистрации
           <>
             <MyLink href="/" name="Главная" className="white-link footer__link">
               {''}

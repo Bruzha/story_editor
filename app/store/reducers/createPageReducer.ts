@@ -13,7 +13,8 @@ interface CreatePageData {
   type: string;
   masTitle: MasTitleItem[];
   showImageInput?: boolean;
-  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | '';
+  showMarkerColorInput?: boolean;
+  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | 'create_new_character' | '';
 }
 
 interface CreatePageState {

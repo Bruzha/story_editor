@@ -12,6 +12,9 @@ import { SubmitHandler, UseFormRegister, UseFormSetValue } from 'react-hook-form
 import { useRouter } from 'next/navigation';
 import './style.scss';
 import { ChangeEvent } from 'react';
+import { AppDispatch } from '@/app/store';
+import { useDispatch } from 'react-redux';
+import { setCharacterData, setMarkerColor, setMiniature } from '@/app/store/reducers/characterReducer';
 
 interface LabelProps {
   text: string;
@@ -20,7 +23,7 @@ interface LabelProps {
 }
 
 interface IProps {
-  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | '';
+  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | 'create_new_character' | '';
   title: string;
   subtitle: string;
   masItems: {
@@ -41,6 +44,7 @@ interface IProps {
   setValue: UseFormSetValue<any>;
   onSubmit: SubmitHandler<any>;
   src?: string | null;
+  typePage?: string | null;
 }
 
 export default function CreatePageMaket({
@@ -58,6 +62,7 @@ export default function CreatePageMaket({
   register,
   setValue,
   onSubmit,
+  typePage,
   src: initialSrc = null,
 }: IProps) {
   const router = useRouter();
@@ -65,10 +70,10 @@ export default function CreatePageMaket({
   handleCancelClick = () => {
     router.back();
   };
-
+  const dispatch: AppDispatch = useDispatch();
   const [selectOptions, setSelectOptions] = useState<{ label: string; value: string }[]>([]);
   const [, setSelectedFileName] = useState<string>('');
-  const [markerColor, setMarkerColor] = useState<string>(initialMarkerColor);
+  const [markerColor, setMarkerColorUse] = useState<string>(initialMarkerColor);
   const [src, setSrc] = useState<string | null>(initialSrc);
 
   // const [masItems, setMasItems] = useState(initialMasItems);
@@ -144,7 +149,8 @@ export default function CreatePageMaket({
   };
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files && event.target.files[0];
+      const file = event.target.files?.[0];
+
       if (file) {
         setValue('miniature', file);
         setSelectedFileName(file.name);
@@ -153,13 +159,25 @@ export default function CreatePageMaket({
           setSrc(reader.result as string);
         };
         reader.readAsDataURL(file);
+
+        if (typeSidebar === 'create_new_character') {
+          const readerByteArray = new FileReader();
+          readerByteArray.onload = (event: any) => {
+            const arrayBuffer = event.target.result;
+            if (arrayBuffer) {
+              const uint8Array = new Uint8Array(arrayBuffer);
+              dispatch(setMiniature(Array.from(uint8Array))); // Convert to byte array
+            }
+          };
+          readerByteArray.readAsArrayBuffer(file);
+        }
       } else {
         setValue('miniature', null);
         setSelectedFileName('');
         setSrc(null);
       }
     },
-    [setValue, setSelectedFileName, setSrc]
+    [setValue, setSelectedFileName, setSrc, typeSidebar, dispatch]
   );
 
   useEffect(() => {
@@ -171,8 +189,22 @@ export default function CreatePageMaket({
   }, [masItems, setValue]);
 
   const handleColorChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setMarkerColor(e.target.value);
+    if (typeSidebar === 'create_new_character') {
+      dispatch(setMarkerColor(e.target.value));
+    }
+    setMarkerColorUse(e.target.value);
     setValue('markerColor', e.target.value);
+  };
+
+  const handleTextareaChange = (itemKey: string) => (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (typePage) {
+      dispatch(
+        setCharacterData({
+          typePage: typePage,
+          data: { [itemKey]: { value: e.target.value } },
+        })
+      );
+    }
   };
 
   return (
@@ -206,8 +238,9 @@ export default function CreatePageMaket({
                 <div className="create__textarea-container">
                   <Textarea
                     key={item.key}
+                    onChange={handleTextareaChange(item.key)}
                     placeholder={item.placeholder}
-                    {...register(item.key)} // Use register here
+                    {...register}
                   />
                   <div>
                     <input

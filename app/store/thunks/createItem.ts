@@ -15,19 +15,34 @@ export const createItem = createAsyncThunk(
     const apiUrl = `http://localhost:3001/create/create_item/${type}`;
 
     try {
+      let requestBody = payload;
+      if (type === 'characters') {
+        requestBody = {
+          info: payload.info,
+          info_appearance: payload.info_appearance,
+          info_personality: payload.info_personality,
+          info_social: payload.info_social,
+          miniature: payload.miniature,
+          markerColor: payload.markerColor,
+          projectId: payload.projectId,
+        };
+      }
+
+      console.log('requestBody 3: ', requestBody);
+
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(requestBody), // Используем requestBody
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('HTTP error creating item:', errorData); // Логируем ответ об ошибке
-        return rejectWithValue(errorData.message || `HTTP error! Status: ${response.status}`); // Возвращаем сообщение об ошибке
+        console.error('HTTP error creating item:', errorData);
+        return rejectWithValue(errorData.message || `HTTP error! Status: ${response.status}`);
       }
 
       const newItem = await response.json();

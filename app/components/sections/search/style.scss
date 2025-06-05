@@ -2,21 +2,17 @@
 
 .search{
 
-    @include media-breakpoint-down(sm){
+    @include media-breakpoint-down(md){
+        margin-bottom: 30px;
         &__button{
             flex-direction: column;
             margin: 0 10% 30px 10%;
         }
     }
-
-    @include media-breakpoint-up(sm){
+    @include media-breakpoint-up(md){
         &__button{
             flex-direction: row;
         }
-    }
-
-    @include media-breakpoint-down(md){
-        margin-bottom: 30px;
     }
 
     @include media-breakpoint-down(xl){
@@ -30,6 +26,9 @@
     @include media-breakpoint-up(xl){
         flex-direction: row;
         align-items: center;
+        &__button{
+            white-space: nowrap;
+        }
     }
 
     @include media-breakpoint-between(md, xxxl){

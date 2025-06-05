@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react'; //  Добавляем useEffect
+import React, { useState, useEffect } from 'react';
 import Maket from '../maket/Maket';
 import Card from '../../ui/card/Card';
 import Search from '../../sections/search/Search';
@@ -12,11 +12,12 @@ interface IProps {
   title: string;
   subtitle: string;
   typeCard: 'project' | 'character' | 'idea' | string;
-  masItems: ItemsData[]; // Use ItemsData[]
+  masItems: ItemsData[];
   showDeleteButton?: boolean;
   showCreateButton?: boolean;
+  showCopyButton?: boolean;
   createPageUrl?: string;
-  onSearch?: (query: string) => void; // Добавили пропс onSearch
+  onSearch?: (query: string) => void;
 }
 
 export default function CardsPageMaket({
@@ -27,57 +28,58 @@ export default function CardsPageMaket({
   masItems,
   showDeleteButton = true,
   showCreateButton = true,
+  showCopyButton = true,
   createPageUrl = '/create_project',
 }: IProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [filteredItems, setFilteredItems] = useState<ItemsData[]>([]); // Инициализируем пустым массивом
+  const [filteredItems, setFilteredItems] = useState<ItemsData[]>([]);
   const itemsPerPage = 8;
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
 
-  // Эффект, чтобы обновить filteredItems, когда masItems изменяется (например, после загрузки данных)
   useEffect(() => {
-    setFilteredItems(masItems); //  Изначально отображаем все элементы
-    setCurrentPage(1); // Сбрасываем страницу при изменении masItems
+    setFilteredItems(masItems);
+    setCurrentPage(1);
   }, [masItems]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem); //  Используем filteredItems
+  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Функция для фильтрации элементов
   const filterItems = (query: string) => {
     if (!query) {
-      setFilteredItems(masItems); //  Если запрос пустой, отображаем все элементы
-      setCurrentPage(1); // Сбрасываем страницу
+      setFilteredItems(masItems);
+      setCurrentPage(1);
       return;
     }
 
     const lowerCaseQuery = query.toLowerCase();
     const filtered = masItems.filter((item) => {
-      //  Поиск по всем полям (или по нужным полям)
       return Object.values(item.data).some((value: any) => {
         if (typeof value === 'string') {
           return value.toLowerCase().includes(lowerCaseQuery);
         }
-        return false; //  Обработка не строковых значений (или исключение полей)
+        return false;
       });
     });
-    setFilteredItems(filtered); //  Обновляем состояние
-    setCurrentPage(1); // Сбрасываем страницу
+    setFilteredItems(filtered);
+    setCurrentPage(1);
   };
 
-  // Обработчик поискового запроса
   const handleSearch = (query: string) => {
-    filterItems(query); //  Вызываем функцию фильтрации
+    filterItems(query);
   };
 
   return (
     <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle}>
-      <Search showCreateButton={showCreateButton} createPageUrl={createPageUrl} onSearch={handleSearch} />{' '}
-      {/* Передаем onSearch */}
+      <Search
+        showCreateButton={showCreateButton}
+        showCopyButton={showCopyButton}
+        createPageUrl={createPageUrl}
+        onSearch={handleSearch}
+      />{' '}
       {currentItems.map((item) => (
         <Card
           key={item.id}
@@ -91,7 +93,7 @@ export default function CardsPageMaket({
       ))}
       <Pagination
         itemsPerPage={itemsPerPage}
-        totalItems={filteredItems.length} // Используем filteredItems.length
+        totalItems={filteredItems.length}
         currentPage={currentPage}
         onPageChange={handlePageChange}
       />

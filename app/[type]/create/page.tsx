@@ -5,7 +5,7 @@ import CreatePageMaket from '@/app/components/sections/create-page-maket/Create-
 import { useEffect, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/app/store';
+import { AppDispatch, RootState } from '../../store';
 import { useAuth } from '@/app/AuthContext';
 import { fetchCreatePageData } from '@/app/store/thunks/fetchCreatePageData';
 import { createItem } from '@/app/store/thunks/createItem';
@@ -20,6 +20,7 @@ import Message from '@/app/components/ui/message/Message';
 import Loading from '@/app/components/ui/loading/Loading';
 import { setProjectId } from '@/app/store/reducers/projectReducer';
 import Input from '@/app/components/ui/input/Input';
+import { clearCharacterData } from '@/app/store/reducers/characterReducer';
 
 interface RouteParams {
   type?: string;
@@ -63,12 +64,17 @@ export default function CreateItemPage() {
     loading: createPageLoading,
     error: createPageError,
   } = useSelector((state: RootState) => state.createPage);
+
+  const projectId = useSelector((state: RootState) => state.project.projectId);
+
+  const { characters, appearance, personality, social, miniature, markerColor } = useSelector(
+    (state: any) => state.character
+  );
   console.log(
     'state.createPage: ',
     useSelector((state: RootState) => state.createPage)
   );
   const subtitle = useSelector((state: RootState) => state.posts.subtitle);
-  const projectId = useSelector((state: RootState) => state.project.projectId);
 
   const [relatedData, setRelatedData] = useState<RelatedDataState>({
     characters: [],
@@ -78,10 +84,10 @@ export default function CreateItemPage() {
   });
   const formMethods = useForm<FormValues>({
     defaultValues: {
-      characterIds: [],
-      locationIds: [],
-      objectIds: [],
-      eventIds: [],
+      ...characters,
+      ...appearance,
+      ...personality,
+      ...social,
     },
   });
   const {
@@ -94,11 +100,14 @@ export default function CreateItemPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (isAuthenticated && type) {
-        if (type === 'characters') {
-          await dispatch(fetchCreatePageData({ type: type, typePage: typePage || 'characters' }));
-        } else {
-          await dispatch(fetchCreatePageData({ type: type }));
+        const fetchParams: { type: string; typePage?: string } = { type: type };
+
+        if (type === 'characters' && typePage) {
+          fetchParams.typePage = typePage;
         }
+
+        await dispatch(fetchCreatePageData(fetchParams));
+
         if (projectId) {
           await dispatch(fetchRelatedData({ type, projectId }));
         }
@@ -107,7 +116,7 @@ export default function CreateItemPage() {
       }
     };
     fetchData();
-  }, [type, dispatch, isAuthenticated, router, projectId]);
+  }, [type, typePage, dispatch, isAuthenticated, router, projectId]);
 
   useEffect(() => {
     const updateRelatedData = async () => {
@@ -130,72 +139,109 @@ export default function CreateItemPage() {
 
   const handleFormSubmit: SubmitHandler<FormValues> = async (data: FormValues) => {
     if (!type) return;
+    if (type === 'characters') {
+      const payload: any = {
+        info: {
+          ...characters,
+        },
+        info_appearance: {
+          ...appearance,
+        },
+        info_personality: {
+          ...personality,
+        },
+        info_social: {
+          ...data,
+        },
+        projectId: projectId,
+        markerColor: markerColor,
+      };
 
-    const formData =
-      createPageData?.masTitle?.reduce((acc: any, item: { key: string | number }) => {
-        acc[item.key] = { value: data[item.key] || '' };
-        return acc;
-      }, {}) || {};
-
-    let customFields = {};
-    if (type === 'projects' || type === 'chapters') {
-      customFields = { status: data.status };
-    }
-    if (type === 'plotlines') {
-      customFields = { type: data.plotline_type };
-    }
-    if (type === 'time_events') {
-      customFields = { eventDate: data.time_events_eventDate };
-    }
-
-    const markerColor = data.markerColor || '#4682B4';
-
-    let miniatureData: number[] | null = null;
-    if (data.miniature) {
-      console.log('data.miniature: ', data.miniature);
-      const byteArrayResult = await dispatch(convertFileToByteArray({ file: data.miniature }));
-      console.log('data.miniaturebyteArrayResult: ', byteArrayResult);
-      if (convertFileToByteArray.fulfilled.match(byteArrayResult)) {
-        console.log('data.miniature startByte: ', data.miniature);
-        miniatureData = byteArrayResult.payload;
-        console.log('data.miniature endByte: ', miniatureData);
-      } else {
-        console.error('Error converting file to byte array', byteArrayResult.error);
-        return;
-      }
-    }
-    const payload = {
-      info: formData,
-      ...customFields,
-      markerColor: markerColor,
-      miniature: miniatureData,
-      projectId: projectId,
-      characterIds: data.characterIds,
-      locationIds: data.locationIds,
-      objectIds: data.objectIds,
-      eventIds: data.eventIds,
-    };
-
-    console.log('payload: ', payload);
-
-    const createItemResult = await dispatch(createItem({ type, payload }));
-    if (createItem.fulfilled.match(createItemResult)) {
-      const newItem = createItemResult.payload;
-
-      const createRelationshipsResult = await dispatch(
-        createGroupRelationships({ itemId: String(newItem.id), type: type, data })
-      );
-      if (!createGroupRelationships.fulfilled.match(createRelationshipsResult)) {
-        console.error('Error creating relationships', createRelationshipsResult.error);
+      if (miniature) {
+        payload.miniature = miniature;
       }
 
-      if (type === 'projects') {
-        dispatch(setProjectId(String(newItem.id)));
+      try {
+        const createItemResult = await dispatch(createItem({ type: 'characters', payload }));
+        if (createItem.fulfilled.match(createItemResult)) {
+          const newItem = createItemResult.payload;
+
+          const redirectUrl = `/characters/${newItem.id}`;
+          dispatch(clearCharacterData());
+          router.push(redirectUrl);
+        } else {
+          console.error('Error creating item', createItemResult.error);
+        }
+      } catch (error) {
+        console.error('Error creating item', error);
       }
-      const redirectUrl = `/${type}/${newItem.id}`;
-      router.push(redirectUrl);
     } else {
-      console.error('Error creating item', createItemResult.error);
+      const formData =
+        createPageData?.masTitle?.reduce((acc: any, item: { key: string | number }) => {
+          acc[item.key] = { value: data[item.key] || '' };
+          return acc;
+        }, {}) || {};
+
+      let customFields = {};
+      if (type === 'projects' || type === 'chapters') {
+        customFields = { status: data.status };
+      }
+      if (type === 'plotlines') {
+        customFields = { type: data.plotline_type };
+      }
+      if (type === 'time_events') {
+        customFields = { eventDate: data.time_events_eventDate };
+      }
+
+      const markerColor = data.markerColor || '#4682B4';
+
+      let miniatureData: number[] | null = null;
+      if (data.miniature) {
+        console.log('data.miniature: ', data.miniature);
+        const byteArrayResult = await dispatch(convertFileToByteArray({ file: data.miniature }));
+        console.log('data.miniaturebyteArrayResult: ', byteArrayResult);
+        if (convertFileToByteArray.fulfilled.match(byteArrayResult)) {
+          console.log('data.miniature startByte: ', data.miniature);
+          miniatureData = byteArrayResult.payload;
+          console.log('data.miniature endByte: ', miniatureData);
+        } else {
+          console.error('Error converting file to byte array', byteArrayResult.error);
+          return;
+        }
+      }
+      const payload = {
+        info: formData,
+        ...customFields,
+        markerColor: markerColor,
+        miniature: miniatureData,
+        projectId: projectId,
+        characterIds: data.characterIds,
+        locationIds: data.locationIds,
+        objectIds: data.objectIds,
+        eventIds: data.eventIds,
+      };
+
+      console.log('payload: ', payload);
+
+      const createItemResult = await dispatch(createItem({ type, payload }));
+      if (createItem.fulfilled.match(createItemResult)) {
+        const newItem = createItemResult.payload;
+
+        const createRelationshipsResult = await dispatch(
+          createGroupRelationships({ itemId: String(newItem.id), type: type, data })
+        );
+        if (!createGroupRelationships.fulfilled.match(createRelationshipsResult)) {
+          console.error('Error creating relationships', createRelationshipsResult.error);
+        }
+
+        if (type === 'projects') {
+          dispatch(setProjectId(String(newItem.id)));
+        }
+        const redirectUrl = `/${type}/${newItem.id}`;
+        router.push(redirectUrl);
+      } else {
+        console.error('Error creating item', createItemResult.error);
+      }
     }
   };
 
@@ -332,10 +378,12 @@ export default function CreateItemPage() {
             subtitle={subtitle}
             masItems={createPageData.masTitle}
             showImageInput={createPageData.showImageInput}
+            showMarkerColorInput={createPageData.showMarkerColorInput}
             showCancelButton={true}
             register={register}
             setValue={setValue}
             onSubmit={handleSubmit(handleFormSubmit)}
+            typePage={typePage}
           >
             {renderCustomFields()}
             {renderCheckboxes()}
