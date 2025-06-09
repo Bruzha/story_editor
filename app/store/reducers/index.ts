@@ -4,6 +4,7 @@ import projectReducer from './projectReducer';
 import itemReducer from './itemReducer';
 import createPageReducer from './createPageReducer';
 import characterReducer from './characterReducer';
+import exportReducer from './exportReducer';
 
 export const rootReducer = combineReducers({
   posts: cardsReducer,
@@ -11,6 +12,7 @@ export const rootReducer = combineReducers({
   item: itemReducer,
   createPage: createPageReducer,
   character: characterReducer,
+  export: exportReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

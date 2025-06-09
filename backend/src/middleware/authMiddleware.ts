@@ -15,7 +15,6 @@ declare global {
 }
 
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
-  // Use Request instead of AuthRequest
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {

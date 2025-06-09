@@ -8,7 +8,7 @@ const masTitleGroup = [
   },
   {
     key: 'description',
-    title: 'Сожержание',
+    title: 'Описание',
     placeholder: 'Краткое описание группы, признаки, по которым она сформировалась',
   },
 ];
