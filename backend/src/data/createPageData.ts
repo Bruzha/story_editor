@@ -20,6 +20,7 @@ interface MasTitleItem {
   title: string;
   placeholder?: string;
   removable?: boolean;
+  value?: string;
 }
 
 interface CreatePageDataType {

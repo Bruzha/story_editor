@@ -4,9 +4,10 @@ import { useState } from 'react';
 import './style.scss';
 import Input from '../../ui/input/Input';
 import Button from '../../ui/button/Button';
-import { clearCharacterData } from '@/app/store/reducers/characterReducer';
+import { clearCharacterData, setCharacterData } from '@/app/store/reducers/characterReducer';
 import { AppDispatch } from '@/app/store';
 import { useDispatch } from 'react-redux';
+import createPageData from '@/backend/src/data/createPageData';
 
 interface IProps {
   showCreateButton?: boolean;
@@ -24,8 +25,40 @@ export default function Search({
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const dispatch: AppDispatch = useDispatch();
+  // const handleCreateClick = () => {
+  //   dispatch(clearCharacterData());
+  //   if (createPageUrl === '/characters/create?typePage=characters') {
+  //   }
+  //   router.push(createPageUrl);
+  // };
+
   const handleCreateClick = () => {
     dispatch(clearCharacterData());
+    if (createPageUrl === '/characters/create?typePage=characters') {
+      const initialData = createPageData
+        .filter((item) => item.type === 'characters')
+        .reduce(
+          (acc, item) => {
+            const typePage = item.typePage || 'social';
+            acc[typePage] = item.masTitle.reduce((pageAcc: { [key: string]: { value: string } }, field) => {
+              pageAcc[field.key] = { value: '' };
+              return pageAcc;
+            }, {});
+            return acc;
+          },
+          {
+            characters: {},
+            appearance: {},
+            personality: {},
+            social: {},
+          }
+        );
+
+      dispatch(setCharacterData({ typePage: 'characters', data: initialData.characters }));
+      dispatch(setCharacterData({ typePage: 'appearance', data: initialData.appearance }));
+      dispatch(setCharacterData({ typePage: 'personality', data: initialData.personality }));
+      dispatch(setCharacterData({ typePage: 'social', data: initialData.social }));
+    }
     router.push(createPageUrl);
   };
 

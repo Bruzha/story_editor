@@ -52,7 +52,9 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
     if (type === 'project') {
       dispatch(setProjectId(String(id)));
     }
-    router.push(`/${type}s/${id}`);
+    if (type === 'character') {
+      router.push(`/${type}s/${id}/?typePage=characters`);
+    } else router.push(`/${type}s/${id}`);
   };
 
   const handleDelete = (e: React.MouseEvent) => {

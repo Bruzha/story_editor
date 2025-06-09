@@ -10,6 +10,7 @@ import { LocationFactory } from '../models/Location';
 import { NoteFactory } from '../models/Note';
 import { PlotLineFactory } from '../models/PlotLine';
 import { TimelineEventFactory } from '../models/TimelineEvent';
+import { CharacterFactory } from '../models/Character';
 
 const router: Router = express.Router();
 
@@ -68,6 +69,14 @@ router.patch(
   protect as ProtectMiddleware,
   (req: Request, res: Response, next: NextFunction) => {
     updateItem(req, res, next, 'TimelineEvents', TimelineEventFactory).catch(next);
+  }
+);
+
+router.patch(
+  '/update/characters/:id',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    updateItem(req, res, next, 'Character', CharacterFactory).catch(next);
   }
 );
 

@@ -63,7 +63,7 @@ export default function Sidebar({ type }: IProps) {
     ];
   } else if (type === 'create_character' && projectId) {
     masLinks = [
-      { name: 'Назад', href: `/projects/${projectId}`, icon: '/icons/back.svg' },
+      { name: 'Назад', href: `/projects/${projectId}/characters`, icon: '/icons/back.svg' },
       {
         name: 'Основная информация',
         href: `/characters/${characterId}?typePage=characters`,

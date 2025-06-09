@@ -38,7 +38,7 @@ router.get(
   '/projects/:projectId/characters/:characterId',
   protect as ProtectMiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    const { typePage } = req.query; // Get typePage from query parameters
+    const { typePage } = req.query;
 
     getItemById(
       req,

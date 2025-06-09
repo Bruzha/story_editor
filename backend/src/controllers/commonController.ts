@@ -200,7 +200,14 @@ export const getItemById = async (
     }
 
     // **Находим соответствующий объект в createPageData**
-    const createPageDataItem = createPageData.find((data) => data.type === modelName.toLowerCase() + 's');
+    let createPageDataItem = createPageData.find((data) => data.type === modelName.toLowerCase() + 's');
+
+    if (modelName === 'Character' && additionalOptions.dataType) {
+      createPageDataItem = createPageData.find(
+        (data) => data.type === modelName.toLowerCase() + 's' && data.typePage === additionalOptions.dataType
+      );
+    }
+
     const masTitle = createPageDataItem?.masTitle;
 
     let newInfo: any = {};
@@ -381,7 +388,7 @@ export const updateItem = async (
 ) => {
   try {
     const { id } = req.params;
-    const { info, status, miniature, markerColor } = req.body;
+    const { info, info_appearance, info_personality, info_social, status, miniature, markerColor } = req.body;
 
     const Model = modelFactory(sequelize, DataTypes) as any;
     // Найти элемент по ID
@@ -392,12 +399,31 @@ export const updateItem = async (
     }
 
     // Обновить элемент
-    await item.update({
-      info: info,
-      status: status,
-      miniature: miniature,
-      markerColor: markerColor,
-    });
+    const updateData: any = {};
+
+    if (info) {
+      updateData.info = info;
+    }
+    if (info_appearance) {
+      updateData.info_appearance = info_appearance;
+    }
+    if (info_personality) {
+      updateData.info_personality = info_personality;
+    }
+    if (info_social) {
+      updateData.info_social = info_social;
+    }
+    if (status) {
+      updateData.status = status;
+    }
+    if (miniature) {
+      updateData.miniature = miniature;
+    }
+    if (markerColor) {
+      updateData.markerColor = markerColor;
+    }
+
+    await item.update(updateData);
 
     // Получить обновленный элемент
     const updatedItem = await Model.findByPk(id);

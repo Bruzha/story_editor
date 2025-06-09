@@ -15,6 +15,7 @@ import { ChangeEvent } from 'react';
 import { AppDispatch } from '@/app/store';
 import { useDispatch } from 'react-redux';
 import { setCharacterData, setMarkerColor, setMiniature } from '@/app/store/reducers/characterReducer';
+import Image from 'next/image';
 
 interface LabelProps {
   text: string;
@@ -147,6 +148,7 @@ export default function CreatePageMaket({
       });
     }
   };
+
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -198,12 +200,31 @@ export default function CreatePageMaket({
 
   const handleTextareaChange = (itemKey: string) => (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (typePage) {
+      let reduxTypePage = '';
+      switch (typePage) {
+        case 'characters':
+          reduxTypePage = 'characters';
+          break;
+        case 'appearance':
+          reduxTypePage = 'appearance';
+          break;
+        case 'personality':
+          reduxTypePage = 'personality';
+          break;
+        case 'social':
+          reduxTypePage = 'social';
+          break;
+        default:
+          reduxTypePage = 'social';
+          break;
+      }
       dispatch(
         setCharacterData({
-          typePage: typePage,
+          typePage: reduxTypePage,
           data: { [itemKey]: { value: e.target.value } },
         })
       );
+      setValue(itemKey, e.target.value);
     }
   };
 
@@ -228,7 +249,11 @@ export default function CreatePageMaket({
             {showImageInput && (
               <Label text={'Миниатюра'} id="item_miniature">
                 <div className="create__miniature-container">
-                  <div>{src && <img className="create__miniatire-img" src={src} alt="Миниатюра" />}</div>
+                  <div>
+                    {src && (
+                      <Image className="create__miniatire-img" src={src} alt="Миниатюра" width={200} height={200} />
+                    )}
+                  </div>
                   <Input type="file" isFileType={true} onChange={handleFileChange} />
                 </div>
               </Label>
@@ -236,12 +261,17 @@ export default function CreatePageMaket({
             {masItems.map((item) => (
               <Label key={item.key} text={item.title} id={`item_${item.key}`}>
                 <div className="create__textarea-container">
-                  <Textarea
-                    key={item.key}
-                    onChange={handleTextareaChange(item.key)}
-                    placeholder={item.placeholder}
-                    {...register}
-                  />
+                  {typePage ? (
+                    <Textarea
+                      key={item.key}
+                      placeholder={item.placeholder}
+                      id={item.key}
+                      onChange={handleTextareaChange(item.key)}
+                      defaultValue={item.value}
+                    />
+                  ) : (
+                    <Textarea key={item.key} placeholder={item.placeholder} {...register(item.key)} />
+                  )}
                   <div>
                     <input
                       title="Добавить поле ниже"

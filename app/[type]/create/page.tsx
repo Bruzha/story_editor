@@ -84,6 +84,10 @@ export default function CreateItemPage() {
   });
   const formMethods = useForm<FormValues>({
     defaultValues: {
+      ...(createPageData?.masTitle?.reduce((acc: any, item) => {
+        acc[item.key] = ''; //  Инициализируем все поля пустыми строками
+        return acc;
+      }, {}) || {}),
       ...characters,
       ...appearance,
       ...personality,
@@ -119,6 +123,15 @@ export default function CreateItemPage() {
   }, [type, typePage, dispatch, isAuthenticated, router, projectId]);
 
   useEffect(() => {
+    // Set default values after data is loaded
+    if (createPageData?.masTitle) {
+      createPageData.masTitle.forEach((item) => {
+        setValue(item.key, characters[item.key]?.value || '');
+      });
+    }
+  }, [createPageData, characters, setValue]);
+
+  useEffect(() => {
     const updateRelatedData = async () => {
       if (projectId && type) {
         const result = await dispatch(fetchRelatedData({ type, projectId }));
@@ -151,10 +164,11 @@ export default function CreateItemPage() {
           ...personality,
         },
         info_social: {
-          ...data,
+          ...social,
         },
         projectId: projectId,
         markerColor: markerColor,
+        miniature: miniature,
       };
 
       if (miniature) {
@@ -166,7 +180,7 @@ export default function CreateItemPage() {
         if (createItem.fulfilled.match(createItemResult)) {
           const newItem = createItemResult.payload;
 
-          const redirectUrl = `/characters/${newItem.id}`;
+          const redirectUrl = `/characters/${newItem.id}/?typePage=characters`;
           dispatch(clearCharacterData());
           router.push(redirectUrl);
         } else {
@@ -368,6 +382,34 @@ export default function CreateItemPage() {
     return null;
   }
 
+  const masItems =
+    createPageData?.masTitle?.map((item) => {
+      let value = '';
+      if (type === 'characters') {
+        // Изменено условие
+        switch (typePage) {
+          case 'characters':
+            value = characters[item.key]?.value || '';
+            break;
+          case 'appearance':
+            value = appearance[item.key]?.value || '';
+            break;
+          case 'personality':
+            value = personality[item.key]?.value || '';
+            break;
+          case 'social':
+            value = social[item.key]?.value || '';
+            break;
+          default:
+            break;
+        }
+      }
+      return {
+        ...item,
+        value: value,
+      };
+    }) || [];
+
   return (
     <FormProvider {...formMethods}>
       <div>
@@ -376,7 +418,7 @@ export default function CreateItemPage() {
             typeSidebar={createPageData.typeSidebar}
             title={createPageData.title}
             subtitle={subtitle}
-            masItems={createPageData.masTitle}
+            masItems={masItems}
             showImageInput={createPageData.showImageInput}
             showMarkerColorInput={createPageData.showMarkerColorInput}
             showCancelButton={true}

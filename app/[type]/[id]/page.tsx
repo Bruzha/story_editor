@@ -13,11 +13,11 @@ import Select from '@/app/components/ui/select/Select';
 import Input from '@/app/components/ui/input/Input';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { useSearchParams } from 'next/navigation';
-import { parseCookies } from 'nookies';
 import { setItemId } from '@/app/store/reducers/itemReducer';
-import { updateItemSuccess } from '@/app/store/reducers/itemReducer';
+import { updateItem } from '@/app/store/thunks/updateItem';
 import Loading from '@/app/components/ui/loading/Loading';
 import Message from '@/app/components/ui/message/Message';
+import { convertFileToByteArray } from '@/app/store/thunks/convertFileToByteArray';
 
 interface RouteParams {
   type: string;
@@ -33,7 +33,7 @@ export default function ItemInfoPage() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
-  const { register, handleSubmit, setValue, reset } = useForm(); // Moved useForm outside the conditional block
+  const { register, handleSubmit, setValue, reset } = useForm();
   const { item, loading, error, characterName } = useSelector((state: RootState) => state.item);
 
   useEffect(() => {
@@ -88,7 +88,6 @@ export default function ItemInfoPage() {
               {...register('status')}
               onChange={(e) => {
                 setValue('status', e.target.value);
-                dispatch(updateItemSuccess({ ...item, status: e.target.value }));
               }}
             />
           </Label>
@@ -135,9 +134,6 @@ export default function ItemInfoPage() {
 
   const onSubmit: SubmitHandler<any> = async (data: any) => {
     console.log('Data submitted:', data);
-    const cookies = parseCookies();
-    const jwtToken = cookies['jwt'];
-    const apiUrl = `http://localhost:3001/update/update/${type}/${id}`;
 
     const masItemsData: any = item.info
       ? Object.keys(item.info).reduce((acc: any, key) => {
@@ -146,64 +142,51 @@ export default function ItemInfoPage() {
         }, {})
       : {};
 
-    const payload: any = {
-      info: masItemsData,
-      status: data.status,
-      markerColor: data.markerColor,
-    };
+    let info = null;
+    let info_appearance = null;
+    let info_personality = null;
+    let info_social = null;
 
-    if (data.miniature) {
-      const miniatureData = await convertFileToByteArray(data.miniature);
-      payload.miniature = miniatureData;
+    if (type === 'characters') {
+      switch (typePage) {
+        case 'characters':
+          info = masItemsData;
+          break;
+        case 'appearance':
+          info_appearance = masItemsData;
+          break;
+        case 'personality':
+          info_personality = masItemsData;
+          break;
+        case 'social':
+          info_social = masItemsData;
+          break;
+        default:
+          break;
+      }
+    } else {
+      info = masItemsData;
     }
 
-    try {
-      const response = await fetch(apiUrl, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${jwtToken}`,
+    dispatch(
+      updateItem({
+        type,
+        id,
+        data: {
+          info: info,
+          info_appearance: info_appearance,
+          info_personality: info_personality,
+          info_social: info_social,
+          status: data.status,
+          markerColor: data.markerColor,
         },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const updatedItem = await response.json();
-      console.log('updatedItem:', updatedItem);
-      console.log('Success:', updatedItem);
-
-      dispatch(updateItemSuccess(updatedItem));
-      dispatch(fetchItemData({ type, id }));
-    } catch (error) {
-      console.error('Error updating item:', error);
-    }
-  };
-
-  const convertFileToByteArray = (file: File): Promise<number[]> => {
-    return new Promise((resolve, reject) => {
-      try {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          if (event.target && event.target.result) {
-            const arrayBuffer = event.target.result as ArrayBuffer;
-            const byteArray = Array.from(new Uint8Array(arrayBuffer));
-            resolve(byteArray);
-          } else {
-            reject(new Error('File reading error'));
-          }
-        };
-        reader.onerror = function (error) {
-          reject(error);
-        };
-        reader.readAsArrayBuffer(file);
-      } catch (e) {
-        console.error('convertFileToByteArray', e);
-        reject(e);
-      }
-    });
+        miniature: data.miniature,
+        convertFileToByteArray: async (file: File) => {
+          const result = await dispatch(convertFileToByteArray({ file }));
+          return result.payload as number[];
+        },
+      })
+    );
   };
 
   return (
@@ -213,6 +196,7 @@ export default function ItemInfoPage() {
         typeSidebar={item.typeSidebar}
         title={item.title}
         subtitle={getItemTitle()}
+        typePage={typePage}
         masItems={
           item.info
             ? Object.entries(item.info).map(([key, value]) => {

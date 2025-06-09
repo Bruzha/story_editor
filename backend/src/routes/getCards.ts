@@ -94,7 +94,7 @@ router.get(
       subtitleSource: 'project',
       typeSidebar: 'project',
       typeCard: 'character',
-      createPageUrl: '/characters/create',
+      createPageUrl: '/characters/create?typePage=characters',
       infoFields: [
         { fieldName: 'name', optional: true, defaultValue: '' },
         { fieldName: 'description', optional: true, defaultValue: '' },
