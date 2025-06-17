@@ -74,7 +74,7 @@ export default function CreateItemPage() {
     'state.createPage: ',
     useSelector((state: RootState) => state.createPage)
   );
-  const subtitle = useSelector((state: RootState) => state.posts.subtitle);
+  const subtitle = useSelector((state: RootState) => state.cards.subtitle);
 
   const [relatedData, setRelatedData] = useState<RelatedDataState>({
     characters: [],

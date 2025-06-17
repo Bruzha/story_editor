@@ -183,6 +183,7 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
     const totalIdeas = await Idea.count({ where: { userId } });
     res.status(200).json({
       email: user.email,
+      role: user.role,
       date: user.createdAt.toLocaleDateString(),
       updateDate: user.updatedAt.toLocaleDateString(),
       login: user.username,

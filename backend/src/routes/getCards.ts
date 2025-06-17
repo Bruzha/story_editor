@@ -27,17 +27,9 @@ router.get('/projects', protect as ProtectMiddleware, (req: Request, res: Respon
     typeSidebar: 'profile',
     typeCard: 'project',
     createPageUrl: '/projects/create',
-    infoFields: [
-      { fieldName: 'name', optional: true, defaultValue: 'Проект' },
-      { fieldName: 'annotation', optional: true, defaultValue: '' },
-      { fieldName: 'genre', optional: true, defaultValue: '' },
-    ],
-    otherFields: [
-      { fieldName: 'createdAt', format: (date) => new Date(date).toLocaleString() },
-      { fieldName: 'status' },
-    ],
-    src: true,
     userIdField: 'userId',
+    displayFields: ['info.name', 'info.annotation', 'info.genre', 'status', 'createdAt'],
+    src: true,
   });
 });
 
@@ -51,12 +43,8 @@ router.get('/ideas', protect as ProtectMiddleware, (req: Request, res: Response,
     typeSidebar: 'profile',
     typeCard: 'idea',
     createPageUrl: '/ideas/create',
-    infoFields: [
-      { fieldName: 'name', optional: true, defaultValue: 'Идея' },
-      { fieldName: 'description', optional: true, defaultValue: '' },
-    ],
-    otherFields: [{ fieldName: 'createdAt', format: (date) => new Date(date).toLocaleString() }],
     userIdField: 'userId',
+    displayFields: ['info.name', 'info.description', 'createdAt'],
   });
 });
 
@@ -73,15 +61,12 @@ router.get(
       typeSidebar: 'project',
       typeCard: 'plotline',
       createPageUrl: '/plotlines/create',
-      infoFields: [
-        { fieldName: 'name', optional: true, defaultValue: '' },
-        { fieldName: 'description', optional: true, defaultValue: '' },
-      ],
-      otherFields: [{ fieldName: 'type' }],
       projectIdRequired: true,
+      displayFields: ['info.name', 'info.description', 'type', 'createdAt'],
     });
   }
 );
+
 //Маршрут для получения персонажей
 router.get(
   '/projects/:projectId/characters',
@@ -95,15 +80,16 @@ router.get(
       typeSidebar: 'project',
       typeCard: 'character',
       createPageUrl: '/characters/create?typePage=characters',
-      infoFields: [
-        { fieldName: 'name', optional: true, defaultValue: '' },
-        { fieldName: 'description', optional: true, defaultValue: '' },
-        { fieldName: 'role', optional: true, defaultValue: '' },
-        { fieldName: 'gender', optional: true, defaultValue: '' },
-        { fieldName: 'age', optional: true, defaultValue: '' },
-        { fieldName: 'race', optional: true, defaultValue: '' },
-      ],
       projectIdRequired: true,
+      displayFields: [
+        'info.name',
+        'info.description',
+        'info.role',
+        'info.gender',
+        'info.age',
+        'info.race',
+        'createdAt',
+      ],
       src: true,
     });
   }
@@ -122,11 +108,7 @@ router.get(
       typeSidebar: 'project',
       typeCard: 'location',
       createPageUrl: '/locations/create',
-      infoFields: [
-        { fieldName: 'name', optional: true, defaultValue: '' },
-        { fieldName: 'description', optional: true, defaultValue: '' },
-        { fieldName: 'type', optional: true, defaultValue: '' },
-      ],
+      displayFields: ['info.name', 'info.description', 'info.type', 'createdAt'],
       projectIdRequired: true,
       src: true,
     });
@@ -146,11 +128,7 @@ router.get(
       typeSidebar: 'project',
       typeCard: 'object',
       createPageUrl: '/objects/create',
-      infoFields: [
-        { fieldName: 'name', optional: true, defaultValue: '' },
-        { fieldName: 'description', optional: true, defaultValue: '' },
-        { fieldName: 'type', optional: true, defaultValue: '' },
-      ],
+      displayFields: ['info.name', 'info.description', 'info.type', 'createdAt'],
       projectIdRequired: true,
       src: true,
     });
@@ -170,10 +148,7 @@ router.get(
       typeSidebar: 'project',
       typeCard: 'group',
       createPageUrl: '/groups/create',
-      infoFields: [
-        { fieldName: 'name', optional: true, defaultValue: '' },
-        { fieldName: 'description', optional: true, defaultValue: '' },
-      ],
+      displayFields: ['info.name', 'info.description', 'createdAt'],
       projectIdRequired: true,
     });
   }
@@ -192,12 +167,7 @@ router.get(
       typeSidebar: 'project',
       typeCard: 'chapter',
       createPageUrl: '/chapters/create',
-      infoFields: [
-        { fieldName: 'title', optional: true, defaultValue: '' },
-        { fieldName: 'description', optional: true, defaultValue: '' },
-        { fieldName: 'order', optional: true, defaultValue: '' },
-      ],
-      otherFields: [{ fieldName: 'status' }],
+      displayFields: ['info.title', 'info.description', 'info.order', 'status', 'createdAt'],
       projectIdRequired: true,
       src: true,
     });
@@ -217,10 +187,7 @@ router.get(
       typeSidebar: 'project',
       typeCard: 'note',
       createPageUrl: '/notes/create',
-      infoFields: [
-        { fieldName: 'title', optional: true, defaultValue: '' },
-        { fieldName: 'content', optional: true, defaultValue: '' },
-      ],
+      displayFields: ['info.title', 'info.content', 'createdAt'],
       projectIdRequired: true,
     });
   }
@@ -239,11 +206,7 @@ router.get(
       typeSidebar: 'timeline',
       typeCard: 'timeline',
       createPageUrl: '/time_events/create',
-      infoFields: [
-        { fieldName: 'name', optional: true, defaultValue: '' },
-        { fieldName: '', optional: true, defaultValue: '' },
-      ],
-      otherFields: [{ fieldName: 'eventDate', format: (date) => new Date(date).toLocaleString() }],
+      displayFields: ['info.name', 'info.description', 'eventDate'],
       projectIdRequired: true,
       src: true,
     });
@@ -263,7 +226,7 @@ router.get(
       typeSidebar: 'help',
       typeCard: 'advice',
       createPageUrl: '/supporting_materials/create',
-      otherFields: [{ fieldName: 'title' }, { fieldName: 'content' }],
+      displayFields: ['title', 'content', 'createdAt'],
       where: { type: enum_supportingmaterials_type.ADVICE },
     });
   }
@@ -282,8 +245,8 @@ router.get(
       typeSidebar: 'help',
       typeCard: 'term',
       createPageUrl: '/supporting_materials/create',
-      otherFields: [{ fieldName: 'title' }, { fieldName: 'content' }],
-      where: { type: enum_supportingmaterials_type.ADVICE },
+      displayFields: ['title', 'content', 'createdAt'],
+      where: { type: enum_supportingmaterials_type.TERM },
     });
   }
 );

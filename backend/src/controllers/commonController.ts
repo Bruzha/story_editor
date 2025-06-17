@@ -5,6 +5,13 @@ import { ProjectFactory } from '../models/Project';
 import { UserFactory } from '../models/User';
 import { sequelize } from '../config/database';
 import createPageData from '../data/createPageData';
+import { GroupObjectFactory } from '../models/GroupObject';
+import { GroupCharacterFactory } from '../models/GroupCharacter';
+import { GroupLocationFactory } from '../models/GroupLocation';
+import { ChapterTimelineEventFactory } from '../models/ChapterTimelineEvent';
+import { CharacterTimelineEventFactory } from '../models/CharacterTimelineEvent';
+import { TimelineEventLocationFactory } from '../models/TimelineEventLocation';
+import { TimelineEventObjectFactory } from '../models/TimelineEventObject';
 
 interface ModelFactory {
   (sequelize: Sequelize, dataTypes: typeof DataTypes): any;
@@ -22,6 +29,7 @@ interface OtherFieldDefinition {
 }
 
 interface Options {
+  displayFields: any;
   modelName: string;
   modelFactory: ModelFactory;
   title: string;
@@ -76,36 +84,34 @@ export const getItems = async (req: Request, res: Response, next: NextFunction, 
     });
 
     const formattedItems = items.map((item: any) => {
-      const info = item.info;
-      const data: any[] = [];
-
-      if (options.infoFields) {
-        options.infoFields.forEach((field) => {
-          const value = info?.[field.fieldName]?.value || field.defaultValue || '';
-          data.push(value);
-        });
-      }
-
-      options.otherFields?.forEach((field) => {
-        let value = item[field.fieldName];
-        if (field.format) {
-          value = field.format(value);
-        }
-        data.push(value);
-      });
-
-      const itemData: any = {
-        id: item.id,
-        data: data,
-        markColor: item.markerColor,
-      };
-
+      const itemData: any = { ...item.get({ plain: true }) };
       if (options.src && item.miniature) {
         const byteArray = item.miniature;
         const base64String = Buffer.from(byteArray).toString('base64');
         itemData.src = `data:image/png;base64,${base64String}`;
       } else {
         itemData.src = null;
+      }
+
+      // Format date fields
+      const formatDate = (date: Date | null) => {
+        if (!date) return '';
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${day}.${month}.${year}, ${hours}:${minutes}`;
+      };
+
+      if (itemData.createdAt) {
+        itemData.createdAt = formatDate(new Date(itemData.createdAt));
+      }
+      if (itemData.updatedAt) {
+        itemData.updatedAt = formatDate(new Date(itemData.updatedAt));
+      }
+      if (itemData.eventDate) {
+        itemData.eventDate = formatDate(new Date(itemData.eventDate));
       }
 
       return itemData;
@@ -130,6 +136,7 @@ export const getItems = async (req: Request, res: Response, next: NextFunction, 
       title: options.title,
       subtitle: subtitle,
       createPageUrl: options.createPageUrl,
+      displayFields: options.displayFields,
     };
 
     res.status(200).json(responseData);
@@ -269,6 +276,22 @@ export const deleteItem = async (
     if (!itemId) {
       return res.status(400).json({ message: `${modelName} ID is required` });
     }
+
+    const GroupObject = GroupObjectFactory(sequelize, DataTypes);
+    (sequelize as any).models.GroupObject = GroupObject;
+    const GroupCharacter = GroupCharacterFactory(sequelize, DataTypes);
+    (sequelize as any).models.GroupCharacter = GroupCharacter;
+    const GroupLocation = GroupLocationFactory(sequelize, DataTypes);
+    (sequelize as any).models.GroupLocation = GroupLocation;
+    const ChapterTimelineEvent = ChapterTimelineEventFactory(sequelize, DataTypes);
+    (sequelize as any).models.ChapterTimelineEvent = ChapterTimelineEvent;
+    const CharacterTimelineEvent = CharacterTimelineEventFactory(sequelize, DataTypes);
+    (sequelize as any).models.CharacterTimelineEvent = CharacterTimelineEvent;
+    const LocationTimelineEvent = TimelineEventLocationFactory(sequelize, DataTypes);
+    (sequelize as any).models.LocationTimelineEvent = LocationTimelineEvent;
+    const ObjectTimelineEvent = TimelineEventObjectFactory(sequelize, DataTypes);
+    (sequelize as any).models.ObjectTimelineEvent = ObjectTimelineEvent;
+
     const userId = req.user!.id;
     const Model = modelFactory(sequelize, DataTypes) as ModelStatic<any>;
     const whereClause: any = {
@@ -283,6 +306,46 @@ export const deleteItem = async (
     });
     if (!item) {
       return res.status(404).json({ message: `${modelName} not found or unauthorized` });
+    }
+
+    //  Удаление связей из связующих таблиц
+    if (modelName === 'Object' || modelName === 'Group') {
+      const GroupObjectModel = (sequelize as any).models.GroupObject;
+      if (modelName === 'Object') await GroupObjectModel.destroy({ where: { objectId: itemId } });
+      if (modelName === 'Group') await GroupObjectModel.destroy({ where: { groupId: itemId } });
+    }
+    if (modelName === 'Character' || modelName === 'Group') {
+      const GroupCharacterModel = (sequelize as any).models.GroupCharacter;
+      if (modelName === 'Character') await GroupCharacterModel.destroy({ where: { characterId: itemId } });
+      if (modelName === 'Group') await GroupCharacterModel.destroy({ where: { groupId: itemId } });
+    }
+    if (modelName === 'Location' || modelName === 'Group') {
+      const GroupLocationModel = (sequelize as any).models.GroupLocation;
+      if (modelName === 'Location') await GroupLocationModel.destroy({ where: { locationId: itemId } });
+      if (modelName === 'Group') await GroupLocationModel.destroy({ where: { groupId: itemId } });
+    }
+    if (modelName === 'Chapter' || modelName === 'TimelineEvent') {
+      const ChapterTimelineEventModel = (sequelize as any).models.ChapterTimelineEvent;
+      if (modelName === 'Chapter') await ChapterTimelineEventModel.destroy({ where: { chapterId: itemId } });
+      if (modelName === 'TimelineEvent')
+        await ChapterTimelineEventModel.destroy({ where: { timelineEventId: itemId } });
+    }
+    if (modelName === 'Character' || modelName === 'TimelineEvent') {
+      const CharacterTimelineEventModel = (sequelize as any).models.CharacterTimelineEvent;
+      if (modelName === 'Character') await CharacterTimelineEventModel.destroy({ where: { characterId: itemId } });
+      if (modelName === 'TimelineEvent')
+        await CharacterTimelineEventModel.destroy({ where: { timelineEventId: itemId } });
+    }
+    if (modelName === 'Location' || modelName === 'TimelineEvent') {
+      const LocationTimelineEventModel = (sequelize as any).models.LocationTimelineEvent;
+      if (modelName === 'Location') await LocationTimelineEventModel.destroy({ where: { locationId: itemId } });
+      if (modelName === 'TimelineEvent')
+        await LocationTimelineEventModel.destroy({ where: { timelineEventId: itemId } });
+    }
+    if (modelName === 'Object' || modelName === 'TimelineEvent') {
+      const ObjectTimelineEventModel = (sequelize as any).models.ObjectTimelineEvent;
+      if (modelName === 'Object') await ObjectTimelineEventModel.destroy({ where: { objectId: itemId } });
+      if (modelName === 'TimelineEvent') await ObjectTimelineEventModel.destroy({ where: { timelineEventId: itemId } });
     }
 
     const sequelizeInstance = Model.sequelize as Sequelize;

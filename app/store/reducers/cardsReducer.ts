@@ -19,6 +19,7 @@ const initialState: CardsState = {
   title: '',
   subtitle: '',
   createPageUrl: '',
+  displayFields: [], // ADD displayFields
   cachedData: {},
 };
 
@@ -30,7 +31,7 @@ export const cardsReducer = createReducer(initialState, (builder) => {
     })
     .addCase(fetchCardsSuccess, (state, action) => {
       state.isLoading = false;
-      const { slug, masItems, typeSidebar, typeCard, title, subtitle, createPageUrl } = action.payload;
+      const { slug, masItems, typeSidebar, typeCard, title, subtitle, createPageUrl, displayFields } = action.payload; // ADD displayFields
       state.cachedData[slug] = {
         items: masItems,
         typeSidebar,
@@ -38,6 +39,7 @@ export const cardsReducer = createReducer(initialState, (builder) => {
         title,
         subtitle,
         createPageUrl,
+        displayFields, // ADD displayFields
       };
       state.items = masItems;
       state.typeSidebar = typeSidebar;
@@ -45,6 +47,7 @@ export const cardsReducer = createReducer(initialState, (builder) => {
       state.title = title;
       state.subtitle = subtitle;
       state.createPageUrl = createPageUrl;
+      state.displayFields = displayFields; // ADD displayFields
     })
     .addCase(fetchCardsFailure, (state, action) => {
       state.isLoading = false;
@@ -59,6 +62,7 @@ export const cardsReducer = createReducer(initialState, (builder) => {
       state.title = '';
       state.subtitle = '';
       state.createPageUrl = '';
+      state.displayFields = []; // ADD displayFields
       state.cachedData = {};
     })
     .addCase(deleteCardRequest, (state) => {

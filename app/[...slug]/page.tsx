@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../AuthContext';
 import CardsPageMaket from '../components/sections/cards-page-maket/Cards-page-maket';
@@ -14,30 +14,61 @@ interface Props {
   params: { slug: string[] };
 }
 
+type TypeSidebar = 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
+
+interface CardData {
+  items?: any[];
+  isLoading?: boolean;
+  error?: string | null;
+  typeSidebar?: TypeSidebar;
+  typeCard?: string; // Replace string with the correct type if it's not a string
+  title?: string;
+  subtitle?: string;
+  createPageUrl?: string;
+  displayFields?: string[]; // ADD displayFields
+}
+
+const defaultCardData: CardData = {
+  isLoading: false,
+  error: null,
+};
+
 export default function CardsPage({ params }: Props) {
   const { slug } = params;
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
+  const [sortBy, setSortBy] = useState('date');
 
   const projectId = useSelector((state: RootState) => state.project.projectId);
 
-  useEffect(() => {
-    console.log({ params });
-  }, []);
+  const {
+    items = [],
+    typeSidebar = '',
+    typeCard = '',
+    title = '',
+    subtitle = '',
+    createPageUrl = '',
+    displayFields = [],
+  } = useSelector((state: RootState) => state.cards.cachedData[slug.join('/')] || defaultCardData);
 
-  const { items, isLoading, error, typeSidebar, typeCard, title, subtitle, createPageUrl } = useSelector(
-    (state: RootState) => state.posts
-  );
+  const { isLoading, error } = useSelector((state: RootState) => ({
+    isLoading: state.cards.isLoading,
+    error: state.cards.error,
+  }));
 
   useEffect(() => {
     if (isAuthenticated) {
-      dispatch(fetchCards(slug, projectId || undefined));
-      console.log('projectId fetchCards: ' + projectId);
+      dispatch(fetchCards(slug));
     } else {
       router.push('/auth/autorisation');
     }
-  }, [isAuthenticated, router, dispatch, slug, projectId]);
+  }, [isAuthenticated, router, dispatch, slug]);
+
+  const handleSort = (sortByOption: string) => {
+    console.log('handleSort called with:', sortByOption);
+    setSortBy(sortByOption);
+  };
 
   if (isLoading) {
     return <Loading />;
@@ -62,6 +93,8 @@ export default function CardsPage({ params }: Props) {
     showCreateButton = false;
     showDeleteButton = false;
   }
+  console.log('masItem: ', items);
+  console.log('displayFields: ', displayFields);
   return (
     <CardsPageMaket
       typeSidebar={typeSidebar}
@@ -73,6 +106,9 @@ export default function CardsPage({ params }: Props) {
       subtitle={subtitle}
       masItems={items}
       createPageUrl={finalCreatePageUrl}
+      displayFields={displayFields}
+      onSort={handleSort} // ADD: Pass handleSort to CardsPageMaket
+      sortBy={sortBy}
     />
   );
 }

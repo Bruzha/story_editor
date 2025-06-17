@@ -157,7 +157,7 @@ const exportToDocxFile = async (doc: docx.Document, fileName: string, projectFol
 };
 
 export default function Export() {
-  const subtitle = useSelector((state: RootState) => state.posts.subtitle);
+  const subtitle = useSelector((state: RootState) => state.cards.subtitle);
   const projectId = useSelector((state: RootState) => state.project.projectId);
   const projectData = useSelector((state: RootState) => state.export.projectData);
   const loading = useSelector((state: RootState) => state.export.loading);

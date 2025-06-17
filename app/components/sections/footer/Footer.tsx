@@ -9,12 +9,17 @@ import { FaPinterest, FaVk } from 'react-icons/fa';
 import './style.scss';
 import Link from 'next/link';
 import { GiSpellBook } from 'react-icons/gi';
+import { clearProfile, resetCardsState } from '@/app/store/actions';
+import { useDispatch } from 'react-redux';
 
 export default function Footer() {
   const { isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const handleLogout = () => {
+    dispatch(resetCardsState());
+    dispatch(clearProfile());
     destroyCookie(null, 'jwt', { path: '/' });
     logout();
     router.push('/');

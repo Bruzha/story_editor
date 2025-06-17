@@ -5,14 +5,18 @@ import itemReducer from './itemReducer';
 import createPageReducer from './createPageReducer';
 import characterReducer from './characterReducer';
 import exportReducer from './exportReducer';
+import { authReducer } from './authReducer';
+import { userReducer } from './userReducer';
 
 export const rootReducer = combineReducers({
-  posts: cardsReducer,
+  cards: cardsReducer,
   project: projectReducer,
   item: itemReducer,
   createPage: createPageReducer,
   character: characterReducer,
   export: exportReducer,
+  auth: authReducer,
+  user: userReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

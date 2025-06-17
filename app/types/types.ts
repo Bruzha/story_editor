@@ -14,17 +14,19 @@ export interface CardsState {
   title: string;
   subtitle: string;
   createPageUrl: string;
+  displayFields?: string[];
   cachedData: {
-    // Добавляем кэшированные данные
     [slug: string]: {
-      // Ключ - slug страницы
-      items: ItemsData[];
-      typeSidebar: string;
-      typeCard: string;
-      title: string;
-      subtitle: string;
-      createPageUrl: string;
-    } | null;
+      items?: ItemsData[];
+      isLoading?: boolean;
+      error?: string | null;
+      typeSidebar?: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
+      typeCard?: string;
+      title?: string;
+      subtitle?: string;
+      createPageUrl?: string;
+      displayFields?: string[];
+    };
   };
 }
 

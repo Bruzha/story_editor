@@ -29,6 +29,9 @@
         &__button{
             white-space: nowrap;
         }
+        &__select{
+            width: 250px;
+        }
     }
 
     @include media-breakpoint-between(md, xxxl){
@@ -48,5 +51,8 @@
     &__button{
         display: flex;
         gap: 20px;
+    }
+    &__select{
+        margin-top: -5px;
     }
 }

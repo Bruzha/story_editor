@@ -44,7 +44,6 @@ export const createItem = createAsyncThunk(
         console.error('HTTP error creating item:', errorData);
         return rejectWithValue(errorData.message || `HTTP error! Status: ${response.status}`);
       }
-
       const newItem = await response.json();
       return newItem;
     } catch (error: any) {

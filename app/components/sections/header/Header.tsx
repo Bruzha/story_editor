@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../AuthContext';
 import { destroyCookie } from 'nookies';
 import { useDispatch } from 'react-redux';
-import { resetCardsState } from '../../../store/actions';
+import { clearProfile, resetCardsState } from '../../../store/actions';
 import { useState, useCallback } from 'react';
 import { GiSpellBook } from 'react-icons/gi';
 import Link from 'next/link';
@@ -18,9 +18,10 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    dispatch(resetCardsState());
+    dispatch(clearProfile());
     e.preventDefault();
     destroyCookie(null, 'jwt', { path: '/' });
-    dispatch(resetCardsState());
     logout();
     router.push('/');
   };

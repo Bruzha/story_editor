@@ -26,6 +26,16 @@ function getColorBrightness(hexColor: string): number {
   return brightness;
 }
 
+const truncateText = (text: string, maxLength: number): string => {
+  if (!text) {
+    return '';
+  }
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength) + '...';
+};
+
 export default function Card({ id, type, src, data, markColor, showDeleteButton = true }: IProps) {
   const actualMarkColor = markColor || '#4682B4';
   const isLightColor = getColorBrightness(actualMarkColor) > 128;
@@ -62,6 +72,8 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
     dispatch(deleteCard(id, type)); // Отправка thunk
   };
 
+  const description = truncateText(data[1], 300); // Обрезаем data[1] до 100 символов
+
   return (
     <div key={id} className="card" style={textStyle} onClick={handleClick}>
       {isValidSrc && (
@@ -84,13 +96,15 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
             />
           )}
         </div>
-        <section>{data[1]}</section>
+        <section>{description}</section>
         <ul>
-          {data.slice(2).map((text, index) => (
-            <li className="card__elements" key={index} style={combinedStyle}>
-              {text}
-            </li>
-          ))}
+          {data.slice(2).map((text, index) => {
+            return text ? ( // Add conditional rendering
+              <li className="card__elements" key={index} style={combinedStyle}>
+                {text}
+              </li>
+            ) : null;
+          })}
         </ul>
       </div>
     </div>

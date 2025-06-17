@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { useRouter } from 'next/navigation';
-import { parseCookies } from 'nookies';
 import Maket from '../components/sections/maket/Maket';
 import Form from '../components/ui/form/Form';
 import Button from '../components/ui/button/Button';
@@ -13,69 +12,17 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema, { ValidationSchemaType } from './validation';
 import './style.scss';
 import Loading from '../components/ui/loading/Loading';
-
-interface ProfileData {
-  email: string;
-  date: string;
-  updateDate: string;
-  login: string;
-  name: string;
-  lastname: string;
-  totalProjects: number;
-  plannedProjects: number;
-  inProgressProjects: number;
-  completedProjects: number;
-  suspendedProjects: number;
-  totalIdeas: number;
-}
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfile, updateProfile } from './../store/thunks/userThunks';
+import { RootState, AppDispatch } from '@/app/store';
 
 export default function Profile() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const [profileData, setProfileData] = useState<ProfileData | null>(null);
-
-  const fetchData = async () => {
-    try {
-      console.log('Profile: fetchData - fetching data...');
-      const cookies = parseCookies();
-      const token = cookies['jwt'];
-      console.log('Profile: fetchData - token from cookie:', token);
-
-      if (!token) {
-        console.error('Token not found in cookies');
-        router.push('/auth/autorisation');
-        return;
-      }
-
-      const response = await fetch('http://localhost:3001/auth/profile', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        console.error('Ошибка при получении данных профиля:', response.status, response.statusText);
-        throw new Error(`Ошибка при получении данных профиля: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('Profile: fetchData - data received:', data);
-      setProfileData(data);
-    } catch (error) {
-      console.error('Ошибка при получении данных профиля:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/auth/autorisation');
-      return;
-    }
-
-    fetchData();
-  }, [isAuthenticated, router]);
+  const dispatch: AppDispatch = useDispatch();
+  const profile = useSelector((state: RootState) => state.user.profile);
+  const isLoading = useSelector((state: RootState) => state.user.isLoading);
+  const error = useSelector((state: RootState) => state.user.error);
 
   const {
     register,
@@ -86,97 +33,92 @@ export default function Profile() {
     resolver: yupResolver(validationSchema),
     mode: 'onBlur',
     defaultValues: {
-      login: profileData?.login || '',
-      name: profileData?.name || '',
-      lastname: profileData?.lastname || '',
+      login: profile?.login || '',
+      name: profile?.name || '',
+      lastname: profile?.lastname || '',
     },
   });
 
   useEffect(() => {
-    if (profileData) {
+    if (!isAuthenticated) {
+      router.push('/auth/autorisation');
+      return;
+    }
+
+    if (!profile) {
+      dispatch(fetchProfile());
+    }
+  }, [isAuthenticated, router, dispatch, profile]);
+
+  useEffect(() => {
+    if (profile) {
       reset({
-        login: profileData.login,
-        name: profileData.name,
-        lastname: profileData.lastname,
+        login: profile.login,
+        name: profile.name,
+        lastname: profile.lastname,
       });
     }
-  }, [profileData, reset]);
+  }, [profile, reset]);
 
   const onSubmit: SubmitHandler<ValidationSchemaType> = async (data: ValidationSchemaType) => {
-    try {
-      console.log('Profile: onSubmit - submitting form...');
-      const cookies = parseCookies();
-      const token = cookies['jwt'];
-
-      const response = await fetch('http://localhost:3001/auth/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        console.error('Ошибка при обновлении данных профиля:', response.status, response.statusText);
-        throw new Error(`Ошибка при обновлении данных профиля: ${response.status} ${response.statusText}`);
-      }
-      await fetchData();
-      console.log('Profile: onSubmit - form submitted successfully');
-    } catch (error) {
+    dispatch(updateProfile(data)).catch((error) => {
       console.error('Ошибка при обновлении данных профиля:', error);
-    }
+    });
   };
 
   if (!isAuthenticated) {
     return null;
   }
 
-  if (!profileData) {
+  if (isLoading) {
     return <Loading />;
   }
 
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
+
   return (
-    <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle={profileData.login}>
+    <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle={profile?.login || ''}>
       <div className="profile">
         <div>
           <div className="profile__info">
             <p>
-              <span>Имя:</span> {profileData.name}
+              <span>Имя:</span> {profile?.name}
             </p>
             <p>
-              <span>Фамилия:</span> {profileData.lastname}
+              <span>Фамилия:</span> {profile?.lastname}
             </p>
             <p>
-              <span>Email:</span> {profileData.email}
+              <span>Email:</span> {profile?.email}
             </p>
             <p>
-              <span>Дата создания профиля:</span> {profileData.date}
+              <span>Дата создания профиля:</span> {profile?.date}
             </p>
             <p>
-              <span>Дата последнего изменения профиля:</span> {profileData.updateDate}
+              <span>Дата последнего изменения профиля:</span> {profile?.updateDate}
             </p>
           </div>
           <h3>Статистика</h3>
           <div className="profile__line"></div>
           <div className="profile__info">
             <p>
-              <span>Общее количество проектов:</span> {profileData.totalProjects}
+              <span>Общее количество проектов:</span> {profile?.totalProjects}
             </p>
             <p>
-              <span>Количество запланированных проектов:</span> {profileData.plannedProjects}
+              <span>Количество запланированных проектов:</span> {profile?.plannedProjects}
             </p>
             <p>
-              <span>Количество проектов в процессе:</span> {profileData.inProgressProjects}
+              <span>Количество проектов в процессе:</span> {profile?.inProgressProjects}
             </p>
             <p>
-              <span>Количество законченных проектов:</span> {profileData.completedProjects}
+              <span>Количество законченных проектов:</span> {profile?.completedProjects}
             </p>
             <p>
-              <span>Количество приостановленных проектов:</span> {profileData.suspendedProjects}
+              <span>Количество приостановленных проектов:</span> {profile?.suspendedProjects}
             </p>
             <p>
-              <span>Количество идей:</span> {profileData.totalIdeas}
+              <span>Количество идей:</span> {profile?.totalIdeas}
             </p>
           </div>
         </div>
@@ -198,7 +140,7 @@ export default function Profile() {
               </div>
             </div>
             <div className="profile__button">
-              <Button name="Сохранить" type="submit" />
+              <Button name="Сохранить" type="submit" disabled={isLoading} />
             </div>
           </Form>
         </div>

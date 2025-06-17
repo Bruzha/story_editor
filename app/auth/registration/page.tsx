@@ -12,6 +12,9 @@ import MyLink from '../../components/ui/link/Link';
 import './style.scss';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../../store/thunks/registerUser';
+import { RootState, AppDispatch } from '@/app/store';
 
 interface FormData {
   login: string;
@@ -36,6 +39,8 @@ export default function Registration() {
   const [, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
   const { login } = useAuth();
+  const dispatch: AppDispatch = useDispatch();
+  const isLoading = useSelector((state: RootState) => state.auth.isLoading);
 
   const {
     register,
@@ -48,47 +53,26 @@ export default function Registration() {
   });
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    try {
-      const response = await fetch('http://localhost:3001/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          login: data.login,
-          email: data.email,
-          password: data.password,
-        }),
-      });
-
-      const result: RegistrationResponse = await response.json();
-
-      if (response.ok) {
+    dispatch(registerUser(data))
+      .then((result) => {
         setErrorMessage(null);
-        if (result.token) {
-          login(result.token);
-          router.push('/profile');
-        } else {
-          setErrorMessage('Token not found in response');
-        }
-      } else {
-        if (result.errors && Array.isArray(result.errors)) {
-          result.errors.forEach((error) => {
-            if (error.path === 'login') {
-              setError('login', { type: 'manual', message: 'Аккаунт с таким логином уже есть' });
-            } else if (error.path === 'email') {
-              setError('email', { type: 'manual', message: 'Аккаунт с таким email уже есть' });
+        login(result.token);
+        router.push('/profile');
+      })
+      .catch((error: RegistrationResponse) => {
+        if (error.errors && Array.isArray(error.errors)) {
+          error.errors.forEach((apiError) => {
+            if (apiError.path === 'login') {
+              setError('login', { type: 'manual', message: 'Пользователь с таким логином уже зарегистрирован' });
+            } else if (apiError.path === 'email') {
+              setError('email', { type: 'manual', message: 'Пользователь с таким email уже зарегистрирован' });
             }
           });
         } else {
-          console.error('Неверный формат ответа:', result);
-          setErrorMessage('Произошла ошибка при регистрации');
+          console.error('Ошибка:', error);
+          setErrorMessage(error.message || 'Произошла ошибка при регистрации');
         }
-      }
-    } catch (error) {
-      console.error('Ошибка:', error);
-      setErrorMessage('Произошла ошибка при регистрации');
-    }
+      });
   };
   return (
     <div className="registration">
@@ -121,7 +105,7 @@ export default function Registration() {
           </div>
         </div>
         <div className="registration__button">
-          <Button name="Регистрация" type="submit" />
+          <Button name="Регистрация" type="submit" disabled={isLoading} />
         </div>
         <div className="registration__link">
           <MyLink name="Уже есть аккаунт? Войти" href={'./autorisation'} className="black-link-form">
