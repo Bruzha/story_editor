@@ -7,6 +7,8 @@ import { destroyCookie } from 'nookies';
 import { AiFillInstagram } from 'react-icons/ai';
 import { FaPinterest, FaVk } from 'react-icons/fa';
 import './style.scss';
+import Link from 'next/link';
+import { GiSpellBook } from 'react-icons/gi';
 
 export default function Footer() {
   const { isAuthenticated, logout } = useAuth();
@@ -21,8 +23,10 @@ export default function Footer() {
   return (
     <footer className="footer">
       <div className="footer__name">
-        <img src="" alt="Логотип" />
-        <p>РЕДАКТОР ИСТОРИЙ</p>
+        <Link href="/" rel="noopener noreferrer">
+          <GiSpellBook size={55} color="var(--secondary-text-color)" />{' '}
+        </Link>
+        <MyLink href="/" name="РЕДАКТОР ИСТОРИЙ" className="footer__h1" />
       </div>
       <div className="footer__info">
         <p className="footer__description">
@@ -59,13 +63,13 @@ export default function Footer() {
       </div>
       <div className="footer__social">
         <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" className="footer__social-link">
-          <FaVk size={30} color="var(--secondary-text-color)" />{' '}
+          <FaVk size={40} color="var(--secondary-text-color)" />{' '}
         </a>
         <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" className="footer__social-link">
-          <FaPinterest size={30} color="var(--secondary-text-color)" />
+          <FaPinterest size={40} color="var(--secondary-text-color)" />
         </a>
         <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" className="footer__social-link">
-          <AiFillInstagram size={30} color="var(--secondary-text-color)" />{' '}
+          <AiFillInstagram size={40} color="var(--secondary-text-color)" />{' '}
         </a>
       </div>
     </footer>

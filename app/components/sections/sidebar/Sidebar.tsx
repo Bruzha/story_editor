@@ -53,7 +53,7 @@ export default function Sidebar({ type }: IProps) {
     masLinks = [
       { name: 'Назад', href: `/projects/${projectId}`, icon: '/icons/back.svg' },
       { name: 'Список событий', href: `/projects/${projectId}/time_events`, icon: '/icons/timeevent.svg' },
-      { name: 'Линия времени', href: `/projects/${projectId}/timeline`, icon: '/icons/timeline.svg' },
+      { name: 'Таймлайн', href: `/projects/${projectId}/timeline`, icon: '/icons/timeline.svg' },
     ];
   } else if (type === 'help' && projectId) {
     masLinks = [

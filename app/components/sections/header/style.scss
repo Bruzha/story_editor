@@ -4,22 +4,20 @@
   @include media-breakpoint-down(sm) {
     height: 90px;
 
-    h1 {
+    &__h1 {
       font-size: 16px;
     }
 
-    img,
     &__links {
       font-size: 14px;
     }
   }
 
   @include media-breakpoint-up(sm) {
-    h1 {
+    &__h1 {
       font-size: 28px;
     }
 
-    img,
     &__links {
       font-size: 22px;
     }
@@ -103,8 +101,8 @@
     align-items: center;
   }
 
-  h1 {
-    font-family: var(--font-merriweather), serif;
+  &__h1 {
+    font-family: var(--font-merriweather), serif !important;
     font-weight: 400;
   }
 }

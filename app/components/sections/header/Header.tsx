@@ -8,6 +8,8 @@ import { destroyCookie } from 'nookies';
 import { useDispatch } from 'react-redux';
 import { resetCardsState } from '../../../store/actions';
 import { useState, useCallback } from 'react';
+import { GiSpellBook } from 'react-icons/gi';
+import Link from 'next/link';
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth();
@@ -34,8 +36,10 @@ export default function Header() {
   return (
     <header className="header">
       <div className="header__name">
-        <img src="" alt="Логотип" />
-        <h1>РЕДАКТОР ИСТОРИЙ</h1>
+        <Link href="/" rel="noopener noreferrer">
+          <GiSpellBook size={55} color="var(--secondary-text-color)" />{' '}
+        </Link>
+        <MyLink href="/" name="РЕДАКТОР ИСТОРИЙ" className="header__h1" />
       </div>
 
       <button className="header__menu-icon" onClick={toggleMenu}>

@@ -10,7 +10,6 @@ interface SupportingMaterialAttributes {
   title: string;
   content: string;
   type: enum_supportingmaterials_type;
-  tags: any;
 }
 
 export interface SupportingMaterialInstance extends Model<SupportingMaterialAttributes>, SupportingMaterialAttributes {
@@ -45,10 +44,6 @@ export const SupportingMaterialFactory = (
       type: {
         type: dataTypes.ENUM(...Object.values(enum_supportingmaterials_type)),
         allowNull: false,
-      },
-      tags: {
-        type: dataTypes.JSONB,
-        allowNull: true,
       },
     },
     {

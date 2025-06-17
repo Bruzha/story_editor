@@ -198,8 +198,6 @@ export const getItemById = async (
         info = item.info_social || {};
       }
     }
-
-    // **Находим соответствующий объект в createPageData**
     let createPageDataItem = createPageData.find((data) => data.type === modelName.toLowerCase() + 's');
 
     if (modelName === 'Character' && additionalOptions.dataType) {
@@ -211,34 +209,27 @@ export const getItemById = async (
     const masTitle = createPageDataItem?.masTitle;
 
     let newInfo: any = {};
-    const extraInfo: any = {}; // Для хранения дополнительных полей
-
-    // **Если нашли, то перестраиваем info**
+    const extraInfo: any = {};
     if (masTitle) {
       masTitle.forEach((masTitleItem) => {
         const key = masTitleItem.key;
         if (info[key]) {
-          // Используем данные из БД, но берем placeholder и removable из masTitle
           newInfo[key] = {
             ...info[key],
             title: masTitleItem.title,
-            placeholder: masTitleItem.placeholder, // Берем placeholder из masTitle
-            removable: masTitleItem.removable, // Берем removable из masTitle
+            placeholder: masTitleItem.placeholder,
+            removable: masTitleItem.removable,
           };
         }
       });
-
-      // Собираем поля, которых нет в masTitle, в extraInfo
       Object.keys(info).forEach((key) => {
         if (!masTitle.find((item) => item.key === key)) {
           extraInfo[key] = info[key];
         }
       });
     } else {
-      newInfo = info; // Если masTitle не найден, используем info как есть
+      newInfo = info;
     }
-
-    // Добавляем extraInfo в конец newInfo
     info = { ...newInfo, ...extraInfo };
 
     let src: string | null = null;
@@ -254,7 +245,7 @@ export const getItemById = async (
       typeSidebar: additionalOptions.typeSidebar,
       title: additionalOptions.title,
       showImageInput: additionalOptions.showImageInput,
-      src: src, // Pass the src
+      src: src,
     };
 
     res.status(200).json(responseData);
@@ -309,8 +300,6 @@ export const deleteItem = async (
         console.warn(`Ошибка при обработке таблицы ${table}:`, error.message);
       }
     }
-
-    // Удаляем основной объект
     await item.destroy();
     res.status(200).json({ message: `${modelName} deleted successfully` });
   } catch (error: any) {
@@ -330,18 +319,12 @@ export const createItem = async (
   try {
     const { info, status, miniature, markerColor, type, eventDate, projectId, userId, content, sceneStructure } =
       req.body;
-    const currentUserId = (req as any).user?.id; // Получаем ID пользователя из req.user
-
+    const currentUserId = (req as any).user?.id;
     const Model = modelFactory(sequelize, DataTypes) as any;
     const ModelAttributes = Model.rawAttributes;
-
     const createData: any = {};
-
-    // Добавляем поля, общие для большинства моделей
     createData.info = info;
     createData.markerColor = markerColor || '#4682B4';
-
-    // Добавляем специфичные поля, если они есть в модели
     if (ModelAttributes.userId) {
       createData.userId = userId || currentUserId;
     }
@@ -391,14 +374,11 @@ export const updateItem = async (
     const { info, info_appearance, info_personality, info_social, status, miniature, markerColor } = req.body;
 
     const Model = modelFactory(sequelize, DataTypes) as any;
-    // Найти элемент по ID
     const item = await Model.findByPk(id);
 
     if (!item) {
       return res.status(404).json({ message: `${modelName} not found` });
     }
-
-    // Обновить элемент
     const updateData: any = {};
 
     if (info) {
@@ -425,7 +405,6 @@ export const updateItem = async (
 
     await item.update(updateData);
 
-    // Получить обновленный элемент
     const updatedItem = await Model.findByPk(id);
 
     res.json(updatedItem);

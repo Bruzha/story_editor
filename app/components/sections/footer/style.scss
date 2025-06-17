@@ -3,7 +3,7 @@
 .footer {
   @include media-breakpoint-down(sm) {
 
-    &__name > p {
+    &__name > &__h1 {
       font-size: 16px;
     }
 
@@ -26,7 +26,7 @@
   }
 
   @include media-breakpoint-up(sm) {
-    &__name > p {
+    &__name > &__h1 {
       font-size: 28px;
     }
 
@@ -86,7 +86,7 @@
     padding: 10px;
    }
 
-  &__name > p {
+  &__name > &__h1 {
     font-family: var(--font-merriweather), serif;
   }
   &__links{

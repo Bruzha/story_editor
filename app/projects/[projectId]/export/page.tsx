@@ -325,7 +325,7 @@ export default function Export() {
         <div className="export">
           <Button name="Экспорт в TXT" />
           <Button name="Экспорт в DOCX" onClick={exportToDocx} />
-          <Button name="Экспорт в PDF" />
+          {/* <Button name="Экспорт в PDF" /> */}
         </div>
       </Maket>
     </>
