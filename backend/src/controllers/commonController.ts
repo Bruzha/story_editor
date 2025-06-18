@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import AuthRequest from '../middleware/AuthRequest';
-import { Sequelize, DataTypes, ModelStatic } from 'sequelize';
+import { Sequelize, DataTypes, ModelStatic, Op } from 'sequelize';
 import { ProjectFactory } from '../models/Project';
 import { UserFactory } from '../models/User';
 import { sequelize } from '../config/database';
@@ -12,6 +12,11 @@ import { ChapterTimelineEventFactory } from '../models/ChapterTimelineEvent';
 import { CharacterTimelineEventFactory } from '../models/CharacterTimelineEvent';
 import { TimelineEventLocationFactory } from '../models/TimelineEventLocation';
 import { TimelineEventObjectFactory } from '../models/TimelineEventObject';
+import { TimelineEventFactory } from '../models/TimelineEvent';
+import { CharacterFactory } from '../models/Character';
+import { LocationFactory } from '../models/Location';
+import { ObjectFactory } from '../models/Object';
+import { ChapterFactory } from '../models/Chapter';
 
 interface ModelFactory {
   (sequelize: Sequelize, dataTypes: typeof DataTypes): any;
@@ -475,5 +480,195 @@ export const updateItem = async (
     console.error(`Error updating ${modelName}:`, error);
     res.status(500).json({ message: `Error updating ${modelName}` });
     next(error);
+  }
+};
+
+// export const getTimelineFilters = async (req: Request, res: Response) => {
+//   const { projectId } = req.params;
+
+//   try {
+//     // Создаем модели из фабричных функций
+//     const TimelineEvent = TimelineEventFactory(sequelize, DataTypes) as any;
+//     const CharacterTimelineEvent = CharacterTimelineEventFactory(sequelize, DataTypes);
+//     const TimelineEventLocation = TimelineEventLocationFactory(sequelize, DataTypes);
+//     const TimelineEventObject = TimelineEventObjectFactory(sequelize, DataTypes);
+//     const ChapterTimelineEvent = ChapterTimelineEventFactory(sequelize, DataTypes);
+//     const Character = CharacterFactory(sequelize, DataTypes);
+//     const Location = LocationFactory(sequelize, DataTypes);
+//     const Object = ObjectFactory(sequelize, DataTypes);
+//     const Chapter = ChapterFactory(sequelize, DataTypes);
+
+//     //  Получаем идентификаторы событий временной шкалы для проекта
+//     const timelineEvents = await TimelineEvent.findAll({
+//       where: { projectId },
+//       attributes: ['id'],
+//     });
+
+//     const timelineEventIds = timelineEvents.map((event: { id: any }) => event.id);
+
+//     // Получаем уникальные идентификаторы связанных персонажей
+//     const characterTimelineEvents = await CharacterTimelineEvent.findAll({
+//       where: { timelineEventId: timelineEventIds },
+//       attributes: ['characterId'],
+//       group: ['characterId'],
+//     });
+
+//     const characterIds = characterTimelineEvents.map((cte: { characterId: any }) => cte.characterId);
+
+//     // Получаем уникальные идентификаторы связанных локаций
+//     const locationTimelineEvents = await TimelineEventLocation.findAll({
+//       where: { timelineEventId: timelineEventIds },
+//       attributes: ['locationId'],
+//       group: ['locationId'],
+//     });
+
+//     const locationIds = locationTimelineEvents.map((lte: { locationId: any }) => lte.locationId);
+
+//     // Получаем уникальные идентификаторы связанных объектов
+//     const objectTimelineEvents = await TimelineEventObject.findAll({
+//       where: { timelineEventId: timelineEventIds },
+//       attributes: ['objectId'],
+//       group: ['objectId'],
+//     });
+
+//     const objectIds = objectTimelineEvents.map((ote: { objectId: any }) => ote.objectId);
+
+//     // Получаем уникальные идентификаторы связанных глав
+//     const chapterTimelineEvents = await ChapterTimelineEvent.findAll({
+//       where: { timelineEventId: timelineEventIds },
+//       attributes: ['chapterId'],
+//       group: ['chapterId'],
+//     });
+
+//     const chapterIds = chapterTimelineEvents.map((cte: { chapterId: any }) => cte.chapterId);
+
+//     // Получаем данные о персонажах по их идентификаторам
+//     const characters = await Character.findAll({
+//       where: { id: characterIds },
+//       attributes: ['id', 'info'],
+//     });
+
+//     // Получаем данные о локациях по их идентификаторам
+//     const locations = await Location.findAll({
+//       where: { id: locationIds },
+//       attributes: ['id', 'info'],
+//     });
+
+//     // Получаем данные об объектах по их идентификаторам
+//     const objects = await Object.findAll({
+//       where: { id: objectIds },
+//       attributes: ['id', 'info'],
+//     });
+
+//     // Получаем данные о главах по их идентификаторам
+//     const chapters = await Chapter.findAll({
+//       where: { id: chapterIds },
+//       attributes: ['id', 'info'],
+//     });
+
+//     // Формируем ответ с данными для фильтров
+//     const filters = {
+//       characters: characters.map((character: any) => ({
+//         id: character.id,
+//         name: character.info?.name?.value || 'Без имени',
+//       })),
+//       locations: locations.map((location: any) => ({
+//         id: location.id,
+//         name: location.info?.name?.value || 'Без имени',
+//       })),
+//       objects: objects.map((object: any) => ({
+//         id: object.id,
+//         name: object.info?.name?.value || 'Без имени',
+//       })),
+//       chapters: chapters.map((chapter: any) => ({
+//         id: chapter.id,
+//         name: `Глава ${chapter.info?.order || 'X'}. ${chapter.info?.title?.value || 'Без названия'}`,
+//       })),
+//     };
+
+//     console.log('filters: ', filters);
+//     res.json(filters);
+//   } catch (error) {
+//     console.error('Ошибка при получении фильтров временной шкалы:', error);
+//     res.status(500).json({ message: 'Ошибка сервера при получении фильтров' });
+//   }
+// };
+
+export const getTimelineFilters = async (req: Request, res: Response) => {
+  const { projectId } = req.params;
+
+  try {
+    // Создаем модели из фабричных функций
+    const TimelineEvent = TimelineEventFactory(sequelize, DataTypes) as any;
+    const CharacterTimelineEvent = CharacterTimelineEventFactory(sequelize, DataTypes);
+    const TimelineEventLocation = TimelineEventLocationFactory(sequelize, DataTypes);
+    const TimelineEventObject = TimelineEventObjectFactory(sequelize, DataTypes);
+    const ChapterTimelineEvent = ChapterTimelineEventFactory(sequelize, DataTypes);
+    const Character = CharacterFactory(sequelize, DataTypes);
+    const Location = LocationFactory(sequelize, DataTypes);
+    const Object = ObjectFactory(sequelize, DataTypes);
+    const Chapter = ChapterFactory(sequelize, DataTypes);
+
+    //  Получаем идентификаторы событий временной шкалы для проекта
+    const timelineEvents = await TimelineEvent.findAll({
+      where: { projectId },
+      attributes: ['id', 'markerColor'],
+    });
+
+    const timelineEventIds = timelineEvents.map((event: { id: any }) => event.id);
+
+    // Вспомогательная функция для получения данных о связанных элементах
+    const getRelatedItems = async (
+      Model: any,
+      timelineEventModel: any,
+      foreignKey: string,
+      nameField: string,
+      markerColorField: string = 'markerColor' // Используем дефолтное значение для markerColorField
+    ) => {
+      const items = await Model.findAll({
+        where: { projectId },
+        attributes: ['id', 'info', markerColorField],
+      });
+
+      const itemsWithEvents = await Promise.all(
+        items.map(async (item: any) => {
+          const relatedTimelineEvents = await timelineEventModel.findAll({
+            where: { [foreignKey]: item.id, timelineEventId: { [Op.in]: timelineEventIds } },
+            attributes: ['timelineEventId'],
+          });
+
+          const timelineEventIds2 = relatedTimelineEvents.map((tev: any) => tev.timelineEventId);
+
+          return {
+            id: String(item.id),
+            name:
+              foreignKey === 'chapterId'
+                ? `Глава ${item.info?.order || 'X'}. ${item.info?.title?.value || 'Без названия'}`
+                : item.info?.[nameField]?.value || 'Без названия', // Используем nameField
+            markerColor: item[markerColorField],
+            timelineEventIds: timelineEventIds2,
+          };
+        })
+      );
+
+      return itemsWithEvents;
+    };
+
+    const characters = await getRelatedItems(Character, CharacterTimelineEvent, 'characterId', 'name');
+    const locations = await getRelatedItems(Location, TimelineEventLocation, 'locationId', 'name');
+    const objects = await getRelatedItems(Object, TimelineEventObject, 'objectId', 'name');
+    const chapters = await getRelatedItems(Chapter, ChapterTimelineEvent, 'chapterId', 'title', 'markerColor');
+
+    const filters = {
+      characters,
+      locations,
+      objects,
+      chapters,
+    };
+
+    res.json(filters);
+  } catch (error) {
+    console.error('Ошибка при получении фильтров временной шкалы:', error);
+    res.status(500).json({ message: 'Ошибка сервера при получении фильтров' });
   }
 };

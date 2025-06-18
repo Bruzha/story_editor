@@ -13,6 +13,20 @@ export interface ApiResponse {
   displayFields?: string[];
 }
 
+interface FilterItem {
+  id: string;
+  name: string;
+  markerColor: string;
+  timelineEventIds: string[];
+}
+
+interface FiltersData {
+  characters: FilterItem[];
+  locations: FilterItem[];
+  objects: FilterItem[];
+  chapters: FilterItem[];
+}
+
 // Заполнение страницы карточками
 export const fetchCardsRequest = createAction('FETCH_CARDS_REQUEST');
 export const fetchCardsSuccess = createAction<ApiResponse>('FETCH_CARDS_SUCCESS');
@@ -53,3 +67,6 @@ export const updateProfileRequest = createAction('UPDATE_PROFILE_REQUEST');
 export const updateProfileSuccess = createAction('UPDATE_PROFILE_SUCCESS');
 export const updateProfileFailure = createAction<string>('UPDATE_PROFILE_FAILURE');
 export const clearProfile = createAction('CLEAR_PROFILE');
+
+// Фильтрация для таймлайна
+export const setFilters = createAction<FiltersData>('SET_FILTERS');

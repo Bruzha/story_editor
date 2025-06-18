@@ -16,6 +16,7 @@ import { TimelineEventLocationFactory } from '../models/TimelineEventLocation';
 import { TimelineEventObjectFactory } from '../models/TimelineEventObject';
 import { ChapterFactory } from '../models/Chapter';
 import { ChapterTimelineEventFactory } from '../models/ChapterTimelineEvent';
+import { getTimelineFilters } from '../controllers/commonController';
 
 interface AddRelationshipRequest extends Request {
   body: {
@@ -172,5 +173,7 @@ router.post(
     );
   }
 );
+
+router.get('/timeline/filters/:projectId', protect as ProtectMiddleware, getTimelineFilters);
 
 export default router;

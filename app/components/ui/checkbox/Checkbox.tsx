@@ -12,9 +12,10 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, value, register }) => {
   const { getValues, setValue } = useFormContext(); // Получаем getValues и setValue
   const [isChecked, setIsChecked] = useState<boolean>(false); //  Добавлено: состояние для чекбокса
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
     const fieldName = register.name;
+    console.log(fieldName);
     const currentValue = getValues(fieldName) || []; // Получаем текущие значения
     const newValue = checked ? [...currentValue, value] : currentValue.filter((item: string) => item !== value);
     setValue(fieldName, newValue); // Устанавливаем новое значение в форму
