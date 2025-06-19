@@ -42,7 +42,7 @@ export default function Sidebar({ type }: IProps) {
       { name: 'Локации', href: `/projects/${projectId}/locations`, icon: '/icons/location.svg' },
       { name: 'Объекты', href: `/projects/${projectId}/objects`, icon: '/icons/object.svg' },
       { name: 'Группы', href: `/projects/${projectId}/groups`, icon: '/icons/group.svg' },
-      { name: 'Схемы отношений', href: `/projects/${projectId}/relationships`, icon: '/icons/relationship.svg' },
+      //{ name: 'Схемы отношений', href: `/projects/${projectId}/relationships`, icon: '/icons/relationship.svg' },
       { name: 'Линия времени', href: `/projects/${projectId}/time_events`, icon: '/icons/timelines.svg' },
       { name: 'Главы', href: `/projects/${projectId}/chapters`, icon: '/icons/chapter.svg' },
       { name: 'Заметки', href: `/projects/${projectId}/notes`, icon: '/icons/notes.svg' },

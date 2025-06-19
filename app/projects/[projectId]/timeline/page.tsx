@@ -4,7 +4,6 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import Maket from '@/app/components/sections/maket/Maket';
-import { ITimelineEvent } from '../../../components/ui/timelineEvent/type';
 import Timeline from '../../../components/ui/timelineEvent/Timeline';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/app/store';
@@ -12,44 +11,47 @@ import Label from '@/app/components/ui/label/Label';
 import { fetchTimelineFilters } from '@/app/store/thunks/fetchTimelineFilters';
 import { AppDispatch } from '@/app/store';
 import { useForm, FormProvider } from 'react-hook-form';
+import { FiltersData, TimelineEvent as TimelineEventType } from '@/app/store/reducers/filtersReducer';
+import Radio from '@/app/components/ui/radio/Radio';
+import MyLink from '@/app/components/ui/link/Link';
+import './style.scss';
 
-interface FilterItem {
-  id: string;
+interface ITimelineEventAdapted {
+  id: number;
   name: string;
-  markerColor: string;
-  timelineEventIds: string[];
-}
-
-interface FiltersData {
-  characters: FilterItem[];
-  locations: FilterItem[];
-  objects: FilterItem[];
-  chapters: FilterItem[];
+  eventDate: string;
+  color: string;
+  info: any;
+  miniature: any;
+  src: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function TimelinePage() {
-  const { register, watch } = useForm(); // Получаем control
+  const { register, watch, control } = useForm({
+    defaultValues: {
+      filter: 'project', //  Устанавливаем значение по умолчанию для поля filter
+    },
+  });
   const subtitle = useSelector((state: RootState) => state.cards.subtitle);
-  const [timelineEvents, setTimelineEvents] = useState<ITimelineEvent[]>([]);
+  const [timelineEvents, setTimelineEvents] = useState<ITimelineEventAdapted[]>([]);
   const projectId = useSelector((state: RootState) => state.project.projectId);
+  const filters = useSelector((state: RootState) => state.filters.filters);
+  const dispatch: AppDispatch = useDispatch();
+
+  // Получаем значения полей формы с помощью watch
+  const selectedFilter = watch('filter');
+
+  let projectMarkerColor = useSelector((state: RootState) => {
+    const project = state.cards.cachedData?.projects?.items?.find((item: any) => item.id === Number(projectId));
+    return project ? project.markerColor : '#4682B4';
+  });
   const items = useSelector((state: RootState) => {
     if (projectId) {
       return state.cards.cachedData?.['projects/' + projectId + '/time_events']?.items;
     }
     return undefined;
-  });
-  const filters = useSelector((state: RootState) => state.filters.filters);
-  const dispatch: AppDispatch = useDispatch();
-
-  // Получаем значения полей формы с помощью watch
-  const selectedCharacterId = watch('filter');
-  const selectedLocationId = watch('filter');
-  const selectedObjectId = watch('filter');
-  const selectedChapterId = watch('filter');
-
-  const projectMarkerColor = useSelector((state: RootState) => {
-    const project = state.cards.cachedData?.projects?.items?.find((item: any) => item.id === Number(projectId));
-    return project ? project.markColor : '#4682B4';
   });
 
   useEffect(() => {
@@ -58,173 +60,110 @@ export default function TimelinePage() {
     }
   }, [projectId, dispatch]);
 
-  const filterEvents = useCallback(
-    (
-      events: any[],
-      filters: FiltersData | null,
-      selectedCharacterId: string | undefined,
-      selectedLocationId: string | undefined,
-      selectedObjectId: string | undefined,
-      selectedChapterId: string | undefined
-    ): ITimelineEvent[] => {
-      console.log('events in filterEvents:', events);
+  const getTimelineEvents = useCallback(
+    (filters: FiltersData | null, selectedFilter: string | undefined): ITimelineEventAdapted[] => {
       if (!filters) {
-        return events.map((item: any) => ({
+        return [];
+      }
+
+      let timelineEvents: TimelineEventType[] = [];
+
+      if (selectedFilter === 'project' && items) {
+        return items.map((item: any) => ({
           id: item.id,
           name: item.info.name.value,
           eventDate: item.eventDate,
           color: item.markerColor,
+          info: item.info,
+          miniature: item.miniature,
+          src: item.src,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
         }));
+      } else {
+        const character = filters.characters.find((char) => char.id === selectedFilter);
+        if (character) {
+          timelineEvents = character.timelineEvents;
+        } else {
+          const location = filters.locations.find((loc) => loc.id === selectedFilter);
+          if (location) {
+            timelineEvents = location.timelineEvents;
+          } else {
+            const object = filters.objects.find((obj) => obj.id === selectedFilter);
+            if (object) {
+              timelineEvents = object.timelineEvents;
+            } else {
+              const chapter = filters.chapters.find((chap) => chap.id === selectedFilter);
+              if (chapter) {
+                timelineEvents = chapter.timelineEvents;
+              }
+            }
+          }
+        }
       }
 
-      let filteredEvents = [...events];
+      // Удаляем дубликаты событий
+      const uniqueEvents = Array.from(new Map(timelineEvents.map((item) => [item.id, item])).values());
 
-      if (selectedCharacterId === 'project') {
-        return events.map((item: any) => ({
-          id: item.id,
-          name: item.info.name.value,
-          eventDate: item.eventDate,
-          color: item.markerColor,
-        }));
-      }
-
-      if (selectedCharacterId) {
-        const selectedCharacterIdNumber = Number(selectedCharacterId); // Преобразуем в число
-        console.log('selectedCharacterId 2: ', selectedCharacterId);
-        filteredEvents = filteredEvents.filter((event: any) => {
-          const character = filters.characters.find((char) => {
-            console.log('char.id:', char.id, 'selectedCharacterIdNumber:', selectedCharacterIdNumber); //  Добавили логи
-            return Number(char.id) === selectedCharacterIdNumber;
-          });
-          console.log('character:', character); //  Добавили логи
-          if (!character) return false;
-          console.log('character.timelineEventIds 2: ', character.timelineEventIds);
-          console.log('event.id:', event.id);
-          return character.timelineEventIds.some((eventId) => eventId === event.id);
-        });
-      }
-
-      if (selectedLocationId) {
-        filteredEvents = filteredEvents.filter((event: any) =>
-          filters.locations
-            .filter((location) => selectedLocationId === location.id)
-            .some((location) => location.timelineEventIds.includes(event.id))
-        );
-      }
-
-      if (selectedObjectId) {
-        filteredEvents = filteredEvents.filter((event: any) =>
-          filters.objects
-            .filter((object) => selectedObjectId === object.id)
-            .some((object) => object.timelineEventIds.includes(event.id))
-        );
-      }
-
-      if (selectedChapterId) {
-        filteredEvents = filteredEvents.filter((event: any) =>
-          filters.chapters
-            .filter((chapter) => selectedChapterId === chapter.id)
-            .some((chapter) => chapter.timelineEventIds.includes(event.id))
-        );
-      }
-
-      console.log('filteredEvents: ', filteredEvents);
-      return filteredEvents.map((item: any) => ({
+      return uniqueEvents.map((item: any) => ({
         id: item.id,
         name: item.info.name.value,
         eventDate: item.eventDate,
         color: item.markerColor,
+        info: item.info,
+        miniature: item.miniature,
+        src: item.src,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
       }));
     },
     []
   );
-
   useEffect(() => {
-    console.log('selectedCharacterId 3:', selectedCharacterId);
-    console.log('selectedLocationId 3:', selectedLocationId);
-    console.log('selectedObjectId 3:', selectedObjectId);
-    console.log('selectedChapterId 3:', selectedChapterId);
-    if (items && filters) {
-      const filteredTimelineEvents = filterEvents(
-        items,
-        filters,
-        selectedCharacterId,
-        selectedLocationId,
-        selectedObjectId,
-        selectedChapterId
-      );
-      const sortedEvents = [...filteredTimelineEvents].sort((a, b) => {
+    if (filters) {
+      const timelineEventsData = getTimelineEvents(filters, selectedFilter);
+      const sortedEvents = [...timelineEventsData].sort((a, b) => {
         const dateA = parseDate(a.eventDate);
         const dateB = parseDate(b.eventDate);
         return dateB.getTime() - dateA.getTime();
       });
       setTimelineEvents(sortedEvents);
-      console.log('timelineEvents after filtering:', sortedEvents); //  Здесь выводим в консоль
+      console.log('timelineEvents after filtering:', sortedEvents);
     }
-  }, [items, filters, selectedCharacterId, selectedLocationId, selectedObjectId, selectedChapterId, filterEvents]);
-
-  function parseDate(dateString: string): Date {
-    const parts = dateString.split(', ')[0].split('.');
-    const timeParts = dateString.split(', ')[1].split(':');
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    const year = parseInt(parts[2], 10);
-    const hours = parseInt(timeParts[0], 10);
-    const minutes = parseInt(timeParts[1], 10);
-
-    return new Date(year, month, day, hours, minutes);
-  }
+  }, [filters, selectedFilter, getTimelineEvents]);
 
   const timelineColor = () => {
-    if (selectedCharacterId === 'project') {
-      return projectMarkerColor || '#000000';
+    let filterItem;
+    if (selectedFilter === 'project') {
+      return projectMarkerColor || '#4682B4';
     }
-    if (selectedCharacterId) {
-      const character = filters?.characters.find((character) => character.id === selectedCharacterId);
-      return character?.markerColor || projectMarkerColor || '#000000';
+    if (filters) {
+      filterItem =
+        filters.characters.find((character) => character.id === selectedFilter) ||
+        filters.locations.find((location) => location.id === selectedFilter) ||
+        filters.objects.find((object) => object.id === selectedFilter) ||
+        filters.chapters.find((chapter) => chapter.id === selectedFilter);
+      return (projectMarkerColor = filterItem?.markerColor);
     }
-    if (selectedLocationId) {
-      const location = filters?.locations.find((location) => location.id === selectedLocationId);
-      return location?.markerColor || projectMarkerColor || '#000000';
-    }
-    if (selectedObjectId) {
-      const object = filters?.objects.find((object) => object.id === selectedObjectId);
-      return object?.markerColor || projectMarkerColor || '#000000';
-    }
-    if (selectedChapterId) {
-      const chapter = filters?.chapters.find((chapter) => chapter.id === selectedChapterId);
-      return chapter?.markerColor || projectMarkerColor || '#000000';
-    }
-    return projectMarkerColor || '#000000';
+
+    return projectMarkerColor || '#4682B4';
   };
 
   return (
     <Maket typeSidebar="timeline" title="ТАЙМЛАЙН" subtitle={subtitle}>
-      <FormProvider {...useForm()}>
-        <div>
-          <Label text={'Проект'}>
-            <label>
-              <input
-                type="radio"
-                value="project"
-                {...register('filter')} // Use the same name for all radio buttons
-              />
-              Весь проект
-            </label>
-          </Label>
+      <FormProvider {...{ register, control }}>
+        <div className="line__radio-block">
+          {projectId && (
+            <Label text={'Проект'}>
+              <Radio value="project" label="Весь проект" />
+            </Label>
+          )}
           {filters && (
             <>
               {filters.characters && filters.characters.length > 0 && (
                 <Label text={'Персонажи'}>
                   {filters.characters.map((character) => (
-                    <label key={character.id}>
-                      <input
-                        type="radio"
-                        value={String(character.id)}
-                        {...register('filter')} // Use the same name for all radio buttons
-                      />
-                      {character.name}
-                    </label>
+                    <Radio key={character.id} value={String(character.id)} label={character.name} />
                   ))}
                 </Label>
               )}
@@ -232,14 +171,7 @@ export default function TimelinePage() {
               {filters.locations && filters.locations.length > 0 && (
                 <Label text={'Локации'}>
                   {filters.locations.map((location) => (
-                    <label key={location.id}>
-                      <input
-                        type="radio"
-                        value={String(location.id)}
-                        {...register('filter')} // Use the same name for all radio buttons
-                      />
-                      {location.name}
-                    </label>
+                    <Radio key={location.id} value={String(location.id)} label={location.name} />
                   ))}
                 </Label>
               )}
@@ -247,14 +179,7 @@ export default function TimelinePage() {
               {filters.objects && filters.objects.length > 0 && (
                 <Label text={'Объекты'}>
                   {filters.objects.map((object) => (
-                    <label key={object.id}>
-                      <input
-                        type="radio"
-                        value={String(object.id)}
-                        {...register('filter')} // Use the same name for all radio buttons
-                      />
-                      {object.name}
-                    </label>
+                    <Radio key={object.id} value={String(object.id)} label={object.name} />
                   ))}
                 </Label>
               )}
@@ -262,14 +187,7 @@ export default function TimelinePage() {
               {filters.chapters && filters.chapters.length > 0 && (
                 <Label text={'Главы'}>
                   {filters.chapters.map((chapter) => (
-                    <label key={chapter.id}>
-                      <input
-                        type="radio"
-                        value={String(chapter.id)}
-                        {...register('filter')} // Use the same name for all radio buttons
-                      />
-                      {chapter.name}
-                    </label>
+                    <Radio key={chapter.id} value={String(chapter.id)} label={chapter.name} />
                   ))}
                 </Label>
               )}
@@ -277,11 +195,16 @@ export default function TimelinePage() {
           )}
         </div>
       </FormProvider>
-      {timelineEvents.length > 0 ? (
-        <Timeline events={timelineEvents} projectColor={timelineColor()} />
-      ) : (
-        <p>Нет событий для отображения</p>
-      )}
+      <div className="line__line">
+        {timelineEvents.length > 0 ? (
+          <Timeline events={timelineEvents} projectColor={timelineColor()} />
+        ) : (
+          <div className="line__message">
+            <p>У этого элемента нет событий для отображения</p>
+            <MyLink href={'/time_events/create'} name={'Создать событие?'} className="black-link-form" />
+          </div>
+        )}
+      </div>
     </Maket>
   );
 }

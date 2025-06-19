@@ -217,7 +217,7 @@ router.get(
       'TimelineEvent',
       TimelineEventFactory,
       {
-        typeSidebar: 'project',
+        typeSidebar: 'timeline',
         title: 'ДАННЫЕ СОБЫТИЯ',
         showImageInput: true,
       },
@@ -241,7 +241,7 @@ router.get(
       'TimelineEvent',
       TimelineEventFactory,
       {
-        typeSidebar: 'project',
+        typeSidebar: 'timeline',
         title: 'ДАННЫЕ СОБЫТИЯ',
         showImageInput: true,
       },

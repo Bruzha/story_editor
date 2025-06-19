@@ -3,14 +3,25 @@
 import { createReducer } from '@reduxjs/toolkit';
 import { fetchTimelineFilters } from '../thunks/fetchTimelineFilters';
 
-interface FilterItem {
+export interface TimelineEvent {
+  id: number;
+  markerColor: string;
+  info: any;
+  miniature: any;
+  src: string | null;
+  eventDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FilterItem {
   id: string;
   name: string;
   markerColor: string;
-  timelineEventIds: string[];
+  timelineEvents: TimelineEvent[]; // Изменено: теперь массив объектов TimelineEvent
 }
 
-interface FiltersData {
+export interface FiltersData {
   characters: FilterItem[];
   locations: FilterItem[];
   objects: FilterItem[];

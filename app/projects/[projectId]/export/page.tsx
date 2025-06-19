@@ -14,20 +14,24 @@ import Loading from '@/app/components/ui/loading/Loading';
 import Message from '@/app/components/ui/message/Message';
 import JSZip from 'jszip';
 import { clearProjectData } from '@/app/store/reducers/exportReducer';
-import generateProjectContent from './generateContent/generateProjectContent';
-import generateCharacterContent from './generateContent/generateCharacterContent';
-import generateLocationContent from './generateContent/generateLocationContent';
-import generateObjectContent from './generateContent/generateObjectContent';
-import generatePlotLineContent from './generateContent/generatePlotLineContent';
-import generateTimelineEventContent from './generateContent/generateTimelineEventContent';
-import generateGroupContent from './generateContent/generateGroupContent';
-import generateNoteContent from './generateContent/generateNoteContent';
+import generateProjectContent from '../../../components/utils/generateProjectContent';
+import generateCharacterContent from '../../../components/utils/generateCharacterContent';
+import generateLocationContent from '../../../components/utils/generateLocationContent';
+import generateObjectContent from '../../../components/utils/generateObjectContent';
+import generatePlotLineContent from '../../../components/utils/generatePlotLineContent';
+import generateTimelineEventContent from '../../../components/utils/generateTimelineEventContent';
+import generateGroupContent from '../../../components/utils/generateGroupContent';
+import generateNoteContent from '../../../components/utils/generateNoteContent';
+import generateChapterContent from '../../../components/utils/generateChapterContent';
+import Label from '@/app/components/ui/label/Label';
+import generateChapterContent_Chapter from '@/app/components/utils/generateChapterContent_Chapter';
+import createPageData from '@/backend/src/data/createPageData';
+import generateTXTContent from '@/app/components/utils/generateTXTContent';
 
 const cmToTwip = (cm: number) => {
   return Math.round(cm * 567);
 };
 
-// 2. Function to create DOCX document
 const createDocxDocument = (content: docx.Paragraph[]): docx.Document => {
   return new docx.Document({
     numbering: {
@@ -150,7 +154,6 @@ const createDocxDocument = (content: docx.Paragraph[]): docx.Document => {
   });
 };
 
-// 3. Function to export DOCX document
 const exportToDocxFile = async (doc: docx.Document, fileName: string, projectFolder: JSZip | null) => {
   const projectBlob = await docx.Packer.toBlob(doc);
   projectFolder?.file(`${fileName}.docx`, projectBlob);
@@ -168,145 +171,255 @@ export default function Export() {
     if (projectId && !projectData && !loading && !error) {
       dispatch(fetchProjectDataForExport(projectId));
     }
-
-    // Clear projectData when projectId changes
     return () => {
       dispatch(clearProjectData());
     };
   }, [projectId, dispatch]);
 
+  const exportProjectToDocx = async (zip: JSZip) => {
+    const projectName = projectData.project.info.name.value || 'Проект без названия';
+    const projectFolder = zip.folder(projectName);
+    const projectContent = generateProjectContent(projectData.project);
+    const projectDoc = createDocxDocument(projectContent);
+    await exportToDocxFile(projectDoc, projectName, projectFolder);
+    return { projectFolder, projectName };
+  };
+
+  const exportStructureToDocx = async (projectFolder: JSZip | null) => {
+    // Characters
+    const charactersFolder = projectFolder?.folder('персонажи') || null;
+    const characterPromises = projectData.characters.map(async (character: any) => {
+      try {
+        const characterContent = generateCharacterContent(character);
+        const characterDoc = createDocxDocument(characterContent);
+        const fileName = `${character.info.name.value || 'Персонаж без имени'} (${character.id})`;
+        await exportToDocxFile(characterDoc, fileName, charactersFolder);
+        return { status: 'fulfilled', value: fileName };
+      } catch (error: any) {
+        console.error('Error creating character DOCX:', error);
+        return { status: 'rejected', reason: error };
+      }
+    });
+
+    const characterResults = await Promise.allSettled(characterPromises);
+    characterResults.forEach((result) => {
+      if (result.status === 'rejected') {
+        console.error('Character processing failed:', result.reason);
+      }
+    });
+
+    // Locations
+    const locationsFolder = projectFolder?.folder('локации') || null;
+    const locationPromises = projectData.locations.map(async (location: any) => {
+      try {
+        const locationContent = generateLocationContent(location);
+        const locationDoc = createDocxDocument(locationContent);
+        const fileName = `${location.info.name.value || 'Локация без названия'} (${location.id})`;
+        await exportToDocxFile(locationDoc, fileName, locationsFolder);
+        return { status: 'fulfilled', value: fileName };
+      } catch (error) {
+        console.error('Error creating location DOCX:', error);
+      }
+    });
+    await Promise.all(locationPromises);
+
+    // Objects
+    const objectsFolder = projectFolder?.folder('объекты') || null;
+
+    const objectPromises = projectData.objects.map(async (object: any) => {
+      try {
+        const objectContent = generateObjectContent(object);
+        const objectDoc = createDocxDocument(objectContent);
+        const fileName = `${object.info.name.value || 'Объект без названия'} (${object.id})`;
+        await exportToDocxFile(objectDoc, fileName, objectsFolder);
+        return { status: 'fulfilled', value: fileName };
+      } catch (error) {
+        console.error('Error creating object DOCX:', error);
+        return { status: 'rejected', reason: error };
+      }
+    });
+    await Promise.all(objectPromises);
+
+    // PlotLines
+    const plotLinesFolder = projectFolder?.folder('сюжетные линии') || null;
+
+    const plotLinesPromises = projectData.plotLines.map(async (plotLine: any) => {
+      try {
+        const plotLineContent = generatePlotLineContent(plotLine);
+        const plotLineDoc = createDocxDocument(plotLineContent);
+        const fileName = `${plotLine.info.name.value || 'Сюжетная линия без названия'} (${plotLine.id})`;
+        await exportToDocxFile(plotLineDoc, fileName, plotLinesFolder);
+        return { status: 'fulfilled', value: fileName };
+      } catch (error: any) {
+        console.error('Error creating plotLine DOCX:', error);
+        return { status: 'rejected', reason: error };
+      }
+    });
+    await Promise.allSettled(plotLinesPromises);
+
+    // timeEvents
+    const timeEventsFolder = projectFolder?.folder('события') || null;
+
+    const timeEventsPromises = projectData.timeEvents.map(async (timeEvent: any) => {
+      try {
+        const timeEventContent = generateTimelineEventContent(timeEvent);
+        const timeEventDoc = createDocxDocument(timeEventContent);
+        const fileName = `${timeEvent.info.name.value || 'Событие без названия'} (${timeEvent.id})`;
+        await exportToDocxFile(timeEventDoc, fileName, timeEventsFolder);
+        return { status: 'fulfilled', value: fileName };
+      } catch (error: any) {
+        console.error('Error creating timeEvent DOCX:', error);
+        return { status: 'rejected', reason: error };
+      }
+    });
+    await Promise.allSettled(timeEventsPromises);
+
+    // Groups
+    const groupsFolder = projectFolder?.folder('группы') || null;
+
+    const groupsPromises = projectData.groups.map(async (group: any) => {
+      try {
+        const groupContent = generateGroupContent(group);
+        const groupDoc = createDocxDocument(groupContent);
+        const fileName = `${group.info.name.value || 'Группа без названия'} (${group.id})`;
+        await exportToDocxFile(groupDoc, fileName, groupsFolder);
+        return { status: 'fulfilled', value: fileName };
+      } catch (error: any) {
+        console.error('Error creating group DOCX:', error);
+        return { status: 'rejected', reason: error };
+      }
+    });
+
+    await Promise.allSettled(groupsPromises);
+
+    // Notes
+    const notesFolder = projectFolder?.folder('заметки') || null;
+    const notesPromises = projectData.notes.map(async (note: any) => {
+      try {
+        const noteContent = generateNoteContent(note);
+        const noteDoc = createDocxDocument(noteContent);
+        const fileName = `${note.info.title.value || 'Заметка без названия'} (${note.id})`;
+        await exportToDocxFile(noteDoc, fileName, notesFolder);
+        return { status: 'fulfilled', value: fileName };
+      } catch (error: any) {
+        console.error('Error creating note DOCX:', error);
+        return { status: 'rejected', reason: error };
+      }
+    });
+    await Promise.allSettled(notesPromises);
+  };
+
   const exportToDocx = async () => {
     if (!projectData) return;
-
+    const zip = new JSZip();
     try {
-      const zip = new JSZip();
-      const projectName = projectData.project.info.name.value || 'Project';
+      const projectInfo = await exportProjectToDocx(zip);
+      const { projectFolder, projectName } = projectInfo;
+
+      // Chapters folder
+      const chaptersFolder = projectFolder?.folder('главы') || null;
+      if (chaptersFolder) {
+        // Structure folder
+        const structureFolder = chaptersFolder.folder('структура');
+        // Content folder
+        const contentFolder = chaptersFolder.folder('содержание');
+
+        // Export structure for each chapter
+        const structurePromises = projectData.chapters.map(async (chapter: any) => {
+          try {
+            const chapterContent = generateChapterContent(chapter);
+            const chapterDoc = createDocxDocument(chapterContent);
+            const fileName =
+              `${chapter.info.order.value}. ${chapter.info.title.value} (${chapter.id})` ||
+              `Глава без названия(${chapter.id})`;
+            await exportToDocxFile(chapterDoc, fileName, structureFolder);
+            return { status: 'fulfilled', value: fileName };
+          } catch (error) {
+            console.error('Error creating chapter structure DOCX:', error);
+            return { status: 'rejected', reason: error }; // Indicate failure
+          }
+        });
+        await Promise.allSettled(structurePromises);
+
+        // Export content for each chapter
+        const contentPromises = projectData.chapters.map(async (chapter: any) => {
+          try {
+            const chapterContent = generateChapterContent_Chapter(chapter);
+            const chapterDoc = createDocxDocument(chapterContent);
+            const fileName =
+              `${chapter.info.order.value}. ${chapter.info.title.value} (${chapter.id})` ||
+              `Глава без названия(${chapter.id})`;
+            await exportToDocxFile(chapterDoc, fileName, contentFolder);
+            return { status: 'fulfilled', value: fileName };
+          } catch (error) {
+            console.error('Error creating chapter content DOCX:', error);
+            return { status: 'rejected', reason: error }; // Indicate failure
+          }
+        });
+        await Promise.allSettled(contentPromises);
+      }
+
+      await exportStructureToDocx(projectFolder);
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, `${projectName}.zip`);
+    } catch (error) {
+      console.error('Error exporting to DOCX:', error);
+    }
+  };
+
+  const exportProjectStructureToDocx = async () => {
+    if (!projectData) return;
+    const zip = new JSZip();
+    try {
+      const project = await exportProjectToDocx(zip);
+      await exportStructureToDocx(project.projectFolder);
+      // Chapters
+      const chaptersFolder = project.projectFolder?.folder('главы') || null;
+      const chapterPromises = projectData.chapters.map(async (chapter: any) => {
+        try {
+          const chapterContent = generateChapterContent(chapter);
+          const chapterDoc = createDocxDocument(chapterContent);
+          const fileName =
+            `${chapter.info.order.value}. ${chapter.info.title.value} (${chapter.id})` ||
+            `Глава без названия(${chapter.id})`;
+          await exportToDocxFile(chapterDoc, fileName, chaptersFolder);
+          return { status: 'fulfilled', value: fileName };
+        } catch (error) {
+          console.error('Error creating chapter DOCX:', error);
+        }
+      });
+      await Promise.all(chapterPromises);
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, `${project.projectName}.zip`);
+    } catch (error) {
+      console.error('Error exporting to DOCX:', error);
+    }
+  };
+
+  const exportProjectChapterToDocx = async () => {
+    if (!projectData) return;
+    const zip = new JSZip();
+    try {
+      const projectName = projectData.project.info.name.value || 'Проект без названия';
       const projectFolder = zip.folder(projectName);
 
-      // 1. Project DOCX
-      const projectContent = generateProjectContent(projectData.project);
-      const projectDoc = createDocxDocument(projectContent);
-      await exportToDocxFile(projectDoc, projectName, projectFolder);
-
-      // 2. Characters DOCX
-      const charactersFolder = projectFolder?.folder('characters') || null;
-      const characterPromises = projectData.characters.map(async (character: any) => {
+      // Chapters
+      const chaptersFolder = projectFolder?.folder('главы') || null;
+      const chapterPromises = projectData.chapters.map(async (chapter: any) => {
         try {
-          const characterContent = generateCharacterContent(character);
-          const characterDoc = createDocxDocument(characterContent);
-          await exportToDocxFile(characterDoc, character.info.name.value || 'Character', charactersFolder);
-          return { status: 'fulfilled', value: character.info.name.value || 'Character' }; // Indicate success
-        } catch (error: any) {
-          console.error('Error creating character DOCX:', error);
-          return { status: 'rejected', reason: error }; // Indicate failure
-        }
-      });
-
-      const characterResults = await Promise.allSettled(characterPromises);
-      characterResults.forEach((result) => {
-        if (result.status === 'rejected') {
-          console.error('Character processing failed:', result.reason);
-        }
-      });
-
-      // 3. Locations DOCX
-      const locationsFolder = projectFolder?.folder('locations') || null;
-      const locationPromises = projectData.locations.map(async (location: any) => {
-        try {
-          const locationContent = generateLocationContent(location);
-          const locationDoc = createDocxDocument(locationContent);
-          await exportToDocxFile(locationDoc, location.info.name.value || 'Location', locationsFolder);
-          return { status: 'fulfilled', value: location.info.name.value || 'Location' }; // Indicate success
+          const chapterContent = generateChapterContent_Chapter(chapter);
+          const chapterDoc = createDocxDocument(chapterContent);
+          const fileName =
+            `${chapter.info.order.value}. ${chapter.info.title.value} (${chapter.id})` ||
+            `Глава без названия(${chapter.id})`;
+          await exportToDocxFile(chapterDoc, fileName, chaptersFolder);
+          return { status: 'fulfilled', value: fileName };
         } catch (error) {
-          console.error('Error creating location DOCX:', error);
+          console.error('Error creating chapter DOCX:', error);
         }
       });
-      await Promise.all(locationPromises); // Wait for all locations to be processed
-
-      // 4. Objects DOCX
-      const objectsFolder = projectFolder?.folder('objects') || null; // Create objects folder
-
-      const objectPromises = projectData.objects.map(async (object: any) => {
-        // Iterate through objects
-        try {
-          const objectContent = generateObjectContent(object); // Generate content
-          const objectDoc = createDocxDocument(objectContent); // Create document
-          await exportToDocxFile(objectDoc, object.info.name.value || 'Object', objectsFolder); // Export document
-          return { status: 'fulfilled', value: object.info.name.value || 'Object' }; // Indicate success
-        } catch (error) {
-          console.error('Error creating object DOCX:', error);
-          return { status: 'rejected', reason: error }; // Indicate failure
-        }
-      });
-      await Promise.all(objectPromises); // Wait for all locations to be processed
-
-      // 5. PlotLines DOCX
-      const plotLinesFolder = projectFolder?.folder('plotLines') || null;
-
-      const plotLinesPromises = projectData.plotLines.map(async (plotLine: any) => {
-        try {
-          const plotLineContent = generatePlotLineContent(plotLine);
-          const plotLineDoc = createDocxDocument(plotLineContent);
-          await exportToDocxFile(plotLineDoc, plotLine.info.name.value || 'PlotLine', plotLinesFolder);
-          return { status: 'fulfilled', value: plotLine.info.name.value || 'PlotLine' }; // Indicate success
-        } catch (error: any) {
-          console.error('Error creating plotLine DOCX:', error);
-          return { status: 'rejected', reason: error }; // Indicate failure
-        }
-      });
-      await Promise.allSettled(plotLinesPromises);
-
-      // 6. timeEvents DOCX
-      const timeEventsFolder = projectFolder?.folder('time_events') || null;
-
-      const timeEventsPromises = projectData.timeEvents.map(async (timeEvent: any) => {
-        try {
-          const timeEventContent = generateTimelineEventContent(timeEvent);
-          const timeEventDoc = createDocxDocument(timeEventContent);
-          await exportToDocxFile(timeEventDoc, timeEvent.info.name.value || 'Событие', timeEventsFolder);
-          return { status: 'fulfilled', value: timeEvent.info.name.value || 'Событие' }; // Indicate success
-        } catch (error: any) {
-          console.error('Error creating timeEvent DOCX:', error);
-          return { status: 'rejected', reason: error }; // Indicate failure
-        }
-      });
-      await Promise.allSettled(timeEventsPromises);
-
-      // 5. Groups DOCX
-      const groupsFolder = projectFolder?.folder('groups') || null; // Обработка null
-
-      const groupsPromises = projectData.groups.map(async (group: any) => {
-        try {
-          const groupContent = generateGroupContent(group);
-          const groupDoc = createDocxDocument(groupContent);
-          await exportToDocxFile(groupDoc, group.info.name.value || 'Group', groupsFolder);
-          return { status: 'fulfilled', value: group.info.name.value || 'Group' }; // Indicate success
-        } catch (error: any) {
-          console.error('Error creating group DOCX:', error);
-          return { status: 'rejected', reason: error }; // Indicate failure
-        }
-      });
-
-      await Promise.allSettled(groupsPromises);
-
-      const notesFolder = projectFolder?.folder('notes') || null;
-      const notesPromises = projectData.notes.map(async (note: any) => {
-        try {
-          const noteContent = generateNoteContent(note);
-          const noteDoc = createDocxDocument(noteContent);
-          await exportToDocxFile(noteDoc, note.info.title.value || 'Заметка', notesFolder);
-          return { status: 'fulfilled', value: note.info.title.value || 'Заметка' }; // Indicate success
-        } catch (error: any) {
-          console.error('Error creating note DOCX:', error);
-          return { status: 'rejected', reason: error }; // Indicate failure
-        }
-      });
-      await Promise.allSettled(notesPromises);
-
-      // Generate ZIP file
+      await Promise.all(chapterPromises);
       const zipBlob = await zip.generateAsync({ type: 'blob' });
-
-      // Save ZIP file
       saveAs(zipBlob, `${projectName}.zip`);
     } catch (error) {
       console.error('Error exporting to DOCX:', error);
@@ -319,14 +432,122 @@ export default function Export() {
   if (error) {
     return <Message title={'ОШИБКА'} message={error} />;
   }
+
+  const exportProjectStructureToTXT = async () => {
+    if (!projectData) return;
+    const zip = new JSZip();
+    const projectName = projectData.project.info.name.value || 'Проект без названия';
+    const projectFolder = zip.folder(projectName);
+
+    if (projectFolder) {
+      // 1. Структура проекта
+      const masTitleProject = createPageData.find((item) => item.type === 'projects')?.masTitle || [];
+      const structureContent = generateTXTContent(projectData.project, masTitleProject);
+      projectFolder.file(`${projectName}_Структура.txt`, structureContent);
+
+      // 2. Главы
+      const chaptersFolder = projectFolder.folder('главы');
+      if (chaptersFolder) {
+        projectData.chapters.forEach((chapter: any) => {
+          const masTitleChapter = createPageData.find((item) => item.type === 'chapters')?.masTitle || [];
+          const chapterContent = generateTXTContent(chapter, masTitleChapter);
+          chaptersFolder.file(`Глава_${chapter.info.order.value}_${chapter.info.title.value}.txt`, chapterContent);
+        });
+      }
+
+      // 3. Персонажи
+      const charactersFolder = projectFolder.folder('персонажи');
+      if (charactersFolder) {
+        projectData.characters.forEach((character: any) => {
+          const masTitleCharacter = createPageData.find((item) => item.type === 'characters')?.masTitle || [];
+          const characterContent = generateTXTContent(character, masTitleCharacter);
+          charactersFolder.file(`Персонаж_${character.info.name.value}.txt`, characterContent);
+        });
+      }
+
+      // 4. События
+      const eventsFolder = projectFolder.folder('события');
+      if (eventsFolder) {
+        projectData.timeEvents.forEach((event: any) => {
+          const masTitleEvent = createPageData.find((item) => item.type === 'timeEvents')?.masTitle || [];
+          const eventContent = generateTXTContent(event, masTitleEvent);
+          eventsFolder.file(`Событие_${event.info.name.value}.txt`, eventContent);
+        });
+      }
+
+      // 5. Сюжетные линии
+      const plotLinesFolder = projectFolder.folder('сюжетные линии');
+      if (plotLinesFolder) {
+        projectData.plotLines.forEach((plotLine: any) => {
+          const masTitlePlotLine = createPageData.find((item) => item.type === 'plotLines')?.masTitle || [];
+          const plotLineContent = generateTXTContent(plotLine, masTitlePlotLine);
+          plotLinesFolder.file(`Сюжетная линия_${plotLine.info.name.value}.txt`, plotLineContent);
+        });
+      }
+
+      // 6. Объекты
+      const objectsFolder = projectFolder.folder('объекты');
+      if (objectsFolder) {
+        projectData.objects.forEach((object: any) => {
+          const masTitleObject = createPageData.find((item) => item.type === 'objects')?.masTitle || [];
+          const objectContent = generateTXTContent(object, masTitleObject);
+          objectsFolder.file(`Объект_${object.info.name.value}.txt`, objectContent);
+        });
+      }
+
+      // 7. Группы
+      const groupsFolder = projectFolder.folder('группы');
+      if (groupsFolder) {
+        projectData.groups.forEach((group: any) => {
+          const masTitleGroup = createPageData.find((item) => item.type === 'groups')?.masTitle || [];
+          const groupContent = generateTXTContent(group, masTitleGroup);
+          groupsFolder.file(`Группа_${group.info.name.value}.txt`, groupContent);
+        });
+      }
+
+      // 8. Заметки
+      const notesFolder = projectFolder.folder('заметки');
+      if (notesFolder) {
+        projectData.notes.forEach((note: any) => {
+          const masTitleNote = createPageData.find((item) => item.type === 'notes')?.masTitle || [];
+          const noteContent = generateTXTContent(note, masTitleNote);
+          notesFolder.file(`Заметка_${note.info.name.value}.txt`, noteContent);
+        });
+      }
+
+      // 9. Локации
+      const locationsFolder = projectFolder.folder('локации');
+      if (locationsFolder) {
+        projectData.locations.forEach((location: any) => {
+          const masTitleLocation = createPageData.find((item) => item.type === 'locations')?.masTitle || [];
+          const locationContent = generateTXTContent(location, masTitleLocation);
+          locationsFolder.file(`Локация_${location.info.name.value}.txt`, locationContent);
+        });
+      }
+    }
+
+    // Генерируем ZIP-архив
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    saveAs(zipBlob, `${projectName}_Структура.zip`);
+  };
+
   return (
     <>
       <Maket typeSidebar="project" title="ЭКСПОРТ" subtitle={subtitle}>
-        <div className="export">
-          <Button name="Экспорт в TXT" />
-          <Button name="Экспорт в DOCX" onClick={exportToDocx} />
-          {/* <Button name="Экспорт в PDF" /> */}
-        </div>
+        <Label text={'Экспорт в TXT'}>
+          <div className="export">
+            <Button name="Произведение и структура проекта" onClick={exportToDocx} />
+            <Button name="Структура проекта" onClick={exportProjectStructureToTXT} />
+            <Button name="Произведение" onClick={exportToDocx} />
+          </div>
+        </Label>
+        <Label text={'Экспорт в DOCX'}>
+          <div className="export">
+            <Button name="Произведение и структура проекта" onClick={exportToDocx} />
+            <Button name="Структура проекта" onClick={exportProjectStructureToDocx} />
+            <Button name="Произведение" onClick={exportProjectChapterToDocx} />
+          </div>
+        </Label>
       </Maket>
     </>
   );

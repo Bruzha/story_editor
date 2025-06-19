@@ -57,6 +57,16 @@ interface AdditionalOptions {
   dataType?: string;
 }
 
+const formatDate = (date: Date | null) => {
+  if (!date) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}.${month}.${year}, ${hours}:${minutes}`;
+};
+
 export const getItems = async (req: Request, res: Response, next: NextFunction, options: Options) => {
   try {
     const userId = (req as AuthRequest).user!.id;
@@ -97,17 +107,6 @@ export const getItems = async (req: Request, res: Response, next: NextFunction, 
       } else {
         itemData.src = null;
       }
-
-      // Format date fields
-      const formatDate = (date: Date | null) => {
-        if (!date) return '';
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        return `${day}.${month}.${year}, ${hours}:${minutes}`;
-      };
 
       if (itemData.createdAt) {
         itemData.createdAt = formatDate(new Date(itemData.createdAt));
@@ -609,13 +608,13 @@ export const getTimelineFilters = async (req: Request, res: Response) => {
     const Object = ObjectFactory(sequelize, DataTypes);
     const Chapter = ChapterFactory(sequelize, DataTypes);
 
-    //  Получаем идентификаторы событий временной шкалы для проекта
+    // Получаем идентификаторы событий временной шкалы для проекта
     const timelineEvents = await TimelineEvent.findAll({
       where: { projectId },
-      attributes: ['id', 'markerColor'],
+      attributes: ['id', 'markerColor', 'info', 'miniature', 'eventDate', 'createdAt', 'updatedAt'], // Получаем все поля события
     });
 
-    const timelineEventIds = timelineEvents.map((event: { id: any }) => event.id);
+    const timelineEventIds = timelineEvents.map((event: any) => event.id);
 
     // Вспомогательная функция для получения данных о связанных элементах
     const getRelatedItems = async (
@@ -637,8 +636,15 @@ export const getTimelineFilters = async (req: Request, res: Response) => {
             attributes: ['timelineEventId'],
           });
 
-          const timelineEventIds2 = relatedTimelineEvents.map((tev: any) => tev.timelineEventId);
-
+          // Получаем полные данные событий из relatedTimelineEvents
+          const timelineEventsData = await TimelineEvent.findAll({
+            where: {
+              id: {
+                [Op.in]: relatedTimelineEvents.map((tev: any) => tev.timelineEventId),
+              },
+            },
+            attributes: ['id', 'markerColor', 'info', 'miniature', 'eventDate', 'createdAt', 'updatedAt'], // Получаем все поля события
+          });
           return {
             id: String(item.id),
             name:
@@ -646,7 +652,17 @@ export const getTimelineFilters = async (req: Request, res: Response) => {
                 ? `Глава ${item.info?.order || 'X'}. ${item.info?.title?.value || 'Без названия'}`
                 : item.info?.[nameField]?.value || 'Без названия', // Используем nameField
             markerColor: item[markerColorField],
-            timelineEventIds: timelineEventIds2,
+            timelineEvents: timelineEventsData.map((event: any) => ({
+              // Изменили название поля с timelineEventIds на timelineEvents
+              id: event.id,
+              markerColor: event.markerColor,
+              info: event.info,
+              miniature: event.miniature,
+              src: event.src,
+              eventDate: formatDate(new Date(event.eventDate)),
+              createdAt: formatDate(new Date(event.createdAt)),
+              updatedAt: formatDate(new Date(event.updatedAt)),
+            })),
           };
         })
       );

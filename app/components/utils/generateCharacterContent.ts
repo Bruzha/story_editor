@@ -182,8 +182,6 @@ const generateCharacterContent = (character: any): docx.Paragraph[] => {
         });
       })
     );
-
-    // Add page break
     characterChildren.push(new docx.Paragraph({ children: [new docx.PageBreak()] }));
 
     // Add "СОЦИАЛЬНЫЕ СВЯЗИ" section
@@ -198,7 +196,7 @@ const generateCharacterContent = (character: any): docx.Paragraph[] => {
     characterChildren.push(
       ...masTitleCharacterSocial.map((item) => {
         const value =
-          character.info_social && character.info_social[item.key]?.value ? character.info_social[item.key]?.value : ''; // Add null check
+          character.info_social && character.info_social[item.key]?.value ? character.info_social[item.key]?.value : '';
         return new docx.Paragraph({
           style: 'Normal',
           indent: { firstLine: 425 },
@@ -218,7 +216,7 @@ const generateCharacterContent = (character: any): docx.Paragraph[] => {
     return characterChildren;
   } catch (error: any) {
     console.error('Error in generateCharacterContent:', error);
-    return []; // Return an empty array to avoid crashing the entire export
+    return [];
   }
 };
 

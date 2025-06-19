@@ -1,5 +1,15 @@
-/* TimelineEvent.module.css */
+@import '/app/mixins.scss';
+
 .timeline-event {
+
+  @include media-breakpoint-down(sm) {
+    &__date,
+    &__name {font-size: 14px;}
+  }
+  @include media-breakpoint-up(sm) {
+    &__date,
+    &__name {font-size: 18px;}
+  }
   position: absolute;
   cursor: pointer;
   left: 50%;
@@ -21,7 +31,6 @@
 
   &__date,
   &__name {
-    font-size: 18px;
     color: var(--text-color);
     width: 30vw;
     font-family: var(--font-open-sans);

@@ -1,4 +1,5 @@
 export interface ItemsData {
+  markerColor?: any;
   id: number;
   src?: string | null;
   data: string[];
