@@ -376,6 +376,59 @@ export const deleteItem = async (
   }
 };
 
+// export const createItem = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction,
+//   modelName: string,
+//   modelFactory: ModelFactory
+// ) => {
+//   try {
+//     const { info, status, miniature, markerColor, type, eventDate, projectId, userId, content, sceneStructure } =
+//       req.body;
+//     const currentUserId = (req as any).user?.id;
+//     const Model = modelFactory(sequelize, DataTypes) as any;
+//     const ModelAttributes = Model.rawAttributes;
+//     const createData: any = {};
+//     createData.info = info;
+//     createData.markerColor = markerColor || '#4682B4';
+//     if (ModelAttributes.userId) {
+//       createData.userId = userId || currentUserId;
+//     }
+//     if (ModelAttributes.projectId) {
+//       createData.projectId = projectId;
+//     }
+//     if (ModelAttributes.status) {
+//       if (modelName === 'Project') createData.status = status || 'запланирован';
+//       if (modelName === 'Chapter') createData.status = status || 'запланирована';
+//     }
+//     if (ModelAttributes.type) {
+//       createData.type = type || 'главная';
+//     }
+//     if (ModelAttributes.eventDate) {
+//       createData.eventDate = eventDate || new Date();
+//     }
+//     if (ModelAttributes.miniature) {
+//       createData.miniature = miniature || null;
+//     }
+//     if (ModelAttributes.content) {
+//       createData.content = content;
+//     }
+//     if (ModelAttributes.sceneStructure) {
+//       createData.sceneStructure = sceneStructure;
+//     }
+
+//     console.log('createData:', createData);
+//     const newItem = await Model.create(createData);
+
+//     res.status(201).json(newItem);
+//   } catch (error) {
+//     console.error(`Error creating ${modelName}:`, error);
+//     res.status(500).json({ message: 'Internal Server Error' });
+//     next(error);
+//   }
+// };
+
 export const createItem = async (
   req: Request,
   res: Response,
@@ -421,7 +474,23 @@ export const createItem = async (
     console.log('createData:', createData);
     const newItem = await Model.create(createData);
 
-    res.status(201).json(newItem);
+    //  Получаем объект целиком из базы данных
+    const fullNewItem = await Model.findByPk(newItem.id);
+
+    const itemData = fullNewItem.get({ plain: true });
+
+    // Форматируем даты
+    if (itemData.createdAt) {
+      itemData.createdAt = formatDate(new Date(itemData.createdAt));
+    }
+    if (itemData.updatedAt) {
+      itemData.updatedAt = formatDate(new Date(itemData.updatedAt));
+    }
+    if (itemData.eventDate) {
+      itemData.eventDate = formatDate(new Date(itemData.eventDate));
+    }
+
+    res.status(201).json(itemData);
   } catch (error) {
     console.error(`Error creating ${modelName}:`, error);
     res.status(500).json({ message: 'Internal Server Error' });

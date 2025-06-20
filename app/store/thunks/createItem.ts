@@ -1,6 +1,7 @@
 // store/thunks/createItem.ts
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { parseCookies } from 'nookies';
+import { RootState } from '../../types/types';
 
 interface CreateItemParams {
   type: string;
@@ -9,7 +10,7 @@ interface CreateItemParams {
 
 export const createItem = createAsyncThunk(
   'item/createItem',
-  async ({ type, payload }: CreateItemParams, { rejectWithValue }) => {
+  async ({ type, payload }: CreateItemParams, { rejectWithValue, getState }) => {
     const cookies = parseCookies();
     const jwtToken = cookies['jwt'];
     const apiUrl = `http://localhost:3001/create/create_item/${type}`;
@@ -36,7 +37,7 @@ export const createItem = createAsyncThunk(
           'Content-Type': 'application/json',
           Authorization: `Bearer ${jwtToken}`,
         },
-        body: JSON.stringify(requestBody), // Используем requestBody
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -45,7 +46,19 @@ export const createItem = createAsyncThunk(
         return rejectWithValue(errorData.message || `HTTP error! Status: ${response.status}`);
       }
       const newItem = await response.json();
-      return newItem;
+
+      //  Определяем slug
+      let slug = '';
+      const projectId = (getState() as RootState).project.projectId;
+      if (type === 'projects') {
+        slug = 'projects';
+      } else if (type === 'ideas') {
+        slug = 'ideas';
+      } else {
+        slug = `projects/${projectId}/${type}`;
+      }
+
+      return { newItem, slug };
     } catch (error: any) {
       console.error('Error creating item:', error);
       return rejectWithValue(error.message || 'An error occurred');

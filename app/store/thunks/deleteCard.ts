@@ -33,11 +33,11 @@ export const deleteCard = (id: number, type: string) => {
       dispatch(deleteCardSuccess(id));
 
       const projectId = getState().project.projectId;
-
+      console.log('projectId', projectId);
       if (type !== 'project' && type !== 'idea') {
         dispatch(fetchCards(['projects', String(projectId), type + 's']));
       } else {
-        dispatch(fetchCards([type + 's', String(projectId)]));
+        dispatch(fetchCards([type + 's']));
       }
     } catch (error: any) {
       dispatch(deleteCardFailure(`Error deleting: ${error.message}`));

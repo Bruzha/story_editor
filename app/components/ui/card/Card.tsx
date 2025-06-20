@@ -68,12 +68,11 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
   };
 
   const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Остановить распространение события click
-    dispatch(deleteCard(id, type)); // Отправка thunk
+    e.stopPropagation();
+    dispatch(deleteCard(id, type));
   };
 
-  const description = truncateText(data[1], 300); // Обрезаем data[1] до 100 символов
-
+  const description = truncateText(data[1], 300);
   return (
     <div key={id} className="card" style={textStyle} onClick={handleClick}>
       {isValidSrc && (
@@ -99,7 +98,7 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
         <section>{description}</section>
         <ul>
           {data.slice(2).map((text, index) => {
-            return text ? ( // Add conditional rendering
+            return text ? (
               <li className="card__elements" key={index} style={combinedStyle}>
                 {text}
               </li>

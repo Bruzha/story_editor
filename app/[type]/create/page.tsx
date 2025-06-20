@@ -177,7 +177,7 @@ export default function CreateItemPage() {
       try {
         const createItemResult = await dispatch(createItem({ type: 'characters', payload }));
         if (createItem.fulfilled.match(createItemResult)) {
-          const newItem = createItemResult.payload;
+          const newItem = createItemResult.payload.newItem;
 
           const redirectUrl = `/characters/${newItem.id}/?typePage=characters`;
           dispatch(clearCharacterData());
@@ -238,7 +238,7 @@ export default function CreateItemPage() {
 
       const createItemResult = await dispatch(createItem({ type, payload }));
       if (createItem.fulfilled.match(createItemResult)) {
-        const newItem = createItemResult.payload;
+        const newItem = createItemResult.payload.newItem;
 
         const createRelationshipsResult = await dispatch(
           createGroupRelationships({ itemId: String(newItem.id), type: type, data })

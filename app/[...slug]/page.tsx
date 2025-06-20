@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../AuthContext';
 import CardsPageMaket from '../components/sections/cards-page-maket/Cards-page-maket';
@@ -33,7 +33,7 @@ const defaultCardData: CardData = {
   error: null,
 };
 
-export default function CardsPage({ params }: Props) {
+function CardsPage({ params }: Props) {
   const { slug } = params;
   const dispatch: AppDispatch = useDispatch();
   const router = useRouter();
@@ -52,6 +52,10 @@ export default function CardsPage({ params }: Props) {
     displayFields = [],
   } = useSelector((state: RootState) => state.cards.cachedData[slug.join('/')] || defaultCardData);
 
+  console.log(
+    'useSelector((state: RootState) => state.cards: ',
+    useSelector((state: RootState) => state.cards)
+  );
   const { isLoading, error } = useSelector((state: RootState) => ({
     isLoading: state.cards.isLoading,
     error: state.cards.error,
@@ -64,9 +68,8 @@ export default function CardsPage({ params }: Props) {
       router.push('/auth/autorisation');
     }
   }, [isAuthenticated, router, dispatch, slug]);
-
+  console.log('items: ', items);
   const handleSort = (sortByOption: string) => {
-    console.log('handleSort called with:', sortByOption);
     setSortBy(sortByOption);
   };
 
@@ -93,8 +96,6 @@ export default function CardsPage({ params }: Props) {
     showCreateButton = false;
     showDeleteButton = false;
   }
-  console.log('masItem: ', items);
-  console.log('displayFields: ', displayFields);
   return (
     <CardsPageMaket
       typeSidebar={typeSidebar}
@@ -107,8 +108,10 @@ export default function CardsPage({ params }: Props) {
       masItems={items}
       createPageUrl={finalCreatePageUrl}
       displayFields={displayFields}
-      onSort={handleSort} // ADD: Pass handleSort to CardsPageMaket
+      onSort={handleSort}
       sortBy={sortBy}
     />
   );
 }
+
+export default memo(CardsPage);

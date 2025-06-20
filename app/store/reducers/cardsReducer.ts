@@ -8,6 +8,7 @@ import {
   deleteCardFailure,
   resetCardsState,
 } from '../actions';
+import { createItem } from '../thunks/createItem';
 import { CardsState } from '../../types/types';
 
 const initialState: CardsState = {
@@ -19,7 +20,7 @@ const initialState: CardsState = {
   title: '',
   subtitle: '',
   createPageUrl: '',
-  displayFields: [], // ADD displayFields
+  displayFields: [],
   cachedData: {},
 };
 
@@ -39,7 +40,7 @@ export const cardsReducer = createReducer(initialState, (builder) => {
         title,
         subtitle,
         createPageUrl,
-        displayFields, // ADD displayFields
+        displayFields,
       };
       state.items = masItems;
       state.typeSidebar = typeSidebar;
@@ -47,7 +48,7 @@ export const cardsReducer = createReducer(initialState, (builder) => {
       state.title = title;
       state.subtitle = subtitle;
       state.createPageUrl = createPageUrl;
-      state.displayFields = displayFields; // ADD displayFields
+      state.displayFields = displayFields;
     })
     .addCase(fetchCardsFailure, (state, action) => {
       state.isLoading = false;
@@ -62,7 +63,7 @@ export const cardsReducer = createReducer(initialState, (builder) => {
       state.title = '';
       state.subtitle = '';
       state.createPageUrl = '';
-      state.displayFields = []; // ADD displayFields
+      state.displayFields = [];
       state.cachedData = {};
     })
     .addCase(deleteCardRequest, (state) => {
@@ -78,5 +79,27 @@ export const cardsReducer = createReducer(initialState, (builder) => {
     })
     .addCase(deleteCardFailure, (state, action) => {
       state.error = action.payload;
+    })
+    .addCase(createItem.fulfilled, (state, action) => {
+      const { newItem, slug } = action.payload;
+
+      //  Добавляем новый элемент в state.items
+      state.items.push(newItem);
+
+      //  Обновляем cachedData только для текущего slug
+      if (state.cachedData[slug] && state.cachedData[slug]!.items) {
+        state.cachedData[slug]!.items.push(newItem);
+      } else {
+        //  Если для данного slug еще нет данных, создаем их
+        state.cachedData[slug] = {
+          items: [newItem],
+          typeSidebar: '', //  Замени на фактические значения, если они известны
+          typeCard: '', //  Замени на фактические значения, если они известны
+          title: '', //  Замени на фактические значения, если они известны
+          subtitle: '', //  Замени на фактические значения, если они известны
+          createPageUrl: '', //  Замени на фактические значения, если они известны
+          displayFields: [], //  Замени на фактические значения, если они известны
+        };
+      }
     });
 });

@@ -97,7 +97,7 @@ export default function Home() {
         </ul>
       </section>
 
-      <section className="home__access">
+      {/* <section className="home__access">
         <Title text={'КАК ПОЛУЧИТЬ ДОСТУП?'}></Title>
         <div className="home__underline"></div>
         <p>Веб-приложение «РЕДАКТОР ИСТОРИЙ» не требует установки. Для работы необходимо:</p>
@@ -106,9 +106,9 @@ export default function Home() {
           <li>Современный веб-браузер (Chrome, Firefox, Safari, Edge) последней версии</li>
           <li>Подключение к интернету</li>
         </ul>
-      </section>
+      </section> */}
 
-      <section className="home__getting_started">
+      {/* <section className="home__getting_started">
         <Title text={'НАЧАЛО РАБОТЫ'}></Title>
         <div className="home__underline"></div>
         <p>Чтобы начать работу с приложением:</p>
@@ -119,7 +119,7 @@ export default function Home() {
           <li>На шапке или футере сайта нажмите «Авторизация» или «Регистрация»</li>
           <li>Заполните поля форм</li>
         </ol>
-      </section>
+      </section> */}
     </div>
   );
 }
