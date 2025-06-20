@@ -13,16 +13,18 @@ const generateTXTContent = (data: any, fields: Field[]): string => {
   const processInfo = (info: any, prefix = '') => {
     if (info) {
       fields.forEach((field) => {
-        const value = info[field.key]?.value || '';
-        content += `${prefix}${field.title}: ${value}\n`;
+        if (info.hasOwnProperty(field.key)) {
+          const value = info[field.key]?.value || '';
+          content += `${prefix}${field.title}: ${value}\n`;
+        }
       });
     }
   };
 
   processInfo(data.info);
-  processInfo(data.info_appearance, 'Внешность - ');
-  processInfo(data.info_personality, 'Личность - ');
-  processInfo(data.info_social, 'Социальное - ');
+  processInfo(data.info_appearance);
+  processInfo(data.info_personality);
+  processInfo(data.info_social);
 
   if (data.type) {
     content += `Тип: ${data.type}\n`;

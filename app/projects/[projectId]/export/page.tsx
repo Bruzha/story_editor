@@ -27,6 +27,7 @@ import Label from '@/app/components/ui/label/Label';
 import generateChapterContent_Chapter from '@/app/components/utils/generateChapterContent_Chapter';
 import createPageData from '@/backend/src/data/createPageData';
 import generateTXTContent from '@/app/components/utils/generateTXTContent';
+import generateChapterTXTContent from '@/app/components/utils/generateChapterTXTContent';
 
 const cmToTwip = (cm: number) => {
   return Math.round(cm * 567);
@@ -315,16 +316,10 @@ export default function Export() {
     try {
       const projectInfo = await exportProjectToDocx(zip);
       const { projectFolder, projectName } = projectInfo;
-
-      // Chapters folder
       const chaptersFolder = projectFolder?.folder('главы') || null;
       if (chaptersFolder) {
-        // Structure folder
         const structureFolder = chaptersFolder.folder('структура');
-        // Content folder
         const contentFolder = chaptersFolder.folder('содержание');
-
-        // Export structure for each chapter
         const structurePromises = projectData.chapters.map(async (chapter: any) => {
           try {
             const chapterContent = generateChapterContent(chapter);
@@ -336,12 +331,10 @@ export default function Export() {
             return { status: 'fulfilled', value: fileName };
           } catch (error) {
             console.error('Error creating chapter structure DOCX:', error);
-            return { status: 'rejected', reason: error }; // Indicate failure
+            return { status: 'rejected', reason: error };
           }
         });
         await Promise.allSettled(structurePromises);
-
-        // Export content for each chapter
         const contentPromises = projectData.chapters.map(async (chapter: any) => {
           try {
             const chapterContent = generateChapterContent_Chapter(chapter);
@@ -440,88 +433,14 @@ export default function Export() {
     const projectFolder = zip.folder(projectName);
 
     if (projectFolder) {
-      // 1. Структура проекта
-      const masTitleProject = createPageData.find((item) => item.type === 'projects')?.masTitle || [];
-      const structureContent = generateTXTContent(projectData.project, masTitleProject);
-      projectFolder.file(`${projectName}_Структура.txt`, structureContent);
-
-      // 2. Главы
+      await dataToTXT(projectFolder, projectName);
+      // Главы
       const chaptersFolder = projectFolder.folder('главы');
       if (chaptersFolder) {
         projectData.chapters.forEach((chapter: any) => {
           const masTitleChapter = createPageData.find((item) => item.type === 'chapters')?.masTitle || [];
           const chapterContent = generateTXTContent(chapter, masTitleChapter);
-          chaptersFolder.file(`Глава_${chapter.info.order.value}_${chapter.info.title.value}.txt`, chapterContent);
-        });
-      }
-
-      // 3. Персонажи
-      const charactersFolder = projectFolder.folder('персонажи');
-      if (charactersFolder) {
-        projectData.characters.forEach((character: any) => {
-          const masTitleCharacter = createPageData.find((item) => item.type === 'characters')?.masTitle || [];
-          const characterContent = generateTXTContent(character, masTitleCharacter);
-          charactersFolder.file(`Персонаж_${character.info.name.value}.txt`, characterContent);
-        });
-      }
-
-      // 4. События
-      const eventsFolder = projectFolder.folder('события');
-      if (eventsFolder) {
-        projectData.timeEvents.forEach((event: any) => {
-          const masTitleEvent = createPageData.find((item) => item.type === 'timeEvents')?.masTitle || [];
-          const eventContent = generateTXTContent(event, masTitleEvent);
-          eventsFolder.file(`Событие_${event.info.name.value}.txt`, eventContent);
-        });
-      }
-
-      // 5. Сюжетные линии
-      const plotLinesFolder = projectFolder.folder('сюжетные линии');
-      if (plotLinesFolder) {
-        projectData.plotLines.forEach((plotLine: any) => {
-          const masTitlePlotLine = createPageData.find((item) => item.type === 'plotLines')?.masTitle || [];
-          const plotLineContent = generateTXTContent(plotLine, masTitlePlotLine);
-          plotLinesFolder.file(`Сюжетная линия_${plotLine.info.name.value}.txt`, plotLineContent);
-        });
-      }
-
-      // 6. Объекты
-      const objectsFolder = projectFolder.folder('объекты');
-      if (objectsFolder) {
-        projectData.objects.forEach((object: any) => {
-          const masTitleObject = createPageData.find((item) => item.type === 'objects')?.masTitle || [];
-          const objectContent = generateTXTContent(object, masTitleObject);
-          objectsFolder.file(`Объект_${object.info.name.value}.txt`, objectContent);
-        });
-      }
-
-      // 7. Группы
-      const groupsFolder = projectFolder.folder('группы');
-      if (groupsFolder) {
-        projectData.groups.forEach((group: any) => {
-          const masTitleGroup = createPageData.find((item) => item.type === 'groups')?.masTitle || [];
-          const groupContent = generateTXTContent(group, masTitleGroup);
-          groupsFolder.file(`Группа_${group.info.name.value}.txt`, groupContent);
-        });
-      }
-
-      // 8. Заметки
-      const notesFolder = projectFolder.folder('заметки');
-      if (notesFolder) {
-        projectData.notes.forEach((note: any) => {
-          const masTitleNote = createPageData.find((item) => item.type === 'notes')?.masTitle || [];
-          const noteContent = generateTXTContent(note, masTitleNote);
-          notesFolder.file(`Заметка_${note.info.name.value}.txt`, noteContent);
-        });
-      }
-
-      // 9. Локации
-      const locationsFolder = projectFolder.folder('локации');
-      if (locationsFolder) {
-        projectData.locations.forEach((location: any) => {
-          const masTitleLocation = createPageData.find((item) => item.type === 'locations')?.masTitle || [];
-          const locationContent = generateTXTContent(location, masTitleLocation);
-          locationsFolder.file(`Локация_${location.info.name.value}.txt`, locationContent);
+          chaptersFolder.file(`${chapter.info.order.value}_${chapter.info.title.value}.txt`, chapterContent);
         });
       }
     }
@@ -531,23 +450,169 @@ export default function Export() {
     saveAs(zipBlob, `${projectName}_Структура.zip`);
   };
 
+  const exportProjectChapterToTXT = async () => {
+    if (!projectData) return;
+    const zip = new JSZip();
+    const projectName = projectData.project.info.name.value || 'Проект без названия';
+    const projectFolder = zip.folder(projectName);
+
+    if (projectFolder) {
+      // 2. Главы
+      const chaptersFolder = projectFolder.folder('главы');
+      if (chaptersFolder) {
+        projectData.chapters.forEach((chapter: any) => {
+          const chapterContent = generateChapterTXTContent(chapter);
+          chaptersFolder.file(`${chapter.info.order.value}_${chapter.info.title.value}.txt`, chapterContent);
+        });
+      }
+    }
+
+    // Генерируем ZIP-архив
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    saveAs(zipBlob, `${projectName}_Структура.zip`);
+  };
+
+  const exportProjectAllToTXT = async () => {
+    if (!projectData) return;
+    const zip = new JSZip();
+    const projectName = projectData.project.info.name.value || 'Проект без названия';
+    const projectFolder = zip.folder(projectName);
+
+    if (projectFolder) {
+      await dataToTXT(projectFolder, projectName);
+
+      // Главы
+      const chaptersFolder = projectFolder.folder('главы');
+      if (chaptersFolder) {
+        const structureFolder = chaptersFolder.folder('структура');
+        const contentFolder = chaptersFolder.folder('содержание');
+
+        if (structureFolder && contentFolder) {
+          projectData.chapters.forEach((chapter: any) => {
+            const masTitleChapter = createPageData.find((item) => item.type === 'chapters')?.masTitle || [];
+            const chapterStructureContent = generateTXTContent(chapter, masTitleChapter);
+            structureFolder.file(
+              `${chapter.info.order.value}_${chapter.info.title.value}_Структура.txt`,
+              chapterStructureContent
+            );
+            const chapterContentContent = generateChapterTXTContent(chapter);
+            contentFolder.file(
+              `${chapter.info.order.value}_${chapter.info.title.value}_Содержание.txt`,
+              chapterContentContent
+            );
+          });
+        }
+      }
+    }
+
+    // Генерируем ZIP-архив
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    saveAs(zipBlob, `${projectName}.zip`);
+  };
+
+  const dataToTXT = async (projectFolder: JSZip, projectName: string) => {
+    // 1. Структура проекта
+    const masTitleProject = createPageData.find((item) => item.type === 'projects')?.masTitle || [];
+    const structureContent = generateTXTContent(projectData.project, masTitleProject);
+    projectFolder.file(`${projectName}.txt`, structureContent);
+
+    // 3. Персонажи
+    const charactersFolder = projectFolder.folder('персонажи');
+    if (charactersFolder) {
+      projectData.characters.forEach((character: any) => {
+        const masTitleCharacter = [
+          ...(createPageData.find((item) => item.type === 'characters' && item.typePage === 'characters')?.masTitle ||
+            []),
+          ...(createPageData.find((item) => item.type === 'characters' && item.typePage === 'appearance')?.masTitle ||
+            []),
+          ...(createPageData.find((item) => item.type === 'characters' && item.typePage === 'personality')?.masTitle ||
+            []),
+          ...(createPageData.find((item) => item.type === 'characters' && item.typePage === 'social')?.masTitle || []),
+        ];
+        const characterContent = generateTXTContent(character, masTitleCharacter);
+        charactersFolder.file(`${character.info.name.value}.txt`, characterContent);
+      });
+    }
+
+    // 4. События
+    const eventsFolder = projectFolder.folder('события');
+    if (eventsFolder) {
+      projectData.timeEvents.forEach((event: any) => {
+        const masTitleEvent = createPageData.find((item) => item.type === 'time_events')?.masTitle || [];
+        const eventContent = generateTXTContent(event, masTitleEvent);
+        eventsFolder.file(`${event.info.name.value}.txt`, eventContent);
+      });
+    }
+
+    // 5. Сюжетные линии
+    const plotLinesFolder = projectFolder.folder('сюжетные линии');
+    if (plotLinesFolder) {
+      projectData.plotLines.forEach((plotLine: any) => {
+        const masTitlePlotLine = createPageData.find((item) => item.type === 'plotLines')?.masTitle || [];
+        const plotLineContent = generateTXTContent(plotLine, masTitlePlotLine);
+        plotLinesFolder.file(`${plotLine.info.name.value}.txt`, plotLineContent);
+      });
+    }
+
+    // 6. Объекты
+    const objectsFolder = projectFolder.folder('объекты');
+    if (objectsFolder) {
+      projectData.objects.forEach((object: any) => {
+        const masTitleObject = createPageData.find((item) => item.type === 'objects')?.masTitle || [];
+        const objectContent = generateTXTContent(object, masTitleObject);
+        objectsFolder.file(`${object.info.name.value}.txt`, objectContent);
+      });
+    }
+
+    // 7. Группы
+    const groupsFolder = projectFolder.folder('группы');
+    if (groupsFolder) {
+      projectData.groups.forEach((group: any) => {
+        const masTitleGroup = createPageData.find((item) => item.type === 'groups')?.masTitle || [];
+        const groupContent = generateTXTContent(group, masTitleGroup);
+        groupsFolder.file(`${group.info.name.value}.txt`, groupContent);
+      });
+    }
+
+    // 8. Заметки
+    const notesFolder = projectFolder.folder('заметки');
+    if (notesFolder) {
+      projectData.notes.forEach((note: any) => {
+        const masTitleNote = createPageData.find((item) => item.type === 'notes')?.masTitle || [];
+        const noteContent = generateTXTContent(note, masTitleNote);
+        notesFolder.file(`${note.info.name.value}.txt`, noteContent);
+      });
+    }
+
+    // 9. Локации
+    const locationsFolder = projectFolder.folder('локации');
+    if (locationsFolder) {
+      projectData.locations.forEach((location: any) => {
+        const masTitleLocation = createPageData.find((item) => item.type === 'locations')?.masTitle || [];
+        const locationContent = generateTXTContent(location, masTitleLocation);
+        locationsFolder.file(`${location.info.name.value}.txt`, locationContent);
+      });
+    }
+  };
   return (
     <>
       <Maket typeSidebar="project" title="ЭКСПОРТ" subtitle={subtitle}>
-        <Label text={'Экспорт в TXT'}>
-          <div className="export">
-            <Button name="Произведение и структура проекта" onClick={exportToDocx} />
-            <Button name="Структура проекта" onClick={exportProjectStructureToTXT} />
-            <Button name="Произведение" onClick={exportToDocx} />
-          </div>
-        </Label>
-        <Label text={'Экспорт в DOCX'}>
-          <div className="export">
-            <Button name="Произведение и структура проекта" onClick={exportToDocx} />
-            <Button name="Структура проекта" onClick={exportProjectStructureToDocx} />
-            <Button name="Произведение" onClick={exportProjectChapterToDocx} />
-          </div>
-        </Label>
+        <div className="export">
+          <Label text={'Экспорт в TXT'}>
+            <div className="export__buttons">
+              <Button name="Произведение и структура проекта" onClick={exportProjectAllToTXT} />
+              <Button name="Структура проекта" onClick={exportProjectStructureToTXT} />
+              <Button name="Произведение" onClick={exportProjectChapterToTXT} />
+            </div>
+          </Label>
+          <Label text={'Экспорт в DOCX'}>
+            <div className="export__buttons">
+              <Button name="Произведение и структура проекта" onClick={exportToDocx} />
+              <Button name="Структура проекта" onClick={exportProjectStructureToDocx} />
+              <Button name="Произведение" onClick={exportProjectChapterToDocx} />
+            </div>
+          </Label>
+        </div>
       </Maket>
     </>
   );

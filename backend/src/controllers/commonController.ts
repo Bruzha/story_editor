@@ -649,7 +649,7 @@ export const getTimelineFilters = async (req: Request, res: Response) => {
             id: String(item.id),
             name:
               foreignKey === 'chapterId'
-                ? `Глава ${item.info?.order || 'X'}. ${item.info?.title?.value || 'Без названия'}`
+                ? `${item.info?.order.value || 'X'}. ${item.info?.title?.value || 'Без названия'}`
                 : item.info?.[nameField]?.value || 'Без названия', // Используем nameField
             markerColor: item[markerColorField],
             timelineEvents: timelineEventsData.map((event: any) => ({
