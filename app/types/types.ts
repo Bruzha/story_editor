@@ -1,4 +1,8 @@
 export interface ItemsData {
+  info_personality?: any;
+  info_social?: any;
+  info_appearance?: any;
+  info?: any;
   markerColor?: any;
   id: number;
   src?: string | null;

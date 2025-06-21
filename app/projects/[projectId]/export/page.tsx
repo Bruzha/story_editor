@@ -580,7 +580,7 @@ export default function Export() {
       projectData.notes.forEach((note: any) => {
         const masTitleNote = createPageData.find((item) => item.type === 'notes')?.masTitle || [];
         const noteContent = generateTXTContent(note, masTitleNote);
-        notesFolder.file(`${note.info.name.value}.txt`, noteContent);
+        notesFolder.file(`${note.info.title.value}.txt`, noteContent);
       });
     }
 

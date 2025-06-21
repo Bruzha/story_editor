@@ -70,3 +70,5 @@ export const clearProfile = createAction('CLEAR_PROFILE');
 
 // Фильтрация для таймлайна
 export const setFilters = createAction<FiltersData>('SET_FILTERS');
+
+export const updateCardSuccess = createAction<{ item: any; slug: string }>('cards/updateCardSuccess');

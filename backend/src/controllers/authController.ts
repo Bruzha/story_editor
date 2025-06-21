@@ -7,6 +7,8 @@ import jwt from 'jsonwebtoken';
 import { CookieOptions } from 'express';
 import { ProjectFactory, enum_projects_status } from '../models/Project';
 import { IdeaFactory } from '../models/Idea';
+import moment from 'moment';
+import { formatDate } from './commonController';
 
 interface BackendError {
   message: string;
@@ -184,8 +186,8 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
     res.status(200).json({
       email: user.email,
       role: user.role,
-      date: user.createdAt.toLocaleDateString(),
-      updateDate: user.updatedAt.toLocaleDateString(),
+      date: formatDate(new Date(user.createdAt)),
+      updateDate: formatDate(new Date(user.updatedAt)),
       login: user.username,
       name: user.firstName || '',
       lastname: user.lastName || '',
@@ -215,6 +217,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
     user.username = login || user.username;
     user.firstName = name || user.firstName;
     user.lastName = lastname || user.lastName;
+    user.updatedAt = moment().toDate();
     await user.save();
     res.status(200).json({ message: 'Profile updated successfully' });
   } catch (error) {

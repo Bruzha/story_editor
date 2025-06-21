@@ -124,7 +124,7 @@ export default function CreateItemPage() {
 
   useEffect(() => {
     if (createPageData?.masTitle) {
-      createPageData.masTitle.forEach((item) => {
+      createPageData.masTitle.forEach((item: { key: string }) => {
         setValue(item.key, characters[item.key]?.value || '');
       });
     }
@@ -210,15 +210,10 @@ export default function CreateItemPage() {
 
       let miniatureData: number[] | null = null;
       if (data.miniature) {
-        console.log('data.miniature: ', data.miniature);
         const byteArrayResult = await dispatch(convertFileToByteArray({ file: data.miniature }));
-        console.log('data.miniaturebyteArrayResult: ', byteArrayResult);
         if (convertFileToByteArray.fulfilled.match(byteArrayResult)) {
-          console.log('data.miniature startByte: ', data.miniature);
           miniatureData = byteArrayResult.payload;
-          console.log('data.miniature endByte: ', miniatureData);
         } else {
-          console.error('Error converting file to byte array', byteArrayResult.error);
           return;
         }
       }
@@ -233,8 +228,6 @@ export default function CreateItemPage() {
         objectIds: data.objectIds,
         eventIds: data.eventIds,
       };
-
-      console.log('payload: ', payload);
 
       const createItemResult = await dispatch(createItem({ type, payload }));
       if (createItem.fulfilled.match(createItemResult)) {

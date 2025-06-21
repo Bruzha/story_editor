@@ -61,7 +61,6 @@ export const fetchProfile = () => {
       const data: ProfileData = await response.json();
       console.log('profile data: ', data);
       dispatch(fetchProfileSuccess(data));
-      // return data; // Return the data for component to use
     } catch (error: any) {
       dispatch(fetchProfileFailure(error.message || 'Произошла ошибка при получении данных профиля'));
       throw error;
@@ -91,17 +90,11 @@ export const updateProfile = (data: ValidationSchemaType) => {
         );
         throw new Error(`Ошибка при обновлении данных профиля: ${response.status} ${response.statusText}`);
       }
-
-      // Get the current profile data from the store
       const currentProfile = getState().user.profile;
-
-      // If there is no existing profile data, dispatch an error and exit
       if (!currentProfile) {
         dispatch(updateProfileFailure('Ошибка: нет данных профиля в store'));
         throw new Error('Ошибка: нет данных профиля в store');
       }
-
-      // Create a new profile object with the updated data
       const updatedProfile = {
         ...currentProfile,
         login: data.login,
@@ -111,6 +104,7 @@ export const updateProfile = (data: ValidationSchemaType) => {
       dispatch(fetchProfileSuccess(updatedProfile));
 
       dispatch(updateProfileSuccess());
+      dispatch(fetchProfile());
       return response;
     } catch (error: any) {
       dispatch(updateProfileFailure(error.message || 'Произошла ошибка при обновлении данных профиля'));

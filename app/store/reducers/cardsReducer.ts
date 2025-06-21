@@ -9,6 +9,7 @@ import {
   resetCardsState,
 } from '../actions';
 import { createItem } from '../thunks/createItem';
+import { updateCardSuccess } from '@/app/store/actions'; //  Импортируем updateCardSuccess
 import { CardsState } from '../../types/types';
 
 const initialState: CardsState = {
@@ -100,6 +101,17 @@ export const cardsReducer = createReducer(initialState, (builder) => {
           createPageUrl: '', //  Замени на фактические значения, если они известны
           displayFields: [], //  Замени на фактические значения, если они известны
         };
+      }
+    })
+    .addCase(updateCardSuccess, (state, action) => {
+      const { item, slug } = action.payload;
+
+      // Обновляем элемент в state.items
+      state.items = state.items.map((i) => (i.id === item.id ? item : i));
+
+      // Обновляем элемент в cachedData[slug].items
+      if (state.cachedData[slug] && state.cachedData[slug]!.items) {
+        state.cachedData[slug]!.items = state.cachedData[slug]!.items.map((i) => (i.id === item.id ? item : i));
       }
     });
 });

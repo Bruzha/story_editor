@@ -1,8 +1,10 @@
 // store/thunks/updateItem.ts
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { parseCookies } from 'nookies';
-import { updateItemSuccess } from '@/app/store/reducers/itemReducer';
+import { updateItemSuccess } from '@/app/store/reducers/itemReducer'; //  Импортируем updateItemSuccess из itemSlice
+import { updateCardSuccess } from '@/app/store/actions'; //  Импортируем updateCardSuccess
 import { fetchItemData } from './fetchItemData';
+import { RootState } from '../../types/types'; //  Импортируй RootState
 
 interface UpdateItemParams {
   type: string;
@@ -13,6 +15,8 @@ interface UpdateItemParams {
     info_personality?: any;
     info_social?: any;
     status?: any;
+    type?: any;
+    eventDate?: any;
     markerColor?: any;
   };
   miniature?: File;
@@ -21,7 +25,7 @@ interface UpdateItemParams {
 
 export const updateItem = createAsyncThunk(
   'item/updateItem',
-  async ({ type, id, data, miniature, convertFileToByteArray }: UpdateItemParams, { dispatch }) => {
+  async ({ type, id, data, miniature, convertFileToByteArray }: UpdateItemParams, { dispatch, getState }) => {
     const cookies = parseCookies();
     const jwtToken = cookies['jwt'];
     const apiUrl = `http://localhost:3001/update/update/${type}/${id}`;
@@ -32,6 +36,8 @@ export const updateItem = createAsyncThunk(
       info_personality: data.info_personality,
       info_social: data.info_social,
       status: data.status,
+      type: data.type,
+      eventDate: data.eventDate,
       markerColor: data.markerColor,
     };
 
@@ -40,6 +46,7 @@ export const updateItem = createAsyncThunk(
       payload.miniature = miniatureData;
     }
 
+    console.log('payload: ', payload);
     try {
       const response = await fetch(apiUrl, {
         method: 'PATCH',
@@ -55,7 +62,22 @@ export const updateItem = createAsyncThunk(
       }
 
       const updatedItem = await response.json();
-      dispatch(updateItemSuccess(updatedItem));
+
+      //  Определяем slug
+      let slug = '';
+      const projectId = (getState() as RootState).project.projectId;
+      if (type === 'projects') {
+        slug = 'projects';
+      } else if (type === 'ideas') {
+        slug = 'ideas';
+      } else if (type === 'time_events' || type === 'timelines') {
+        slug = `projects/${projectId}/time_events`;
+      } else {
+        slug = `projects/${projectId}/${type}`;
+      }
+
+      dispatch(updateItemSuccess(updatedItem)); //  Диспатчим updateItemSuccess из itemSlice
+      dispatch(updateCardSuccess({ item: updatedItem, slug })); //  Диспатчим updateCardSuccess
       dispatch(fetchItemData({ type, id }));
       return updatedItem;
     } catch (error: any) {

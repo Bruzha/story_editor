@@ -15,7 +15,7 @@ const generateLocationContent = (location: any): docx.Paragraph[] => {
         style: 'Heading1',
         children: [
           new docx.TextRun({
-            text: location.info?.name?.value || 'Location Name',
+            text: location.info?.name?.value || 'Локация без названия',
             bold: true,
             underline: {
               type: docx.UnderlineType.SINGLE,

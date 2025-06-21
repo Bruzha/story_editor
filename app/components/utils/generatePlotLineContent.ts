@@ -16,7 +16,7 @@ const generatePlotLineContent = (plotLine: any): docx.Paragraph[] => {
         style: 'Heading1',
         children: [
           new docx.TextRun({
-            text: plotLine.info?.name?.value || 'Plot Line', // Add null check
+            text: plotLine.info?.name?.value || 'Сюжетная линиия без названия', // Add null check
             bold: true,
             underline: {
               type: docx.UnderlineType.SINGLE,

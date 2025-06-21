@@ -77,8 +77,6 @@ export default function CreatePageMaket({
   const [markerColor, setMarkerColorUse] = useState<string>(initialMarkerColor);
   const [src, setSrc] = useState<string | null>(initialSrc);
 
-  // const [masItems, setMasItems] = useState(initialMasItems);
-
   useEffect(() => {
     const options: { label: string; value: string }[] = [];
 
@@ -113,7 +111,6 @@ export default function CreatePageMaket({
       const headerOffset = () => {
         let offset = 0;
 
-        // Элементы, которые могут быть sticky
         const createSelect = document.querySelector<HTMLElement>('.create__select');
         if (createSelect) {
           offset += createSelect.offsetHeight;
@@ -123,7 +120,6 @@ export default function CreatePageMaket({
           offset += subtitleContainer.offsetHeight;
         }
 
-        // Учитывается Sidebar, если он sticky
         const isSidebarSticky = window.innerWidth < 768;
         const sidebar = document.querySelector<HTMLElement>('.sidebar');
         if (isSidebarSticky && sidebar) {

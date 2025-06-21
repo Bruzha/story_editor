@@ -6,7 +6,8 @@ import { useDispatch } from 'react-redux';
 import { deleteCard } from '../../../store/thunks/deleteCard';
 import { AppDispatch } from '@/app/store';
 import { setProjectId } from '@/app/store/reducers/projectReducer'; // Import setProjectId
-import React from 'react';
+import React, { useState } from 'react';
+import Modal from '../modal/Modal';
 
 interface IProps {
   id: number;
@@ -58,6 +59,8 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
   const router = useRouter();
   const dispatch: AppDispatch = useDispatch();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleClick = () => {
     if (type === 'project') {
       dispatch(setProjectId(String(id)));
@@ -69,12 +72,31 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setIsModalOpen(true);
+  };
+
+  const confirmDelete = () => {
     dispatch(deleteCard(id, type));
+    setIsModalOpen(false);
+  };
+
+  const cancelDelete = () => {
+    setIsModalOpen(false);
   };
 
   const description = truncateText(data[1], 300);
   return (
     <div key={id} className="card" style={textStyle} onClick={handleClick}>
+      {isModalOpen && (
+        <Modal
+          isOpen={isModalOpen}
+          onClose={cancelDelete}
+          title="Подтверждение удаления"
+          message="Вы точно хотите удалить этот элемент и связанные с ним данные?"
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
+      )}
       {isValidSrc && (
         <div>
           <img className="card__avatar" src={src} alt="" style={borderStyle} />

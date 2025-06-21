@@ -71,6 +71,13 @@ router.patch(
     updateItem(req, res, next, 'TimelineEvents', TimelineEventFactory).catch(next);
   }
 );
+router.patch(
+  '/update/timelines/:id',
+  protect as ProtectMiddleware,
+  (req: Request, res: Response, next: NextFunction) => {
+    updateItem(req, res, next, 'TimelineEvents', TimelineEventFactory).catch(next);
+  }
+);
 
 router.patch(
   '/update/characters/:id',

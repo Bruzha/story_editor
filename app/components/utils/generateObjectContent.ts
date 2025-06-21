@@ -15,7 +15,7 @@ const generateObjectContent = (object: any): docx.Paragraph[] => {
         style: 'Heading1',
         children: [
           new docx.TextRun({
-            text: object.info?.name?.value || 'Object Name',
+            text: object.info?.name?.value || 'Объект без названия',
             bold: true,
             underline: {
               type: docx.UnderlineType.SINGLE,

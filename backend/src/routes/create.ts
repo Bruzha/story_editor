@@ -2,11 +2,11 @@ import express, { Router, Request, Response, NextFunction } from 'express';
 import { protect } from '../middleware/authMiddleware';
 import { IdeaFactory } from '../models/Idea';
 import { ProjectFactory } from '../models/Project';
-import { createItem } from '../controllers/commonController';
+import { createItem, formatDate } from '../controllers/commonController';
 import { LocationFactory } from '../models/Location';
 import { ObjectFactory } from '../models/Object';
 import createPageData from '../data/createPageData';
-import { CharacterFactory } from '../models/Character';
+import { CharacterFactory, CharacterInstance } from '../models/Character';
 import { TimelineEventFactory } from '../models/TimelineEvent';
 import { ChapterFactory } from '../models/Chapter';
 import { GroupFactory } from '../models/Group';
@@ -71,7 +71,7 @@ router.post('/create_item/plotlines', protect as ProtectMiddleware, (req, res, n
 router.post('/create_item/characters', protect as ProtectMiddleware, async (req, res, next) => {
   try {
     const { info, info_appearance, info_personality, info_social, miniature, markerColor, projectId } = req.body;
-    const newCharacter = await CharacterFactory(sequelize, DataTypes).create({
+    const newCharacter = (await CharacterFactory(sequelize, DataTypes).create({
       projectId,
       info: info,
       info_appearance: info_appearance,
@@ -79,8 +79,28 @@ router.post('/create_item/characters', protect as ProtectMiddleware, async (req,
       info_social: info_social,
       miniature: miniature,
       markerColor: markerColor,
-    });
-    res.status(201).json(newCharacter);
+    })) as CharacterInstance; //  Явное приведение типа
+
+    const characterData = newCharacter.get({ plain: true });
+
+    // Преобразуем миниатюру в base64 строку
+    let src: string | null = null;
+    if (newCharacter.miniature) {
+      const byteArray = newCharacter.miniature;
+      const base64String = Buffer.from(byteArray).toString('base64');
+      src = `data:image/png;base64,${base64String}`;
+    }
+
+    // Создаем новый объект, который будет содержать все свойства
+    const formattedCharacter = {
+      ...characterData,
+      src: src,
+      createdAt: formatDate(newCharacter.createdAt),
+      updatedAt: formatDate(newCharacter.updatedAt),
+    };
+
+    console.log('formattedCharacter: ', formattedCharacter);
+    res.status(201).json(formattedCharacter);
   } catch (error) {
     console.error('Error creating character:', error);
     next(error);

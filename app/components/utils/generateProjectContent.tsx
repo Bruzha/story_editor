@@ -14,7 +14,7 @@ const generateProjectContent = (projectData: any): docx.Paragraph[] => {
       style: 'Heading1',
       children: [
         new docx.TextRun({
-          text: projectData.info.name.value || 'Project Name',
+          text: projectData.info.name.value || 'Проект без названия',
           bold: true,
           underline: {
             type: docx.UnderlineType.SINGLE,

@@ -23,7 +23,7 @@ const generateCharacterContent = (character: any): docx.Paragraph[] => {
         style: 'Heading1',
         children: [
           new docx.TextRun({
-            text: character.info.name.value || 'Project Name',
+            text: character.info.name.value || 'Персонаж без имени',
             bold: true,
             underline: {
               type: docx.UnderlineType.SINGLE,

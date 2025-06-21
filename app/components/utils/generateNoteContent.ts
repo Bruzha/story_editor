@@ -15,7 +15,7 @@ const generateNoteContent = (note: any): docx.Paragraph[] => {
         style: 'Heading1',
         children: [
           new docx.TextRun({
-            text: 'Заметка',
+            text: note.info?.title?.value || 'Заметка без названия',
             bold: true,
           }),
         ],

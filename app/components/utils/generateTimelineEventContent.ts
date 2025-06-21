@@ -16,7 +16,7 @@ const generateTimelineEventContent = (timelineEvent: any): docx.Paragraph[] => {
         style: 'Heading1',
         children: [
           new docx.TextRun({
-            text: timelineEvent.info?.name?.value || 'Timeline Event', // Add null check
+            text: timelineEvent.info?.name?.value || 'Событие без названия', // Add null check
             bold: true,
             underline: {
               type: docx.UnderlineType.SINGLE,

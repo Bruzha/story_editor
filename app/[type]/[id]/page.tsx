@@ -18,6 +18,7 @@ import { updateItem } from '@/app/store/thunks/updateItem';
 import Loading from '@/app/components/ui/loading/Loading';
 import Message from '@/app/components/ui/message/Message';
 import { convertFileToByteArray } from '@/app/store/thunks/convertFileToByteArray';
+import moment from 'moment';
 
 interface RouteParams {
   type: string;
@@ -41,8 +42,12 @@ export default function ItemInfoPage() {
   }, [id, type, dispatch]);
 
   useEffect(() => {
-    reset();
-  }, [item]);
+    if (item) {
+      // Преобразуем eventDate в формат ISO 8601 перед установкой значения по умолчанию
+      const isoDate = item.eventDate ? moment(item.eventDate, 'DD.MM.YYYY, HH:mm').format('YYYY-MM-DDTHH:mm') : '';
+      reset({ ...item, time_events_eventDate: isoDate }); // Устанавливаем значение по умолчанию для time_events_eventDate
+    }
+  }, [item, reset]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -84,10 +89,28 @@ export default function ItemInfoPage() {
                 { value: 'завершен', label: 'Завершен' },
                 { value: 'приостановлен', label: 'Приостановлен' },
               ]}
-              value={item.status}
               {...register('status')}
               onChange={(e) => {
                 setValue('status', e.target.value);
+              }}
+            />
+          </Label>
+        </>
+      );
+    }
+    if (type === 'plotlines') {
+      return (
+        <>
+          <Label text={'Тип'} id="plotline_type">
+            <Select
+              options={[
+                { value: 'главная', label: 'Главная' },
+                { value: 'второстепенная', label: 'Второстепенная' },
+                { value: 'равнозначная', label: 'Равнозначная' },
+              ]}
+              {...register('type')}
+              onChange={(e) => {
+                setValue('type', e.target.value);
               }}
             />
           </Label>
@@ -98,23 +121,38 @@ export default function ItemInfoPage() {
       return (
         <>
           <Label text={'Дата события'} id="time_events_eventDate">
-            <Input type="datetime-local" value={item.eventDate} {...register('time_events_eventDate')} />
+            <Input
+              type="datetime-local"
+              {...register('time_events_eventDate')}
+              onChange={(e) => {
+                setValue('eventDate', e.target.value); // Обновляем значение в форме
+              }}
+            />
+          </Label>
+        </>
+      );
+    }
+    if (type === 'chapters') {
+      return (
+        <>
+          <Label text={'Статус'} id="status">
+            <Select
+              options={[
+                { value: 'запланирована', label: 'Запланирована' },
+                { value: 'в процессе', label: 'В процессе' },
+                { value: 'завершена', label: 'Завершена' },
+                { value: 'приостановлена', label: 'Приостановлена' },
+              ]}
+              {...register('status')}
+              onChange={(e) => {
+                setValue('status', e.target.value);
+              }}
+            />
           </Label>
         </>
       );
     }
     return null;
-  };
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   const getItemTitle = () => {
@@ -133,8 +171,6 @@ export default function ItemInfoPage() {
   };
 
   const onSubmit: SubmitHandler<any> = async (data: any) => {
-    console.log('Data submitted:', data);
-
     const masItemsData: any = item.info
       ? Object.keys(item.info).reduce((acc: any, key) => {
           acc[key] = { value: data[key] !== undefined ? data[key] : '' };
@@ -167,7 +203,6 @@ export default function ItemInfoPage() {
     } else {
       info = masItemsData;
     }
-
     dispatch(
       updateItem({
         type,
@@ -178,6 +213,8 @@ export default function ItemInfoPage() {
           info_personality: info_personality,
           info_social: info_social,
           status: data.status,
+          type: data.type,
+          eventDate: data.time_events_eventDate,
           markerColor: data.markerColor,
         },
         miniature: data.miniature,
@@ -200,7 +237,6 @@ export default function ItemInfoPage() {
         masItems={
           item.info
             ? Object.entries(item.info).map(([key, value]) => {
-                console.log('key:', key, 'value:', value);
                 return {
                   key: key,
                   title: (value as any)?.title,
@@ -211,20 +247,20 @@ export default function ItemInfoPage() {
               })
             : []
         }
-        markerColor={item.markerColor || '#4682B4'}
+        markerColor={item.markerColor || '#4682B4'} // Передаем markerColor
         showCancelButton={true}
         showImageInput={item.showImageInput}
         register={register}
         setValue={setValue}
         onSubmit={handleSubmit(onSubmit)}
-        src={item.src}
+        src={item.src} // Передаем src
       >
         {renderCustomFields()}
         <Label text={'Дата создания'} id="created_date">
-          <Input readOnly value={formatDate(item.createdAt)} />
+          <Input readOnly value={item.createdAt} />
         </Label>
         <Label text={'Дата обновления'} id="updated_date">
-          <Input readOnly value={formatDate(item.updatedAt)} />
+          <Input readOnly value={item.updatedAt} />
         </Label>
       </CreatePageMaket>
     </div>

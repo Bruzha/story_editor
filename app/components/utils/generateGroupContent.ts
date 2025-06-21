@@ -16,7 +16,7 @@ const generateGroupContent = (group: any): docx.Paragraph[] => {
         style: 'Heading1',
         children: [
           new docx.TextRun({
-            text: group.info?.name?.value || 'Group Name', // Проверка на null
+            text: group.info?.name?.value || 'Группа без названия', // Проверка на null
             bold: true,
           }),
         ],

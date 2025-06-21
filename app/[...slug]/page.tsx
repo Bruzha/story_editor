@@ -21,11 +21,11 @@ interface CardData {
   isLoading?: boolean;
   error?: string | null;
   typeSidebar?: TypeSidebar;
-  typeCard?: string; // Replace string with the correct type if it's not a string
+  typeCard?: string;
   title?: string;
   subtitle?: string;
   createPageUrl?: string;
-  displayFields?: string[]; // ADD displayFields
+  displayFields?: string[];
 }
 
 const defaultCardData: CardData = {
@@ -52,10 +52,6 @@ function CardsPage({ params }: Props) {
     displayFields = [],
   } = useSelector((state: RootState) => state.cards.cachedData[slug.join('/')] || defaultCardData);
 
-  console.log(
-    'useSelector((state: RootState) => state.cards: ',
-    useSelector((state: RootState) => state.cards)
-  );
   const { isLoading, error } = useSelector((state: RootState) => ({
     isLoading: state.cards.isLoading,
     error: state.cards.error,
@@ -68,7 +64,6 @@ function CardsPage({ params }: Props) {
       router.push('/auth/autorisation');
     }
   }, [isAuthenticated, router, dispatch, slug]);
-  console.log('items: ', items);
   const handleSort = (sortByOption: string) => {
     setSortBy(sortByOption);
   };
