@@ -5,14 +5,14 @@ import './style.scss';
 
 interface IProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   options: { value: string; label: string }[];
-  onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void; // Изменяем тип onChange
+  onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
 const Select: React.FC<IProps> = ({ options, onChange, ...props }) => {
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value; // Получаем значение из события
+    const value = event.target.value;
     if (onChange) {
-      onChange(event); // Передаем событие в onChange
+      onChange(event);
     }
     console.log('Выбранное значение:', value);
   };

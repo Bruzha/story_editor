@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { deleteCard } from '../../../store/thunks/deleteCard';
 import { AppDispatch } from '@/app/store';
-import { setProjectId } from '@/app/store/reducers/projectReducer'; // Import setProjectId
+import { setProjectId } from '@/app/store/reducers/projectReducer';
 import React, { useState } from 'react';
 import Modal from '../modal/Modal';
 
@@ -91,7 +91,7 @@ export default function Card({ id, type, src, data, markColor, showDeleteButton 
         <Modal
           isOpen={isModalOpen}
           onClose={cancelDelete}
-          title="Подтверждение удаления"
+          title="Подтверждение"
           message="Вы точно хотите удалить этот элемент и связанные с ним данные?"
           onConfirm={confirmDelete}
           onCancel={cancelDelete}

@@ -11,6 +11,7 @@ import { GroupFactory } from '../models/Group';
 import { ChapterFactory } from '../models/Chapter';
 import { NoteFactory } from '../models/Note';
 import { TimelineEventFactory } from '../models/TimelineEvent';
+import { SupportingMaterialFactory } from '../models/SupportingMaterial';
 
 const router: Router = express.Router();
 
@@ -251,5 +252,23 @@ router.get(
     );
   }
 );
+
+// Маршрут для получения данных о совете
+router.get('/advices/:adviceId', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  getItemById(req, res, next, 'adviceId', 'SupportingMaterial', SupportingMaterialFactory, {
+    typeSidebar: 'profile',
+    title: 'ДАННЫЕ СОВЕТА',
+    showImageInput: false,
+  });
+});
+
+// Маршрут для получения данных о термине
+router.get('/terms/:termId', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  getItemById(req, res, next, 'termId', 'SupportingMaterial', SupportingMaterialFactory, {
+    typeSidebar: 'profile',
+    title: 'ДАННЫЕ СОВЕТА',
+    showImageInput: false,
+  });
+});
 
 export default router;

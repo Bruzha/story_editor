@@ -4,7 +4,7 @@ import { ItemsData } from '../types/types';
 // Тип для данных, возвращаемых API
 export interface ApiResponse {
   masItems: ItemsData[];
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
+  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | string | '';
   typeCard: string;
   title: string;
   subtitle: string;

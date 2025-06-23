@@ -12,6 +12,7 @@ import { GroupFactory } from '../models/Group';
 import { ChapterFactory } from '../models/Chapter';
 import { NoteFactory } from '../models/Note';
 import { TimelineEventFactory } from '../models/TimelineEvent';
+import { SupportingMaterialFactory } from '../models/SupportingMaterial';
 
 const router: Router = express.Router();
 
@@ -69,12 +70,23 @@ router.delete('/notes/delete', protect as ProtectMiddleware, (req: Request, res:
   const noteId = req.query.noteId;
   deleteItem(req as AuthRequest, res, next, noteId, 'Note', NoteFactory);
 });
+// Маршрут для удаления совета
+router.delete('/advices/delete', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  const adviceId = req.query.adviceId;
+  deleteItem(req as AuthRequest, res, next, adviceId, 'SupportingMaterial', SupportingMaterialFactory);
+});
+// Маршрут для удаления термина
+router.delete('/terms/delete', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  const termId = req.query.termId;
+  deleteItem(req as AuthRequest, res, next, termId, 'SupportingMaterial', SupportingMaterialFactory);
+});
+
 // Маршрут для удаления события на линии времени
 router.delete(
   '/time_events/delete',
   protect as ProtectMiddleware,
   (req: Request, res: Response, next: NextFunction) => {
-    const timelineId = req.query.time_lineId;
+    const timelineId = req.query.time_eventId;
     deleteItem(req as AuthRequest, res, next, timelineId, 'TimelineEvent', TimelineEventFactory);
   }
 );

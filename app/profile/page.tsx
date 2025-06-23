@@ -77,7 +77,6 @@ export default function Profile() {
   if (error) {
     return <p>Error: {error}</p>;
   }
-
   return (
     <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle={profile?.login || ''}>
       <div className="profile">

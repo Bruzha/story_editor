@@ -14,6 +14,7 @@ import {
   masTitleCharacterPersonality,
   masTitleCharacterSocial,
 } from './masData/character';
+import { masTitleAdvice, masTitleTerm } from './masData/advice';
 
 interface MasTitleItem {
   key: string;
@@ -47,6 +48,20 @@ const createPageData: CreatePageDataType[] = [
     title: 'СОЗДАНИЕ ИДЕИ',
     masTitle: masTitleIdea,
     typeSidebar: 'profile',
+  },
+  {
+    type: 'advices',
+    title: 'СОЗДАНИЕ СОВЕТА',
+    masTitle: masTitleAdvice,
+    typeSidebar: 'profile',
+    showMarkerColorInput: false,
+  },
+  {
+    type: 'terms',
+    title: 'СОЗДАНИЕ ТЕРМИНА',
+    masTitle: masTitleTerm,
+    typeSidebar: 'profile',
+    showMarkerColorInput: false,
   },
   {
     type: 'plotlines',

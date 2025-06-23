@@ -224,6 +224,9 @@ export default function CreatePageMaket({
     }
   };
 
+  if (title === 'ДАННЫЕ СОВЕТА' || title === 'ДАННЫЕ ТЕРМИНА') {
+    showMarkerColorInput = false;
+  }
   return (
     <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle} lineColor={markerColor}>
       <Form onSubmit={onSubmit}>
@@ -268,7 +271,7 @@ export default function CreatePageMaket({
                   ) : (
                     <Textarea key={item.key} placeholder={item.placeholder} {...register(item.key)} />
                   )}
-                  <div>
+                  {/* <div>
                     <input
                       title="Добавить поле ниже"
                       className="create__button-textarea"
@@ -276,7 +279,7 @@ export default function CreatePageMaket({
                       src="/icons/add.svg"
                       alt="Добавить поле ниже"
                     />
-                    {/* {!item.removable && (
+                    {!item.removable && (
                       <input
                         title="Удалить поле"
                         className="create__button-textarea"
@@ -285,8 +288,8 @@ export default function CreatePageMaket({
                         alt="Удалить поле"
                         onClick={() => removeItem(item.key)}
                       />
-                    )} */}
-                  </div>
+                    )}
+                  </div> */}
                 </div>
               </Label>
             ))}

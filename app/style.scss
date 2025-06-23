@@ -221,28 +221,27 @@
     }
 
     &__feature-item {
-        position: relative;
-        padding: 10px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        p {
-            margin: 10px 0;
-        }
+  position: relative;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  p {
+    margin: 10px 0;
+  }
 
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.15);
-        }
-    }
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+}
 
-    &__feature-toggle {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 0.8em;
-        color: var(--secondary-text-color);
-    }
+&__feature-toggle {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-size: 0.8em;
+  color: var(--secondary-text-color);
+}
 
     &__feature-content {
         padding: 10px;

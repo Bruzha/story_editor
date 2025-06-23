@@ -14,7 +14,7 @@ interface Props {
   params: { slug: string[] };
 }
 
-type TypeSidebar = 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
+type TypeSidebar = 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | string | '';
 
 interface CardData {
   items?: any[];
@@ -41,6 +41,7 @@ function CardsPage({ params }: Props) {
   const [sortBy, setSortBy] = useState('date');
 
   const projectId = useSelector((state: RootState) => state.project.projectId);
+  const userRole = useSelector((state: RootState) => state.user.profile?.role);
 
   const {
     items = [],
@@ -51,6 +52,11 @@ function CardsPage({ params }: Props) {
     createPageUrl = '',
     displayFields = [],
   } = useSelector((state: RootState) => state.cards.cachedData[slug.join('/')] || defaultCardData);
+
+  console.log(
+    'useSelector((state: RootState) => state.cards.cachedData',
+    useSelector((state: RootState) => state.cards.cachedData)
+  );
 
   const { isLoading, error } = useSelector((state: RootState) => ({
     isLoading: state.cards.isLoading,
@@ -64,6 +70,7 @@ function CardsPage({ params }: Props) {
       router.push('/auth/autorisation');
     }
   }, [isAuthenticated, router, dispatch, slug]);
+
   const handleSort = (sortByOption: string) => {
     setSortBy(sortByOption);
   };
@@ -87,10 +94,11 @@ function CardsPage({ params }: Props) {
   if (typeSidebar === 'project' || typeSidebar === 'timeline') {
     showCopyButton = true;
   }
-  if (typeSidebar === 'help') {
+  if (typeSidebar === 'help' && userRole === 'user') {
     showCreateButton = false;
     showDeleteButton = false;
   }
+
   return (
     <CardsPageMaket
       typeSidebar={typeSidebar}

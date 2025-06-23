@@ -269,6 +269,24 @@ export default function CreateItemPage() {
         </>
       );
     }
+    if (type === 'admin_terms' || type === 'user_terms') {
+      return (
+        <>
+          <Label text={'Тип'} id="plotline_type">
+            <Input readOnly value="Термин" />
+          </Label>
+        </>
+      );
+    }
+    if (type === 'admin_advices' || type === 'user_advices') {
+      return (
+        <>
+          <Label text={'Тип'} id="plotline_type">
+            <Input readOnly value="Совет" />
+          </Label>
+        </>
+      );
+    }
     if (type === 'plotlines') {
       return (
         <>

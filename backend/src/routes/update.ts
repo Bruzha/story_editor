@@ -11,6 +11,7 @@ import { NoteFactory } from '../models/Note';
 import { PlotLineFactory } from '../models/PlotLine';
 import { TimelineEventFactory } from '../models/TimelineEvent';
 import { CharacterFactory } from '../models/Character';
+import { SupportingMaterialFactory } from '../models/SupportingMaterial';
 
 const router: Router = express.Router();
 
@@ -26,6 +27,13 @@ router.patch(
 
 router.patch('/update/objects/:id', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
   updateItem(req, res, next, 'Object', ObjectFactory).catch(next);
+});
+
+router.patch('/update/advices/:id', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  updateItem(req, res, next, 'SupportingMaterial', SupportingMaterialFactory).catch(next);
+});
+router.patch('/update/terms/:id', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  updateItem(req, res, next, 'SupportingMaterial', SupportingMaterialFactory).catch(next);
 });
 
 router.patch('/update/groups/:id', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {

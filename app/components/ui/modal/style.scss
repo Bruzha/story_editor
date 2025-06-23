@@ -1,4 +1,36 @@
-.modalOverlay {
+@import "/app/mixins.scss";
+
+.mod {
+
+  @include media-breakpoint-down(sm) {
+    &__message{
+        font-size: 16px;
+    }
+    &__buttons{
+      flex-direction: column;
+    }
+  }
+
+  @include media-breakpoint-up(sm){
+    &__message{
+        font-size: 22px;
+    }
+  }
+  @include media-breakpoint-down(md) {
+    &__buttons {
+      margin-top: 40px;
+    }
+  }
+  @include media-breakpoint-between(md, xxxl){
+    &__buttons {
+      margin-top: 60px;
+    }
+  }
+  @include media-breakpoint-up(xxxl){
+    &__buttons {
+      margin-top: 75px;
+    }
+  }
   position: fixed;
   top: 0;
   left: 0;
@@ -9,29 +41,24 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-}
 
-.modalContent {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  width: 500px;
-  max-width: 90%;
-  text-align: center;
-}
+  &__content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    align-items: center;
+  }
 
-.modalTitle {
-  font-size: 24px;
-  margin-bottom: 10px;
-}
 
-.modalMessage {
-  font-size: 16px;
-  margin-bottom: 20px;
-}
+  &__message {
+    margin-bottom: 20px;
+    text-align: center;
+  }
 
-.modalButtons {
-  display: flex;
-  justify-content: space-around;
+  &__buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
 }

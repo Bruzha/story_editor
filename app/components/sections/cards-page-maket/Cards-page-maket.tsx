@@ -7,7 +7,7 @@ import Search from '../../sections/search/Search';
 import Pagination from '../../ui/pagination/Pagination';
 
 interface IProps {
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
+  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | string | '';
   title: string;
   subtitle: string;
   typeCard: string;

@@ -21,34 +21,69 @@ export default function Sidebar({ type }: IProps) {
   const [currentPath, setCurrentPath] = useState('');
   const projectId = useSelector((state: RootState) => state.project?.projectId);
   const characterId = useSelector((state: RootState) => state.item?.itemId);
-
+  const userRole = useSelector((state: RootState) => state.user.profile?.role);
   useEffect(() => {
     setCurrentPath(pathname);
   }, [pathname]);
 
   let masLinks: ListItem[] = [];
   if (type === 'profile') {
+    if (userRole === 'user') {
+      masLinks = [
+        { name: 'Профиль', href: '/profile', icon: '/icons/name.svg' },
+        { name: 'Проекты', href: '/projects', icon: '/icons/project.svg' },
+        { name: 'Идеи', href: '/ideas', icon: '/icons/idea.svg' },
+      ];
+    } else {
+      masLinks = [
+        { name: 'Профиль', href: '/profile', icon: '/icons/name.svg' },
+        { name: 'Проекты', href: '/projects', icon: '/icons/project.svg' },
+        { name: 'Идеи', href: '/ideas', icon: '/icons/idea.svg' },
+        { name: 'Советы', href: '/advices', icon: '/icons/help.svg' },
+        { name: 'Термины', href: '/terms', icon: '/icons/terms.svg' },
+      ];
+    }
+  } else if (type === 'profile-admin') {
     masLinks = [
       { name: 'Профиль', href: '/profile', icon: '/icons/name.svg' },
       { name: 'Проекты', href: '/projects', icon: '/icons/project.svg' },
       { name: 'Идеи', href: '/ideas', icon: '/icons/idea.svg' },
+      { name: 'Советы', href: '/advices', icon: '/icons/help.svg' },
+      { name: 'Термины', href: '/terms', icon: '/icons/terms.svg' },
     ];
   } else if (type === 'project' && projectId) {
-    masLinks = [
-      { name: 'Назад', href: '/projects', icon: '/icons/back.svg' },
-      { name: 'Данные проекта', href: `/projects/${projectId}`, icon: '/icons/base.svg' },
-      { name: 'Сюжетные линии', href: `/projects/${projectId}/plotlines`, icon: '/icons/plotline.svg' },
-      { name: 'Персонажи', href: `/projects/${projectId}/characters`, icon: '/icons/character.svg' },
-      { name: 'Локации', href: `/projects/${projectId}/locations`, icon: '/icons/location.svg' },
-      { name: 'Объекты', href: `/projects/${projectId}/objects`, icon: '/icons/object.svg' },
-      { name: 'Группы', href: `/projects/${projectId}/groups`, icon: '/icons/group.svg' },
-      //{ name: 'Схемы отношений', href: `/projects/${projectId}/relationships`, icon: '/icons/relationship.svg' },
-      { name: 'Линия времени', href: `/projects/${projectId}/time_events`, icon: '/icons/timelines.svg' },
-      { name: 'Главы', href: `/projects/${projectId}/chapters`, icon: '/icons/chapter.svg' },
-      { name: 'Заметки', href: `/projects/${projectId}/notes`, icon: '/icons/notes.svg' },
-      { name: 'Экспорт', href: `/projects/${projectId}/export`, icon: '/icons/export.svg' },
-      { name: 'Советы', href: `/projects/${projectId}/advices`, icon: '/icons/help.svg' },
-    ];
+    if (userRole === 'user') {
+      masLinks = [
+        { name: 'Назад', href: '/projects', icon: '/icons/back.svg' },
+        { name: 'Данные проекта', href: `/projects/${projectId}`, icon: '/icons/base.svg' },
+        { name: 'Сюжетные линии', href: `/projects/${projectId}/plotlines`, icon: '/icons/plotline.svg' },
+        { name: 'Персонажи', href: `/projects/${projectId}/characters`, icon: '/icons/character.svg' },
+        { name: 'Локации', href: `/projects/${projectId}/locations`, icon: '/icons/location.svg' },
+        { name: 'Объекты', href: `/projects/${projectId}/objects`, icon: '/icons/object.svg' },
+        { name: 'Группы', href: `/projects/${projectId}/groups`, icon: '/icons/group.svg' },
+        //{ name: 'Схемы отношений', href: `/projects/${projectId}/relationships`, icon: '/icons/relationship.svg' },
+        { name: 'Линия времени', href: `/projects/${projectId}/time_events`, icon: '/icons/timelines.svg' },
+        { name: 'Главы', href: `/projects/${projectId}/chapters`, icon: '/icons/chapter.svg' },
+        { name: 'Заметки', href: `/projects/${projectId}/notes`, icon: '/icons/notes.svg' },
+        { name: 'Экспорт', href: `/projects/${projectId}/export`, icon: '/icons/export.svg' },
+        { name: 'Советы', href: `/projects/${projectId}/advices`, icon: '/icons/help.svg' },
+      ];
+    } else {
+      masLinks = [
+        { name: 'Назад', href: '/projects', icon: '/icons/back.svg' },
+        { name: 'Данные проекта', href: `/projects/${projectId}`, icon: '/icons/base.svg' },
+        { name: 'Сюжетные линии', href: `/projects/${projectId}/plotlines`, icon: '/icons/plotline.svg' },
+        { name: 'Персонажи', href: `/projects/${projectId}/characters`, icon: '/icons/character.svg' },
+        { name: 'Локации', href: `/projects/${projectId}/locations`, icon: '/icons/location.svg' },
+        { name: 'Объекты', href: `/projects/${projectId}/objects`, icon: '/icons/object.svg' },
+        { name: 'Группы', href: `/projects/${projectId}/groups`, icon: '/icons/group.svg' },
+        //{ name: 'Схемы отношений', href: `/projects/${projectId}/relationships`, icon: '/icons/relationship.svg' },
+        { name: 'Линия времени', href: `/projects/${projectId}/time_events`, icon: '/icons/timelines.svg' },
+        { name: 'Главы', href: `/projects/${projectId}/chapters`, icon: '/icons/chapter.svg' },
+        { name: 'Заметки', href: `/projects/${projectId}/notes`, icon: '/icons/notes.svg' },
+        { name: 'Экспорт', href: `/projects/${projectId}/export`, icon: '/icons/export.svg' },
+      ];
+    }
   } else if (type === 'timeline' && projectId) {
     masLinks = [
       { name: 'Назад', href: `/projects/${projectId}`, icon: '/icons/back.svg' },

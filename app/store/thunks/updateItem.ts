@@ -72,6 +72,10 @@ export const updateItem = createAsyncThunk(
         slug = 'ideas';
       } else if (type === 'time_events' || type === 'timelines') {
         slug = `projects/${projectId}/time_events`;
+      } else if (type === 'advices') {
+        slug = 'advices';
+      } else if (type === 'terms') {
+        slug = 'terms';
       } else {
         slug = `projects/${projectId}/${type}`;
       }

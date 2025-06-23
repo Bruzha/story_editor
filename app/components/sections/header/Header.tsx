@@ -57,7 +57,7 @@ export default function Header() {
               {''}
             </MyLink>
             <MyLink
-              href="/"
+              href="#"
               name="Выйти"
               className="white-link header__exit-link"
               onClick={(e) => {

@@ -18,7 +18,6 @@ export const fetchItemData = createAsyncThunk(
       const state = thunkAPI.getState() as RootState;
       const { cachedItems } = state.item;
       const { projectId } = state.project;
-
       const cacheKey = `${id}-${type}${typePage ? `-${typePage}` : ''}`;
 
       if (cachedItems[cacheKey]) {

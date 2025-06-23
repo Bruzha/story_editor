@@ -41,7 +41,7 @@ interface Options {
   modelName: string;
   modelFactory: ModelFactory;
   title: string;
-  subtitleSource: 'user' | 'project';
+  subtitleSource: 'user' | 'project' | string;
   typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
   typeCard: string;
   createPageUrl: string;
@@ -95,12 +95,10 @@ export const getItems = async (req: Request, res: Response, next: NextFunction, 
     if (options.where) {
       Object.assign(whereClause, options.where);
     }
-
     const items = await Model.findAll({
       where: whereClause,
       order: [['createdAt', 'DESC']],
     });
-
     const formattedItems = items.map((item: any) => {
       const itemData: any = { ...item.get({ plain: true }) };
       if (options.src && item.miniature) {
@@ -134,6 +132,8 @@ export const getItems = async (req: Request, res: Response, next: NextFunction, 
         return res.status(404).json({ message: 'Project not found' });
       }
       subtitle = project.info.name.value;
+    } else {
+      subtitle = options.subtitleSource;
     }
 
     const responseData = {
@@ -145,7 +145,6 @@ export const getItems = async (req: Request, res: Response, next: NextFunction, 
       createPageUrl: options.createPageUrl,
       displayFields: options.displayFields,
     };
-
     res.status(200).json(responseData);
   } catch (error) {
     console.error(`Ошибка при получении ${options.modelName}:`, error);
@@ -168,6 +167,7 @@ export const getItemById = async (
 ) => {
   try {
     const itemId = req.params[itemIdParamName];
+    console.log('itemId', itemId);
 
     if (!itemId) {
       return res.status(400).json({ message: `${modelName} ID is required` });
@@ -219,6 +219,11 @@ export const getItemById = async (
         (data) => data.type === modelName.toLowerCase() + 's' && data.typePage === additionalOptions.dataType
       );
     }
+    console.log('itemIdParamName', itemIdParamName);
+    if (modelName === 'SupportingMaterial') {
+      if (itemIdParamName === 'adviceId') createPageDataItem = createPageData.find((data) => data.type === 'advices');
+      if (itemIdParamName === 'termId') createPageDataItem = createPageData.find((data) => data.type === 'terms');
+    }
 
     const masTitle = createPageDataItem?.masTitle;
 
@@ -246,6 +251,7 @@ export const getItemById = async (
     }
     info = { ...newInfo, ...extraInfo };
 
+    console.log('item: ', item);
     let src: string | null = null;
     if (item.miniature) {
       const byteArray = item.miniature;
@@ -275,6 +281,7 @@ export const getItemById = async (
       src: src,
     };
 
+    console.log('111 responseData: ', responseData);
     res.status(200).json(responseData);
   } catch (error) {
     console.error(`Error fetching ${modelName} by ID:`, error);
@@ -471,7 +478,8 @@ export const createItem = async (
   res: Response,
   next: NextFunction,
   modelName: string,
-  modelFactory: ModelFactory
+  modelFactory: ModelFactory,
+  typeHelp?: string
 ) => {
   try {
     const { info, status, miniature, markerColor, type, eventDate, projectId, userId, content, sceneStructure } =
@@ -481,6 +489,11 @@ export const createItem = async (
     const ModelAttributes = Model.rawAttributes;
     const createData: any = {};
     createData.info = info;
+    if (modelName === 'SupportingMaterial') {
+      // createData.title = info.title.value;
+      // createData.content = info.content.value;
+      createData.type = typeHelp || 'Совет';
+    }
     createData.markerColor = markerColor || '#4682B4';
     if (ModelAttributes.userId) {
       createData.userId = userId || currentUserId;
@@ -493,7 +506,7 @@ export const createItem = async (
       if (modelName === 'Chapter') createData.status = status || 'запланирована';
     }
     if (ModelAttributes.type) {
-      createData.type = type || 'главная';
+      if (modelName === 'PlotLine') createData.type = type || 'главная';
     }
     if (ModelAttributes.eventDate) {
       createData.eventDate = eventDate || new Date();
@@ -502,7 +515,7 @@ export const createItem = async (
       createData.miniature = miniature || null;
     }
     if (ModelAttributes.content) {
-      createData.content = content;
+      if (modelName !== 'SupportingMaterial') createData.content = content;
     }
     if (ModelAttributes.sceneStructure) {
       createData.sceneStructure = sceneStructure;

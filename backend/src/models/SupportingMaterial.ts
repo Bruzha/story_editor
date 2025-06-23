@@ -7,8 +7,7 @@ export enum enum_supportingmaterials_type {
 
 interface SupportingMaterialAttributes {
   id?: number;
-  title: string;
-  content: string;
+  info: any;
   type: enum_supportingmaterials_type;
 }
 
@@ -33,13 +32,9 @@ export const SupportingMaterialFactory = (
         autoIncrement: true,
         primaryKey: true,
       },
-      title: {
-        type: dataTypes.TEXT,
-        allowNull: false,
-      },
-      content: {
-        type: dataTypes.TEXT,
-        allowNull: false,
+      info: {
+        type: dataTypes.JSONB,
+        allowNull: true,
       },
       type: {
         type: dataTypes.ENUM(...Object.values(enum_supportingmaterials_type)),

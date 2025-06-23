@@ -54,6 +54,10 @@ export const createItem = createAsyncThunk(
         slug = 'projects';
       } else if (type === 'ideas') {
         slug = 'ideas';
+      } else if (type === 'advices') {
+        slug = 'advices';
+      } else if (type === 'terms') {
+        slug = 'terms';
       } else {
         slug = `projects/${projectId}/${type}`;
       }

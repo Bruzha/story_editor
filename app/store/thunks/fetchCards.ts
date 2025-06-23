@@ -4,17 +4,17 @@ import { fetchCardsRequest, fetchCardsSuccess, fetchCardsFailure } from '../acti
 import { parseCookies } from 'nookies';
 import { AppDispatch, RootState } from '../index';
 
-type TypeSidebar = 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
+type TypeSidebar = 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | string | '';
 
 interface ApiResponse {
-  masItems: any[]; // Replace any with the correct type
+  masItems: any[];
   typeSidebar: TypeSidebar;
-  typeCard: string; // Replace string with the correct type if it's not a string
+  typeCard: string;
   title: string;
   subtitle: string;
   createPageUrl: string;
   slug: string;
-  displayFields: string[]; // ADD displayFields
+  displayFields: string[];
 }
 
 export const fetchCards = (slug: string[]) => {
@@ -27,8 +27,8 @@ export const fetchCards = (slug: string[]) => {
       const apiResponse: ApiResponse = {
         ...cachedData,
         slug: cacheKey,
-        masItems: cachedData.items || [], // Provide a default empty array
-        typeSidebar: cachedData.typeSidebar || '', // Provide a default empty string
+        masItems: cachedData.items || [],
+        typeSidebar: cachedData.typeSidebar || '',
         typeCard: cachedData.typeCard || '',
         title: cachedData.title || '',
         subtitle: cachedData.subtitle || '',
@@ -53,7 +53,7 @@ export const fetchCards = (slug: string[]) => {
 
       const SlugToString = slug.join('/');
       const apiUrl = `http://localhost:3001/getCards/${SlugToString}`;
-
+      console.log('apiUrl: ', apiUrl);
       const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
@@ -66,7 +66,6 @@ export const fetchCards = (slug: string[]) => {
       }
 
       const data = await response.json();
-      console.log('data: ', data);
       dispatch(fetchCardsSuccess({ ...data, slug: cacheKey }));
     } catch (error: any) {
       dispatch(fetchCardsFailure(error.message));

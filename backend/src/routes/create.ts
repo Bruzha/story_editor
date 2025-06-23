@@ -14,6 +14,7 @@ import { NoteFactory } from '../models/Note';
 import { PlotLineFactory } from '../models/PlotLine';
 import { sequelize } from '../config/database';
 import { DataTypes } from 'sequelize';
+import { SupportingMaterialFactory } from '../models/SupportingMaterial';
 
 const router: Router = express.Router();
 
@@ -32,7 +33,7 @@ router.get('/create-page-data/:type', protect as ProtectMiddleware, (req: Reques
   } else {
     pageData = createPageData.find((item) => item.type === type);
   }
-
+  console.log(pageData);
   if (pageData) {
     res.status(200).json(pageData);
   } else {
@@ -66,6 +67,13 @@ router.post('/create_item/notes', protect as ProtectMiddleware, (req, res, next)
 });
 router.post('/create_item/plotlines', protect as ProtectMiddleware, (req, res, next) => {
   createItem(req, res, next, 'PlotLine', PlotLineFactory).catch(next);
+});
+
+router.post('/create_item/advices', protect as ProtectMiddleware, (req, res, next) => {
+  createItem(req, res, next, 'SupportingMaterial', SupportingMaterialFactory, 'Совет').catch(next);
+});
+router.post('/create_item/terms', protect as ProtectMiddleware, (req, res, next) => {
+  createItem(req, res, next, 'SupportingMaterial', SupportingMaterialFactory, 'Термин').catch(next);
 });
 
 router.post('/create_item/characters', protect as ProtectMiddleware, async (req, res, next) => {

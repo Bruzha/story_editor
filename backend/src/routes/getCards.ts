@@ -222,11 +222,11 @@ router.get(
       modelName: 'SupportingMaterial',
       modelFactory: SupportingMaterialFactory,
       title: 'СОВЕТЫ',
-      subtitleSource: 'project',
+      subtitleSource: 'Вспомогательные советы',
       typeSidebar: 'help',
       typeCard: 'advice',
-      createPageUrl: '/supporting_materials/create',
-      displayFields: ['title', 'content', 'createdAt'],
+      createPageUrl: '/advices/create',
+      displayFields: ['info.title', 'info.content', 'createdAt'],
       where: { type: enum_supportingmaterials_type.ADVICE },
     });
   }
@@ -241,14 +241,44 @@ router.get(
       modelName: 'SupportingMaterial',
       modelFactory: SupportingMaterialFactory,
       title: 'ТЕРМИНЫ',
-      subtitleSource: 'project',
+      subtitleSource: 'Вспомогательный словарь терминов',
       typeSidebar: 'help',
       typeCard: 'term',
-      createPageUrl: '/supporting_materials/create',
-      displayFields: ['title', 'content', 'createdAt'],
+      createPageUrl: '/terms/create',
+      displayFields: ['info.title', 'info.content', 'createdAt'],
       where: { type: enum_supportingmaterials_type.TERM },
     });
   }
 );
+
+// Маршрут для получения советов для администратора
+router.get('/advices', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  getItems(req, res, next, {
+    modelName: 'SupportingMaterial',
+    modelFactory: SupportingMaterialFactory,
+    title: 'СОВЕТЫ',
+    subtitleSource: 'Вспомогательные советы',
+    typeSidebar: 'profile',
+    typeCard: 'advice',
+    createPageUrl: '/advices/create',
+    displayFields: ['info.title', 'info.content', 'createdAt'],
+    where: { type: enum_supportingmaterials_type.ADVICE },
+  });
+});
+
+// Маршрут для получения терминов для администратора
+router.get('/terms', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
+  getItems(req, res, next, {
+    modelName: 'SupportingMaterial',
+    modelFactory: SupportingMaterialFactory,
+    title: 'ТЕРМИНЫ',
+    subtitleSource: 'Вспомогательный словарь терминов',
+    typeSidebar: 'profile',
+    typeCard: 'term',
+    createPageUrl: '/terms/create',
+    displayFields: ['info.title', 'info.content', 'createdAt'],
+    where: { type: enum_supportingmaterials_type.TERM },
+  });
+});
 
 export default router;

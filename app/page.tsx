@@ -4,9 +4,17 @@ import Button from './components/ui/button/Button';
 import Title from './components/ui/title/Title';
 import './style.scss';
 import dataFeatures from './dataForInstractions';
+import { useAuth } from './AuthContext';
+import { useDispatch } from 'react-redux';
+import { destroyCookie } from 'nookies';
+import { clearProfile, resetCardsState } from './store/actions';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const { isAuthenticated, logout } = useAuth();
+  const router = useRouter();
   const [expandedItems, setExpandedItems] = useState<number[]>([]);
+  const dispatch = useDispatch();
 
   const features = dataFeatures;
 
@@ -18,6 +26,20 @@ export default function Home() {
         return [...prev, id];
       }
     });
+  };
+
+  const handleLogout = () => {
+    dispatch(resetCardsState());
+    dispatch(clearProfile());
+    destroyCookie(null, 'jwt', { path: '/' });
+    logout();
+    router.push('/');
+  };
+  const handleLogin = () => {
+    router.push('/auth/autorisation');
+  };
+  const handleRegister = () => {
+    router.push('/auth/registration');
   };
 
   return (
@@ -37,13 +59,19 @@ export default function Home() {
             Работайте откуда угодно — даже с телефона.
           </h3>
           <div className="home__line"></div>
-          <h3>Создайте свою вселенную</h3>
-          <h3>Сформируйте ярких персонажей</h3>
+          <h3>Создавайте свои вселенные</h3>
+          <h3>Формируйте ярких персонажей</h3>
           <h3>Пишите уникальные истории</h3>
         </div>
         <div className="home__buttons">
-          <Button name={'Войти'} />
-          <Button name={'Зарегистрироваться'} />
+          {isAuthenticated ? (
+            <Button name={'Выйти'} onClick={handleLogout} />
+          ) : (
+            <>
+              <Button name={'Войти'} onClick={handleLogin} />
+              <Button name={'Зарегистрироваться'} onClick={handleRegister} />
+            </>
+          )}
         </div>
       </header>
 
@@ -58,7 +86,13 @@ export default function Home() {
               onClick={() => toggleItem(feature.id)}
             >
               {feature.title}
-              <span className="home__feature-toggle">▼</span>
+              <span className="home__feature-toggle">
+                {expandedItems.includes(feature.id) ? (
+                  <img src="/icons/arrow-up.svg" title="Свернуть" alt="Свернуть" width={20} height={20} />
+                ) : (
+                  <img src="/icons/arrow-down.svg" title="Развернуть" alt="Развернуть" width={20} height={20} />
+                )}
+              </span>
               {expandedItems.includes(feature.id) && (
                 <div className="home__feature-content">
                   {feature.content.map((step, index) => (
@@ -96,30 +130,6 @@ export default function Home() {
           </li>
         </ul>
       </section>
-
-      {/* <section className="home__access">
-        <Title text={'КАК ПОЛУЧИТЬ ДОСТУП?'}></Title>
-        <div className="home__underline"></div>
-        <p>Веб-приложение «РЕДАКТОР ИСТОРИЙ» не требует установки. Для работы необходимо:</p>
-        <ul>
-          <li>Любое устройство с доступом в интернет (компьютер, ноутбук, планшет, смартфон)</li>
-          <li>Современный веб-браузер (Chrome, Firefox, Safari, Edge) последней версии</li>
-          <li>Подключение к интернету</li>
-        </ul>
-      </section> */}
-
-      {/* <section className="home__getting_started">
-        <Title text={'НАЧАЛО РАБОТЫ'}></Title>
-        <div className="home__underline"></div>
-        <p>Чтобы начать работу с приложением:</p>
-        <ol>
-          <li>Откройте веб-браузер на вашем устройстве</li>
-          <li>Введите в адресную строку URL веб-приложения</li>
-          <li>Нажмите клавишу «Enter» для перехода на сайт</li>
-          <li>На шапке или футере сайта нажмите «Авторизация» или «Регистрация»</li>
-          <li>Заполните поля форм</li>
-        </ol>
-      </section> */}
     </div>
   );
 }
