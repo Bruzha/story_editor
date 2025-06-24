@@ -8,6 +8,7 @@ import exportReducer from './exportReducer';
 import { authReducer } from './authReducer';
 import { userReducer } from './userReducer';
 import { filtersReducer } from './filtersReducer';
+import elementReducer from './elementReducer';
 
 export const rootReducer = combineReducers({
   cards: cardsReducer,
@@ -19,6 +20,7 @@ export const rootReducer = combineReducers({
   auth: authReducer,
   user: userReducer,
   filters: filtersReducer,
+  elements: elementReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

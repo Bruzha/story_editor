@@ -490,8 +490,6 @@ export const createItem = async (
     const createData: any = {};
     createData.info = info;
     if (modelName === 'SupportingMaterial') {
-      // createData.title = info.title.value;
-      // createData.content = info.content.value;
       createData.type = typeHelp || 'Совет';
     }
     createData.markerColor = markerColor || '#4682B4';
@@ -775,5 +773,94 @@ export const getTimelineFilters = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Ошибка при получении фильтров временной шкалы:', error);
     res.status(500).json({ message: 'Ошибка сервера при получении фильтров' });
+  }
+};
+
+export const getElementsForCopy = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = (req as AuthRequest).user!.id;
+    const { type } = req.params;
+
+    const Project = ProjectFactory(sequelize, DataTypes) as any;
+
+    // 1. Получаем проекты пользователя
+    const projects = await Project.findAll({
+      where: { userId: userId },
+      attributes: ['id', 'info'],
+    });
+
+    const projectData = [];
+
+    // 2. Для каждого проекта получаем элементы нужного типа
+    for (const project of projects) {
+      let elements = [];
+      let modelFactory: any;
+
+      switch (type) {
+        case 'locations':
+          modelFactory = LocationFactory;
+          break;
+        case 'objects':
+          modelFactory = ObjectFactory;
+          break;
+        case 'characters':
+          modelFactory = CharacterFactory;
+          break;
+        case 'chapters':
+          modelFactory = ChapterFactory;
+          break;
+        case 'plotlines':
+          modelFactory = PlotLineFactory;
+          break;
+        case 'groups':
+          modelFactory = GroupFactory;
+          break;
+        case 'notes':
+          modelFactory = NoteFactory;
+          break;
+        case 'timelines':
+          modelFactory = TimelineEventFactory;
+          break;
+        case 'time_events':
+          modelFactory = TimelineEventFactory;
+          break;
+        default:
+          return res.status(400).json({ message: 'Invalid element type' });
+      }
+
+      const Model = modelFactory(sequelize, DataTypes) as any;
+
+      elements = await Model.findAll({
+        where: {
+          projectId: project.id, // Получаем элементы только для этого проекта
+        },
+      });
+
+      projectData.push({
+        projectId: project.id,
+        projectName: project.info.name.value,
+        elements: elements.map((item: any) => {
+          const itemData: any = { ...item.get({ plain: true }) };
+
+          // Добавляем форматирование
+          if (itemData.createdAt) {
+            itemData.createdAt = formatDate(new Date(itemData.createdAt));
+          }
+          if (itemData.updatedAt) {
+            itemData.updatedAt = formatDate(new Date(itemData.updatedAt));
+          }
+          if (itemData.eventDate) {
+            itemData.eventDate = formatDate(new Date(itemData.eventDate));
+          }
+
+          return itemData;
+        }),
+      });
+    }
+
+    return res.status(200).json(projectData);
+  } catch (error) {
+    console.error('Error getting elements for copy:', error);
+    next(error);
   }
 };

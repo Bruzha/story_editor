@@ -95,6 +95,10 @@
         // display: grid;
         // grid-template-columns: calc(100% - 40px) 20px;
         // gap: 20px;
+        p{
+            margin-top: 10px;
+            font-weight: 400;        
+        }   
     }
     &__miniatire-img{
         border-radius: 50%;

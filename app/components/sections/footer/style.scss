@@ -82,9 +82,12 @@
     align-items: center;
     padding: 10px;
   }
-   &__description, &__social{
+  &__description, &__social{
     padding: 10px;
-   }
+  }
+  &__description{
+    text-align: center;
+  }
 
   &__name > &__h1 {
     font-family: var(--font-merriweather), serif;

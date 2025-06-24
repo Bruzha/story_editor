@@ -12,8 +12,8 @@ import { SubmitHandler, UseFormRegister, UseFormSetValue } from 'react-hook-form
 import { useRouter } from 'next/navigation';
 import './style.scss';
 import { ChangeEvent } from 'react';
-import { AppDispatch } from '@/app/store';
-import { useDispatch } from 'react-redux';
+import { AppDispatch, RootState } from '@/app/store';
+import { useDispatch, useSelector } from 'react-redux';
 import { setCharacterData, setMarkerColor, setMiniature } from '@/app/store/reducers/characterReducer';
 import Image from 'next/image';
 
@@ -76,6 +76,7 @@ export default function CreatePageMaket({
   const [, setSelectedFileName] = useState<string>('');
   const [markerColor, setMarkerColorUse] = useState<string>(initialMarkerColor);
   const [src, setSrc] = useState<string | null>(initialSrc);
+  const userRole = useSelector((state: RootState) => state.user.profile?.role);
 
   useEffect(() => {
     const options: { label: string; value: string }[] = [];
@@ -226,7 +227,11 @@ export default function CreatePageMaket({
 
   if (title === 'ДАННЫЕ СОВЕТА' || title === 'ДАННЫЕ ТЕРМИНА') {
     showMarkerColorInput = false;
+    if (userRole === 'user') {
+      typeSidebar = 'help';
+    }
   }
+
   return (
     <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle} lineColor={markerColor}>
       <Form onSubmit={onSubmit}>
@@ -260,7 +265,9 @@ export default function CreatePageMaket({
             {masItems.map((item) => (
               <Label key={item.key} text={item.title} id={`item_${item.key}`}>
                 <div className="create__textarea-container">
-                  {typePage ? (
+                  {userRole === 'user' && (title === 'ДАННЫЕ СОВЕТА' || title === 'ДАННЫЕ ТЕРМИНА') ? (
+                    <p key={item.key}>{item.value}</p>
+                  ) : typePage ? (
                     <Textarea
                       key={item.key}
                       placeholder={item.placeholder}
@@ -271,25 +278,6 @@ export default function CreatePageMaket({
                   ) : (
                     <Textarea key={item.key} placeholder={item.placeholder} {...register(item.key)} />
                   )}
-                  {/* <div>
-                    <input
-                      title="Добавить поле ниже"
-                      className="create__button-textarea"
-                      type="image"
-                      src="/icons/add.svg"
-                      alt="Добавить поле ниже"
-                    />
-                    {!item.removable && (
-                      <input
-                        title="Удалить поле"
-                        className="create__button-textarea"
-                        type="image"
-                        src="/icons/delete.svg"
-                        alt="Удалить поле"
-                        onClick={() => removeItem(item.key)}
-                      />
-                    )}
-                  </div> */}
                 </div>
               </Label>
             ))}

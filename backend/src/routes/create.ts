@@ -2,7 +2,7 @@ import express, { Router, Request, Response, NextFunction } from 'express';
 import { protect } from '../middleware/authMiddleware';
 import { IdeaFactory } from '../models/Idea';
 import { ProjectFactory } from '../models/Project';
-import { createItem, formatDate } from '../controllers/commonController';
+import { createItem, formatDate, getElementsForCopy } from '../controllers/commonController';
 import { LocationFactory } from '../models/Location';
 import { ObjectFactory } from '../models/Object';
 import createPageData from '../data/createPageData';
@@ -113,6 +113,10 @@ router.post('/create_item/characters', protect as ProtectMiddleware, async (req,
     console.error('Error creating character:', error);
     next(error);
   }
+});
+
+router.get('/copy/elements/:type', protect as ProtectMiddleware, async (req, res, next) => {
+  getElementsForCopy(req, res, next);
 });
 
 export default router;

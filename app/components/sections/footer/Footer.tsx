@@ -67,13 +67,31 @@ export default function Footer() {
         )}
       </div>
       <div className="footer__social">
-        <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" className="footer__social-link">
+        <a
+          title="ВКонтакте"
+          href="https://vk.com/ruzhastik"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="footer__social-link"
+        >
           <FaVk size={40} color="var(--secondary-text-color)" />{' '}
         </a>
-        <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" className="footer__social-link">
+        <a
+          title="Pinterest"
+          href="https://pin.it/6fUGjwxhf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="footer__social-link"
+        >
           <FaPinterest size={40} color="var(--secondary-text-color)" />
         </a>
-        <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" className="footer__social-link">
+        <a
+          title="Instagram"
+          href="https://www.instagram.com/ruzhastik?igsh=MTJ3dWt2anozMXMyYg=="
+          target="_blank"
+          rel="noopener noreferrer"
+          className="footer__social-link"
+        >
           <AiFillInstagram size={40} color="var(--secondary-text-color)" />{' '}
         </a>
       </div>

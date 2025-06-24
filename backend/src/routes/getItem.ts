@@ -266,7 +266,7 @@ router.get('/advices/:adviceId', protect as ProtectMiddleware, (req: Request, re
 router.get('/terms/:termId', protect as ProtectMiddleware, (req: Request, res: Response, next: NextFunction) => {
   getItemById(req, res, next, 'termId', 'SupportingMaterial', SupportingMaterialFactory, {
     typeSidebar: 'profile',
-    title: 'ДАННЫЕ СОВЕТА',
+    title: 'ДАННЫЕ ТЕРМИНА',
     showImageInput: false,
   });
 });

@@ -14,7 +14,7 @@ import { fetchRelatedData } from '@/app/store/thunks/fetchRelatedData';
 import { convertFileToByteArray } from '@/app/store/thunks/convertFileToByteArray';
 import Label from '@/app/components/ui/label/Label';
 import Select from '@/app/components/ui/select/Select';
-import Checkbox from '@/app/components/ui/checkbox/Checkbox';
+//import Checkbox from '@/app/components/ui/checkbox/Checkbox';
 import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
 import Message from '@/app/components/ui/message/Message';
 import Loading from '@/app/components/ui/loading/Loading';
@@ -341,7 +341,7 @@ export default function CreateItemPage() {
     ) {
       return (
         <>
-          <Label text="Персонажи">
+          {/* <Label text="Персонажи">
             {relatedData.characters.map((character) => (
               <Checkbox
                 key={character.id}
@@ -370,18 +370,18 @@ export default function CreateItemPage() {
                 value={String(object.id)}
               />
             ))}
-          </Label>
+          </Label> */}
         </>
       );
     }
     if (type === 'chapters' && relatedData.time_events.length > 0) {
       return (
         <>
-          <Label text="События линии времени, входящие в главу">
+          {/* <Label text="События линии времени, входящие в главу">
             {relatedData.time_events.map((event) => (
               <Checkbox key={event.id} label={event.title} register={register('eventIds')} value={String(event.id)} />
             ))}
-          </Label>
+          </Label> */}
         </>
       );
     }

@@ -1,25 +1,19 @@
-import React, { ChangeEvent, useState } from 'react'; // Добавлено useState
-import { UseFormRegisterReturn, useFormContext } from 'react-hook-form'; // Добавлен useFormContext
+import React, { ChangeEvent, useState } from 'react';
 import './style.scss';
 
 interface CheckboxProps {
   label: string;
   value: string;
-  register: UseFormRegisterReturn;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const Checkbox: React.FC<CheckboxProps> = ({ label, value, register }) => {
-  const { getValues, setValue } = useFormContext(); // Получаем getValues и setValue
-  const [isChecked, setIsChecked] = useState<boolean>(false); //  Добавлено: состояние для чекбокса
+const Checkbox: React.FC<CheckboxProps> = ({ label, value, onChange }) => {
+  const [isChecked, setIsChecked] = useState<boolean>(false);
 
   const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const { checked } = event.target;
-    const fieldName = register.name;
-    console.log(fieldName);
-    const currentValue = getValues(fieldName) || []; // Получаем текущие значения
-    const newValue = checked ? [...currentValue, value] : currentValue.filter((item: string) => item !== value);
-    setValue(fieldName, newValue); // Устанавливаем новое значение в форму
-    setIsChecked(checked); // Обновляем локальное состояние
+    setIsChecked(checked);
+    onChange(event);
   };
 
   return (
@@ -29,10 +23,9 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, value, register }) => {
           <input
             className="checkbox__input-hidden"
             type="checkbox"
-            {...register}
             value={value}
             onChange={handleChange}
-            checked={isChecked} // Связываем состояние input с isChecked
+            checked={isChecked}
           />
           <span className={`checkbox__custom ${isChecked ? 'checkbox__custom--checked' : ''}`}></span>
         </div>

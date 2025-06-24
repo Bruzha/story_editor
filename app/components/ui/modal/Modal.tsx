@@ -1,5 +1,5 @@
 // components/ui/modal/Modal.tsx
-import React from 'react';
+import React, { ReactNode } from 'react';
 import Button from '../button/Button';
 import './style.scss';
 import '../form/style.scss';
@@ -12,9 +12,20 @@ interface ModalProps {
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
+  children?: ReactNode;
+  titleButtonYes?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, message, onConfirm, onCancel }) => {
+const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  children,
+  titleButtonYes = 'Да',
+}) => {
   if (!isOpen) {
     return null;
   }
@@ -24,8 +35,9 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, message, onConfir
       <div className="mod__content form" onClick={(e) => e.stopPropagation()}>
         <Title text={title}></Title>
         <p className="mod__message">{message}</p>
+        {children}
         <div className="mod__buttons">
-          <Button onClick={onConfirm} name={'Да'} />
+          <Button onClick={onConfirm} name={titleButtonYes} />
           <Button onClick={onCancel} name={'Отмена'} />
         </div>
       </div>

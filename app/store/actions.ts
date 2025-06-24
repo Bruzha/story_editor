@@ -27,6 +27,17 @@ interface FiltersData {
   chapters: FilterItem[];
 }
 
+interface ElementItem {
+  id: number;
+  [key: string]: any;
+}
+
+interface ProjectElements {
+  projectId: number;
+  projectName: string;
+  elements: ElementItem[];
+}
+
 // Заполнение страницы карточками
 export const fetchCardsRequest = createAction('FETCH_CARDS_REQUEST');
 export const fetchCardsSuccess = createAction<ApiResponse>('FETCH_CARDS_SUCCESS');
@@ -72,3 +83,8 @@ export const clearProfile = createAction('CLEAR_PROFILE');
 export const setFilters = createAction<FiltersData>('SET_FILTERS');
 
 export const updateCardSuccess = createAction<{ item: any; slug: string }>('cards/updateCardSuccess');
+
+// Загрузка элементов пользователя для добавления из проекта
+export const fetchElementsRequest = createAction('elements/fetchElementsRequest');
+export const fetchElementsSuccess = createAction<ProjectElements[]>('elements/fetchElementsSuccess');
+export const fetchElementsFailure = createAction<string>('elements/fetchElementsFailure');

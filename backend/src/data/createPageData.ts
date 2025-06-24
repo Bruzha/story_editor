@@ -110,6 +110,13 @@ const createPageData: CreatePageDataType[] = [
     typeSidebar: 'timeline',
   },
   {
+    type: 'timelines',
+    title: 'СОЗДАНИЕ СОБЫТИЯ',
+    showImageInput: true,
+    masTitle: masTitleTimeEvent,
+    typeSidebar: 'timeline',
+  },
+  {
     type: 'characters',
     title: 'СОЗДАНИЕ ПЕРСОНАЖА: основная информация',
     masTitle: masTitleCharacter,
