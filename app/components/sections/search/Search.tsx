@@ -225,7 +225,7 @@ export default function Search({
       const selectedElementIds = selectedElementsData[projectKey];
       console.log('selectedElementIds:', selectedElementIds);
       if (selectedElementIds && selectedElementIds.length > 0) {
-        const projectElements = elements.find((p) => p.projectId === parseInt(projectKey));
+        const projectElements = elements.find((p: any) => p.projectId === parseInt(projectKey));
         console.log('projectElements:', projectElements);
         if (projectElements) {
           selectedElementIds.forEach((elementId) => {
@@ -296,7 +296,7 @@ export default function Search({
         title="ДОБАВЛЕНИЕ ИЗ ПРОЕКТА"
         message={
           !elementsLoading
-            ? elements && elements.some((project) => project.elements.length > 0)
+            ? elements && elements.some((project: any) => project.elements.length > 0)
               ? 'Выберите элементы, которые хотите добавить в проект.'
               : 'У вас нет элементов, которые можно было бы добавить из проектов.'
             : ''

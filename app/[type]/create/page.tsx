@@ -1,4 +1,3 @@
-// app/[type]/create/page.tsx
 'use client';
 
 import CreatePageMaket from '@/app/components/sections/create-page-maket/Create-page-maket';
@@ -14,13 +13,14 @@ import { fetchRelatedData } from '@/app/store/thunks/fetchRelatedData';
 import { convertFileToByteArray } from '@/app/store/thunks/convertFileToByteArray';
 import Label from '@/app/components/ui/label/Label';
 import Select from '@/app/components/ui/select/Select';
-//import Checkbox from '@/app/components/ui/checkbox/Checkbox';
-import { useForm, SubmitHandler, FormProvider } from 'react-hook-form';
+import Checkbox from '@/app/components/ui/checkbox/Checkbox';
+import { useForm, SubmitHandler, FormProvider, useFormContext } from 'react-hook-form';
 import Message from '@/app/components/ui/message/Message';
 import Loading from '@/app/components/ui/loading/Loading';
 import { setProjectId } from '@/app/store/reducers/projectReducer';
 import Input from '@/app/components/ui/input/Input';
 import { clearCharacterData } from '@/app/store/reducers/characterReducer';
+import React, { ChangeEvent } from 'react';
 
 interface RouteParams {
   type?: string;
@@ -38,6 +38,7 @@ interface FormValues {
   locationIds?: string[];
   objectIds?: string[];
   eventIds?: string[];
+  chapterIds?: string[];
   miniature?: File;
   status?: string;
   plotline_type?: string;
@@ -49,9 +50,37 @@ interface RelatedDataState {
   locations: Item[];
   objects: Item[];
   time_events: Item[];
+  chapters: Item[];
+  relatedData: boolean;
 }
 
-export default function CreateItemPage() {
+interface CheckboxProps {
+  label: string;
+  value: string;
+  fieldName: string;
+}
+
+const RelatedEntityCheckbox: React.FC<CheckboxProps> = ({ label, value, fieldName }) => {
+  const { setValue, getValues } = useFormContext();
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    console.log('value: ', value);
+    const { checked } = event.target;
+    const currentValue = getValues(fieldName) || [];
+    let newValue: string[] = Array.isArray(currentValue) ? [...currentValue] : [];
+
+    if (checked) {
+      newValue = [...newValue, value];
+    } else {
+      newValue = newValue.filter((item) => item !== value);
+    }
+
+    setValue(fieldName, newValue);
+  };
+
+  return <Checkbox label={label} value={String(value)} onChange={handleChange} />;
+};
+
+function CreateItemPage() {
   const { type } = useParams<RouteParams>();
   const dispatch: AppDispatch = useDispatch();
   const { isAuthenticated } = useAuth();
@@ -81,6 +110,8 @@ export default function CreateItemPage() {
     locations: [],
     objects: [],
     time_events: [],
+    chapters: [],
+    relatedData: false,
   });
   const formMethods = useForm<FormValues>({
     defaultValues: {
@@ -140,6 +171,8 @@ export default function CreateItemPage() {
             locations: result.payload.locations || [],
             objects: result.payload.objects || [],
             time_events: result.payload.timeEvents || [],
+            chapters: result.payload.chapters || [],
+            relatedData: result.payload.relatedData || false,
           });
         } else {
           console.error('Failed to fetch related data:', result.payload);
@@ -150,6 +183,7 @@ export default function CreateItemPage() {
   }, [dispatch, projectId, type]);
 
   const handleFormSubmit: SubmitHandler<FormValues> = async (data: FormValues) => {
+    console.log('data: ', data);
     if (!type) return;
     if (type === 'characters') {
       const payload: any = {
@@ -227,8 +261,10 @@ export default function CreateItemPage() {
         locationIds: data.locationIds,
         objectIds: data.objectIds,
         eventIds: data.eventIds,
+        chapterIds: data.chapterIds,
       };
 
+      console.log('payload', payload);
       const createItemResult = await dispatch(createItem({ type, payload }));
       if (createItem.fulfilled.match(createItemResult)) {
         const newItem = createItemResult.payload.newItem;
@@ -333,59 +369,80 @@ export default function CreateItemPage() {
   };
 
   const renderCheckboxes = () => {
-    if (
-      (type === 'groups' || type === 'time_events') &&
-      relatedData.characters.length > 0 &&
-      relatedData.locations.length > 0 &&
-      relatedData.objects.length > 0
-    ) {
-      return (
-        <>
-          {/* <Label text="Персонажи">
-            {relatedData.characters.map((character) => (
-              <Checkbox
-                key={character.id}
-                label={character.title}
-                register={register('characterIds')}
-                value={String(character.id)}
-              />
-            ))}
-          </Label>
-          <Label text="Локации">
-            {relatedData.locations.map((location) => (
-              <Checkbox
-                key={location.id}
-                label={location.title}
-                register={register('locationIds')}
-                value={String(location.id)}
-              />
-            ))}
-          </Label>
-          <Label text="Объекты">
-            {relatedData.objects.map((object) => (
-              <Checkbox
-                key={object.id}
-                label={object.title}
-                register={register('objectIds')}
-                value={String(object.id)}
-              />
-            ))}
-          </Label> */}
-        </>
+    const checkboxes = [];
+
+    if ((type === 'groups' || type === 'time_events') && relatedData.characters.length > 0) {
+      checkboxes.push(
+        <Label text="Персонажи" key="characters">
+          {relatedData.characters.map((character) => (
+            <RelatedEntityCheckbox
+              key={character.id}
+              label={character.title}
+              value={String(character.id)}
+              fieldName="characterIds"
+            />
+          ))}
+        </Label>
       );
     }
+
+    if ((type === 'groups' || type === 'time_events') && relatedData.locations.length > 0) {
+      checkboxes.push(
+        <Label text="Локации" key="locations">
+          {relatedData.locations.map((location) => (
+            <RelatedEntityCheckbox
+              key={location.id}
+              label={location.title}
+              value={String(location.id)}
+              fieldName="locationIds"
+            />
+          ))}
+        </Label>
+      );
+    }
+
+    if ((type === 'groups' || type === 'time_events') && relatedData.objects.length > 0) {
+      checkboxes.push(
+        <Label text="Объекты" key="objects">
+          {relatedData.objects.map((object) => (
+            <RelatedEntityCheckbox
+              key={object.id}
+              label={object.title}
+              value={String(object.id)}
+              fieldName="objectIds"
+            />
+          ))}
+        </Label>
+      );
+    }
+
+    if (type === 'time_events' && relatedData.chapters.length > 0) {
+      console.log('relatedData.chapters: ', relatedData.chapters);
+      checkboxes.push(
+        <Label text="Главы" key="chapters">
+          {relatedData.chapters.map((chapter) => (
+            <RelatedEntityCheckbox
+              key={chapter.id}
+              label={chapter.title}
+              value={String(chapter.id)}
+              fieldName="chapterIds"
+            />
+          ))}
+        </Label>
+      );
+    }
+
     if (type === 'chapters' && relatedData.time_events.length > 0) {
-      return (
-        <>
-          {/* <Label text="События линии времени, входящие в главу">
-            {relatedData.time_events.map((event) => (
-              <Checkbox key={event.id} label={event.title} register={register('eventIds')} value={String(event.id)} />
-            ))}
-          </Label> */}
-        </>
+      checkboxes.push(
+        <Label text="События линии времени, входящие в главу" key="time_events">
+          {relatedData.time_events.map((event) => (
+            <RelatedEntityCheckbox key={event.id} label={event.title} value={String(event.id)} fieldName="eventIds" />
+          ))}
+        </Label>
       );
     }
-    return null;
+
+    return checkboxes.length > 0 ? <>{checkboxes}</> : null;
   };
 
   if (!isAuthenticated) {
@@ -422,7 +479,7 @@ export default function CreateItemPage() {
   return (
     <FormProvider {...formMethods}>
       <div>
-        {isAuthenticated && type && createPageData ? (
+        {isAuthenticated && type && createPageData && relatedData.relatedData ? (
           <CreatePageMaket
             typeSidebar={createPageData.typeSidebar}
             title={createPageData.title}
@@ -441,7 +498,7 @@ export default function CreateItemPage() {
           </CreatePageMaket>
         ) : (
           <div>
-            {createPageLoading ? (
+            {createPageLoading || !relatedData.relatedData ? (
               <Loading />
             ) : createPageError ? (
               <Message title={'ОШИБКА'} message={createPageError} />
@@ -454,3 +511,5 @@ export default function CreateItemPage() {
     </FormProvider>
   );
 }
+
+export default CreateItemPage;

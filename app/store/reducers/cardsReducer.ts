@@ -9,7 +9,7 @@ import {
   resetCardsState,
 } from '../actions';
 import { createItem } from '../thunks/createItem';
-import { updateCardSuccess } from '@/app/store/actions'; //  Импортируем updateCardSuccess
+import { updateCardSuccess } from '@/app/store/actions';
 import { CardsState } from '../../types/types';
 
 const initialState: CardsState = {
@@ -33,7 +33,7 @@ export const cardsReducer = createReducer(initialState, (builder) => {
     })
     .addCase(fetchCardsSuccess, (state, action) => {
       state.isLoading = false;
-      const { slug, masItems, typeSidebar, typeCard, title, subtitle, createPageUrl, displayFields } = action.payload; // ADD displayFields
+      const { slug, masItems, typeSidebar, typeCard, title, subtitle, createPageUrl, displayFields } = action.payload;
       state.cachedData[slug] = {
         items: masItems,
         typeSidebar,
@@ -83,33 +83,24 @@ export const cardsReducer = createReducer(initialState, (builder) => {
     })
     .addCase(createItem.fulfilled, (state, action) => {
       const { newItem, slug } = action.payload;
-
-      //  Добавляем новый элемент в state.items
       state.items.push(newItem);
-
-      //  Обновляем cachedData только для текущего slug
       if (state.cachedData[slug] && state.cachedData[slug]!.items) {
         state.cachedData[slug]!.items.push(newItem);
       } else {
-        //  Если для данного slug еще нет данных, создаем их
         state.cachedData[slug] = {
           items: [newItem],
-          typeSidebar: '', //  Замени на фактические значения, если они известны
-          typeCard: '', //  Замени на фактические значения, если они известны
-          title: '', //  Замени на фактические значения, если они известны
-          subtitle: '', //  Замени на фактические значения, если они известны
-          createPageUrl: '', //  Замени на фактические значения, если они известны
-          displayFields: [], //  Замени на фактические значения, если они известны
+          typeSidebar: '',
+          typeCard: '',
+          title: '',
+          subtitle: '',
+          createPageUrl: '',
+          displayFields: [],
         };
       }
     })
     .addCase(updateCardSuccess, (state, action) => {
       const { item, slug } = action.payload;
-
-      // Обновляем элемент в state.items
       state.items = state.items.map((i) => (i.id === item.id ? item : i));
-
-      // Обновляем элемент в cachedData[slug].items
       if (state.cachedData[slug] && state.cachedData[slug]!.items) {
         state.cachedData[slug]!.items = state.cachedData[slug]!.items.map((i) => (i.id === item.id ? item : i));
       }

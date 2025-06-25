@@ -53,11 +53,6 @@ function CardsPage({ params }: Props) {
     displayFields = [],
   } = useSelector((state: RootState) => state.cards.cachedData[slug.join('/')] || defaultCardData);
 
-  console.log(
-    'useSelector((state: RootState) => state.cards.cachedData',
-    useSelector((state: RootState) => state.cards.cachedData)
-  );
-
   const { isLoading, error } = useSelector((state: RootState) => ({
     isLoading: state.cards.isLoading,
     error: state.cards.error,

@@ -5,7 +5,7 @@ import { createContext, useState, useContext, ReactNode, useEffect } from 'react
 import { parseCookies, destroyCookie, setCookie } from 'nookies';
 import { useRouter } from 'next/navigation';
 import { Provider } from 'react-redux';
-import { store } from './store';
+import store from './store';
 
 interface AuthContextProps {
   isAuthenticated: boolean;
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsAuthenticated(true);
       console.log('AuthContext: useEffect - isAuthenticated set to true on load');
     }
-  }, [router]);
+  }, []);
 
   const contextValue: AuthContextProps = {
     isAuthenticated,

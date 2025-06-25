@@ -14,7 +14,7 @@ export interface CardsState {
   items: ItemsData[];
   isLoading: boolean;
   error: string | null;
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
+  typeSidebar: string;
   typeCard: string;
   title: string;
   subtitle: string;
@@ -25,7 +25,7 @@ export interface CardsState {
       items?: ItemsData[];
       isLoading?: boolean;
       error?: string | null;
-      typeSidebar?: 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | '';
+      typeSidebar?: string;
       typeCard?: string;
       title?: string;
       subtitle?: string;

@@ -1,21 +1,8 @@
 // src/store/thunks/fetchCards.ts
 
-import { fetchCardsRequest, fetchCardsSuccess, fetchCardsFailure } from '../actions';
+import { fetchCardsRequest, fetchCardsSuccess, fetchCardsFailure, ApiResponse } from '../actions';
 import { parseCookies } from 'nookies';
 import { AppDispatch, RootState } from '../index';
-
-type TypeSidebar = 'profile' | 'project' | 'timeline' | 'help' | 'create_character' | string | '';
-
-interface ApiResponse {
-  masItems: any[];
-  typeSidebar: TypeSidebar;
-  typeCard: string;
-  title: string;
-  subtitle: string;
-  createPageUrl: string;
-  slug: string;
-  displayFields: string[];
-}
 
 export const fetchCards = (slug: string[]) => {
   return async (dispatch: AppDispatch, getState: () => RootState) => {

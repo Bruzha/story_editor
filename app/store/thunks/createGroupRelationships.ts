@@ -51,8 +51,23 @@ export const createGroupRelationships = createAsyncThunk(
         })
       ) || [];
 
+    const chapterPromises =
+      data.chapterIds?.map((chapterId: string) =>
+        fetch(`http://localhost:3001/addRelationship/${type}/add-chapter`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ itemId, chapterId }),
+        })
+      ) || [];
+
     try {
-      await Promise.all([...characterPromises, ...locationPromises, ...objectPromises, ...timeEventPromises]);
+      await Promise.all([
+        ...characterPromises,
+        ...locationPromises,
+        ...objectPromises,
+        ...timeEventPromises,
+        ...chapterPromises,
+      ]);
       console.log('Relationships created successfully');
       return { success: true };
     } catch (error: any) {
