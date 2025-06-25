@@ -92,29 +92,44 @@ const deleteRelationship = async (
   req: DeleteRelationshipRequest,
   res: Response,
   next: NextFunction,
-  relationModelFactory: ModelFactory, // Фабрика для связующей модели
+  relationModelFactory: ModelFactory,
   modelIdField: string,
   targetIdField: string
 ) => {
-  const { itemId, characterId, locationId, objectId, eventId, chapterId } = req.body;
-  const targetId = characterId || locationId || objectId || eventId || chapterId;
+  const { itemId } = req.body;
 
-  if (!itemId || !targetId) {
-    return res.status(400).json({ message: 'itemId and targetId are required' });
+  if (!itemId) {
+    return res.status(400).json({ message: 'itemId is required' });
   }
 
   try {
-    const RelationModel = relationModelFactory(sequelize, DataTypes) as any; // Получаем модель из фабрики
+    const RelationModel = relationModelFactory(sequelize, DataTypes) as any;
     console.log('RelationModel: ', RelationModel);
-    const relation = await RelationModel.findOne({
+    console.log('modelIdField: ', modelIdField);
+    console.log('targetIdField: ', targetIdField);
+    console.log('itemId: ', itemId);
+
+    // Находим все записи, связанные с itemId
+    const relations = await RelationModel.findAll({
       where: {
         [modelIdField]: itemId,
-        [targetIdField]: targetId,
       },
     });
-    console.log('relation: ', relation);
-    await relation.destroy(); // Вызываем destroy на экземпляре модели
-    res.json({ message: 'Relationship deleted successfully' });
+
+    console.log('relations: ', relations);
+
+    if (!relations || relations.length === 0) {
+      return res.status(500).json({ message: 'Failed to delete relationship' });
+    }
+
+    // Удаляем все найденные записи
+    await Promise.all(
+      relations.map(async (relation: any) => {
+        await relation.destroy();
+      })
+    );
+
+    res.json({ message: 'Relationships deleted successfully' });
   } catch (error) {
     console.error('Error deleting relationship:', error);
     res.status(500).json({ message: 'Failed to delete relationship' });
@@ -350,6 +365,14 @@ router.delete(
 
 router.delete(
   '/time_events/delete-chapter',
+  protect as ProtectMiddleware,
+  async (req: DeleteRelationshipRequest, res: Response, next: NextFunction) => {
+    await deleteRelationship(req, res, next, ChapterTimelineEventFactory, 'timelineEventId', 'chapterId');
+  }
+);
+
+router.delete(
+  '/chapters/delete-timeEvent',
   protect as ProtectMiddleware,
   async (req: DeleteRelationshipRequest, res: Response, next: NextFunction) => {
     await deleteRelationship(req, res, next, ChapterTimelineEventFactory, 'timelineEventId', 'chapterId');

@@ -68,33 +68,7 @@ interface ExistingRelationships {
   chapterIds: string[];
 }
 
-const RelatedEntityCheckbox: React.FC<RelatedEntityCheckboxProps> = ({ label, value, fieldName, isChecked }) => {
-  const { setValue, getValues } = useFormContext();
-  const [checked, setChecked] = React.useState(isChecked);
-
-  useEffect(() => {
-    setChecked(isChecked);
-  }, [isChecked]);
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked: eventChecked } = event.target;
-    setChecked(eventChecked);
-    const currentValue = getValues(fieldName) || [];
-    let newValue: string[] = Array.isArray(currentValue) ? [...currentValue] : [];
-
-    if (eventChecked) {
-      newValue = [...newValue, value];
-    } else {
-      newValue = newValue.filter((item) => item !== value);
-    }
-
-    setValue(fieldName, newValue);
-  };
-
-  return <Checkbox label={label} name={fieldName} value={value} checked={checked} onChange={handleChange} />;
-};
-
-function ItemInfoPage() {
+const ItemInfoPage: React.FC = () => {
   const { type, id } = useParams<RouteParams>();
   const searchParams = useSearchParams();
   const typePage = searchParams.get('typePage');
@@ -103,7 +77,6 @@ function ItemInfoPage() {
   const router = useRouter();
   const projectId = useSelector((state: RootState) => state.project.projectId);
   const formMethods = useForm<FormValues>();
-
   const { register, handleSubmit, setValue, reset } = useForm<FormValues>();
   const { item, loading, error, characterName } = useSelector((state: RootState) => state.item);
 
@@ -167,6 +140,34 @@ function ItemInfoPage() {
 
     fetchData();
   }, [type, id, typePage, dispatch, isAuthenticated, router]);
+
+  const RelatedEntityCheckbox: React.FC<RelatedEntityCheckboxProps> = ({ label, value, fieldName, isChecked }) => {
+    const { setValue } = useFormContext<FormValues>(); //  FormValues
+    const [checked, setChecked] = useState(isChecked);
+
+    useEffect(() => {
+      setChecked(isChecked);
+    }, [isChecked]);
+
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+      const { checked: eventChecked } = event.target;
+      setChecked(eventChecked);
+
+      setExistingRelationships((prevExistingRelationships) => {
+        const updatedExistingRelationships = {
+          ...prevExistingRelationships,
+          [fieldName]: eventChecked
+            ? [...(prevExistingRelationships[fieldName] || []), value]
+            : (prevExistingRelationships[fieldName] || []).filter((item) => item !== value),
+        };
+
+        setValue(fieldName, updatedExistingRelationships[fieldName]); // Обновляем поле в react-hook-form
+        return updatedExistingRelationships;
+      });
+    };
+
+    return <Checkbox label={label} name={fieldName} value={value} checked={checked} onChange={handleChange} />;
+  };
 
   if (!isAuthenticated) {
     return null;
@@ -285,6 +286,7 @@ function ItemInfoPage() {
         }, {})
       : {};
 
+    console.log('existingRelationships: ', existingRelationships);
     let info = null;
     let info_appearance = null;
     let info_personality = null;
@@ -321,11 +323,12 @@ function ItemInfoPage() {
       const key = (relatedType + 'Ids') as keyof ExistingRelationships;
       const existingRelationships = getExistingRelationships(key);
       const deleteAllPromises = existingRelationships.map(async (relatedId) => {
+        console.log('relatedId: ', relatedId);
         await dispatch(
           updateRelationship({
             type: 'delete',
             endpoint: deleteEndpoint,
-            itemId: id, // id - id текущего элемента страницы
+            itemId: id,
             [relatedType + 'Id']: relatedId,
           })
         );
@@ -347,48 +350,83 @@ function ItemInfoPage() {
     };
 
     console.log('data 3: ', data);
+    const updatePromises: Promise<any>[] = []; // Массив для хранения промисов
+
     if (type === 'groups') {
-      await updateRelationships(
-        'character',
-        data.characterIds || [],
-        '/groups/add-character',
-        '/groups/delete-character'
+      updatePromises.push(
+        updateRelationships(
+          'character',
+          existingRelationships.characterIds || [],
+          '/groups/add-character',
+          '/groups/delete-character'
+        )
       );
 
-      await updateRelationships('location', data.locationIds || [], '/groups/add-location', '/groups/delete-location');
+      updatePromises.push(
+        updateRelationships(
+          'location',
+          existingRelationships.locationIds || [],
+          '/groups/add-location',
+          '/groups/delete-location'
+        )
+      );
 
-      await updateRelationships('object', data.objectIds || [], '/groups/add-object', '/groups/delete-object');
+      updatePromises.push(
+        updateRelationships(
+          'object',
+          existingRelationships.objectIds || [],
+          '/groups/add-object',
+          '/groups/delete-object'
+        )
+      );
     } else if (type === 'timelines') {
-      await updateRelationships(
-        'character',
-        data.characterIds || [],
-        '/time_events/add-character',
-        '/time_events/delete-character'
+      updatePromises.push(
+        updateRelationships(
+          'character',
+          existingRelationships.characterIds || [],
+          '/time_events/add-character',
+          '/time_events/delete-character'
+        )
       );
 
-      await updateRelationships(
-        'location',
-        data.locationIds || [],
-        '/time_events/add-location',
-        '/time_events/delete-location'
+      updatePromises.push(
+        updateRelationships(
+          'location',
+          existingRelationships.locationIds || [],
+          '/time_events/add-location',
+          '/time_events/delete-location'
+        )
       );
 
-      await updateRelationships(
-        'object',
-        data.objectIds || [],
-        '/time_events/add-object',
-        '/time_events/delete-object'
+      updatePromises.push(
+        updateRelationships(
+          'object',
+          existingRelationships.objectIds || [],
+          '/time_events/add-object',
+          '/time_events/delete-object'
+        )
       );
 
-      await updateRelationships(
-        'chapter',
-        data.chapterIds || [],
-        '/time_events/add-chapter',
-        '/time_events/delete-chapter'
+      updatePromises.push(
+        updateRelationships(
+          'chapter',
+          existingRelationships.chapterIds || [],
+          '/time_events/add-chapter',
+          '/time_events/delete-chapter'
+        )
       );
     } else if (type === 'chapters') {
-      await updateRelationships('event', data.eventIds || [], '/chapters/add-timeEvent', '/chapters/delete-timeEvent');
+      updatePromises.push(
+        updateRelationships(
+          'event',
+          existingRelationships.eventIds || [],
+          '/chapters/add-timeEvent',
+          '/chapters/delete-timeEvent'
+        )
+      );
     }
+    //  Ждем завершения всех updateRelationships
+    await Promise.all(updatePromises);
 
     dispatch(
       updateItem({
@@ -558,5 +596,5 @@ function ItemInfoPage() {
       </div>
     </FormProvider>
   );
-}
+};
 export default memo(ItemInfoPage);
