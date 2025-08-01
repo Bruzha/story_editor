@@ -479,7 +479,7 @@ function CreateItemPage() {
   return (
     <FormProvider {...formMethods}>
       <div>
-        {isAuthenticated && type && createPageData && relatedData.relatedData ? (
+        {isAuthenticated && type && createPageData ? (
           <CreatePageMaket
             typeSidebar={createPageData.typeSidebar}
             title={createPageData.title}
@@ -498,7 +498,7 @@ function CreateItemPage() {
           </CreatePageMaket>
         ) : (
           <div>
-            {createPageLoading || !relatedData.relatedData ? (
+            {createPageLoading ? (
               <Loading />
             ) : createPageError ? (
               <Message title={'ОШИБКА'} message={createPageError} />
