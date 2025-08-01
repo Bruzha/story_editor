@@ -14,15 +14,19 @@
       position: relative;
       display: flex;
       align-items: center;
-      :focus{
-        outline: 3px solid var(--secondary-color);
-      }
-      :hover{
+      :focus, :hover{
         outline: 3px solid var(--secondary-color);
       }
     }
-    &__wrapper--readonly :focus{
+    &__fileType{
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    &__wrapper--readonly {
+      :focus, :hover{
         outline: none;
+      }
     }
     &__icon {
       position: absolute;

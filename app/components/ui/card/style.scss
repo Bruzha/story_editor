@@ -46,7 +46,7 @@
     cursor: pointer;
     display: flex;
     flex-direction: row;
-    padding: 20px;
+    padding: 20px 5px 20px 20px;
     border-radius: 10px;
     margin-bottom: 20px;
     font-family: var(--font-open-sans), sans-serif;
@@ -69,6 +69,8 @@
     &__button-delete{
         width: 25px;
         height: 25px;
+        padding: 15px;
+        margin-top: -15px;
     }
     &__first-line{
         display: flex;

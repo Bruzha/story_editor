@@ -5,12 +5,21 @@ import './style.scss';
 
 interface IProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   options: { value: string; label: string }[];
+  onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
-const Select: React.FC<IProps> = ({ options, ...props }) => {
+const Select: React.FC<IProps> = ({ options, onChange, ...props }) => {
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    if (onChange) {
+      onChange(event);
+    }
+    console.log('Выбранное значение:', value);
+  };
+
   return (
     <div className="select__wrapper">
-      <select className="select" {...props}>
+      <select className="select" {...props} onChange={handleChange}>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

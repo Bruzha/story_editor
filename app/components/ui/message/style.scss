@@ -1,0 +1,54 @@
+@import "/app/mixins.scss";
+
+.message {
+  @include media-breakpoint-down(sm) {
+    height: calc(100vh - 90px - 90px);
+    &__text{
+        font-size: 16px;
+    }
+  }
+
+  @include media-breakpoint-up(sm){
+    &__text{
+        font-size: 22px;
+    }
+  }
+  @include media-breakpoint-between(sm, md) {
+    height: calc(100vh - 110px - 110px);
+    
+  }
+  @include media-breakpoint-down(md) {
+    &__form{
+        width: calc(100% - 40px - 40px - 30px);
+    }
+  }
+
+  @include media-breakpoint-between(md, xxxl) {
+    height: calc(100vh - 130px - 130px);
+    &__form{
+        width: calc(100% - 40px - 40px - 50px);
+    }
+  }
+
+  @include media-breakpoint-up(xxxl) {
+    height: calc(100vh - 150px - 150px);
+    &__form{
+        width: calc(100% - 480px - 480px - 70px);
+    }
+  }
+
+  width: 100%;
+  background-color: var(--background-color);
+  margin-left: 0;
+  margin-right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &__text{
+    color: var(--text-color);
+    font-family: var(--font-open-sans);
+    font-weight: 400;
+    text-align: center;
+  }
+}

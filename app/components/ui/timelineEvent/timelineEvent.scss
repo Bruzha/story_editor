@@ -1,0 +1,59 @@
+@import '/app/mixins.scss';
+
+.timeline-event {
+
+  @include media-breakpoint-down(sm) {
+    &__date,
+    &__name {font-size: 14px;}
+  }
+  @include media-breakpoint-up(sm) {
+    &__date,
+    &__name {font-size: 18px;}
+  }
+  position: absolute;
+  cursor: pointer;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: space-between;
+  height: 20px;
+  margin-top: -10px;
+  &:hover{
+    .timeline-event__date, .timeline-event__name{
+        text-decoration: underline;
+    }
+    .timeline-event__circle{
+        box-shadow: 0px 0px 8px var(--primary-color);
+    }
+  }
+
+  &__date,
+  &__name {
+    color: var(--text-color);
+    width: 30vw;
+    font-family: var(--font-open-sans);
+    word-break: break-all;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  &__date {
+    text-align: right;
+    right: 45px;
+  }
+
+  &__name {
+    text-align: left;
+    left: 45px;
+  }
+
+  &__circle {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+  }
+}

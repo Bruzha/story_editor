@@ -1,0 +1,30 @@
+@import "/app/mixins.scss";
+
+.export{
+
+    @include media-breakpoint-down(xl) {
+        &__buttons{
+            flex-direction: column;
+        }
+    }
+    @include media-breakpoint-up(xl) {
+        &__buttons{
+            flex-direction: row;
+            justify-content: space-between;
+        }
+    }
+    @include media-breakpoint-up(xxxl) {
+        &__buttons{
+            margin: 0 240px 0 240px;
+        }
+    }
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    &__buttons{
+        display: flex;
+        gap: 20px;
+        margin-top: 10px;
+    }
+}

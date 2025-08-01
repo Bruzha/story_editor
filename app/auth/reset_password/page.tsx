@@ -11,6 +11,9 @@ import Title from '../../components/ui/title/Title';
 import Link from '../../components/ui/link/Link';
 import './style.scss';
 import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { checkEmail, resetPassword } from '../../store/thunks/resetPassword';
+import { RootState, AppDispatch } from '@/app/store';
 
 interface EmailForm {
   email: string;
@@ -19,11 +22,6 @@ interface EmailForm {
 interface PasswordForm {
   password: string;
   confirmPassword: string;
-}
-
-interface ResetPasswordResponse {
-  message: string;
-  errors?: { [key: string]: string };
 }
 
 const emailValidationSchema = yup.object({
@@ -51,6 +49,8 @@ export default function ResetPassword() {
   const [, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
+  const dispatch: AppDispatch = useDispatch();
+  const isLoading = useSelector((state: RootState) => state.auth.isLoading);
 
   const {
     register: registerEmail,
@@ -71,67 +71,33 @@ export default function ResetPassword() {
   });
 
   const onSubmitEmail: SubmitHandler<EmailForm> = async (data: EmailForm) => {
-    try {
-      const response = await fetch('http://localhost:3001/auth/check-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email: data.email }),
-      });
-      const result: ResetPasswordResponse = await response.json();
-      console.log(JSON.stringify({ email: data.email }));
-      if (response.ok) {
-        console.log('Email check success:', result);
+    dispatch(checkEmail(data.email))
+      .then(() => {
         setEmail(data.email);
         setShowPasswordForm(true);
         setSuccessMessage(null);
         setErrorMessage(null);
-      } else {
-        console.error('Email check error:', result);
-        setErrorMessage(result.message || 'Пользователь с таким email не найден');
+      })
+      .catch((error) => {
+        console.error('Error checking email:', error);
+        setErrorMessage(error.message || 'Пользователь с таким email не найден');
         setSuccessMessage(null);
         setShowPasswordForm(false);
-      }
-    } catch (error) {
-      console.error('Error checking email:', error);
-      setErrorMessage('Произошла ошибка при проверке email');
-      setSuccessMessage(null);
-      setShowPasswordForm(false);
-    }
+      });
   };
 
   const onSubmitPassword: SubmitHandler<PasswordForm> = async (data: PasswordForm) => {
-    try {
-      const response = await fetch('http://localhost:3001/auth/reset-password', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          password: data.password,
-          confirmPassword: data.confirmPassword,
-        }),
-      });
-
-      const result: ResetPasswordResponse = await response.json();
-
-      if (response.ok) {
-        console.log('Password reset success:', result);
+    dispatch(resetPassword(email, data))
+      .then((result) => {
         setSuccessMessage(result.message);
         setErrorMessage(null);
         router.push('/auth/autorisation');
-      } else {
-        console.error('Password reset error:', result);
-        setErrorMessage(result.message || 'Не удалось сбросить пароль');
+      })
+      .catch((error) => {
+        console.error('Error resetting password:', error);
+        setErrorMessage(error.message || 'Не удалось сбросить пароль');
         setSuccessMessage(null);
-      }
-    } catch (error) {
-      console.error('Error resetting password:', error);
-      setErrorMessage('Произошла ошибка при сбросе пароля');
-      setSuccessMessage(null);
-    }
+      });
   };
 
   return (
@@ -147,7 +113,7 @@ export default function ResetPassword() {
             </div>
           </div>
           <div className="reset__button">
-            <Button name="Проверить email" type="submit" />
+            <Button name="Проверить email" type="submit" disabled={isLoading} />
           </div>
           <div className="reset__link">
             <Link name="Вернуться на страницу авторизации?" href={'./autorisation'} className="black-link-form">
@@ -183,7 +149,7 @@ export default function ResetPassword() {
             {errorMessage && <p className="reset__error-message reset__unit-error">{errorMessage}</p>}
           </div>
           <div className="reset__button">
-            <Button name="Сменить пароль" type="submit" />
+            <Button name="Сменить пароль" type="submit" disabled={isLoading} />
           </div>
           <div className="reset__link">
             <Link name="Вернуться на страницу авторизации?" href={'./autorisation'} className="black-link-form">

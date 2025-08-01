@@ -1,18 +1,50 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import bodyParser from 'body-parser';
 import { sequelize } from './config/database';
 import authRoutes from './routes/auth';
+import deleteRoutes from './routes/delete';
+import createRoutes from './routes/create';
+import updateRoutes from './routes/update';
+import getCardsRoutes from './routes/getCards';
+import getItemRoutes from './routes/getItem';
+import cookieParser from 'cookie-parser';
+import addRelationshipRoutes from './routes/addRelationship';
+import exportRoutes from './routes/export';
 
 dotenv.config({ path: '../.env' });
 
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors());
-app.use(express.json());
-app.use('/auth', authRoutes);
+// Cookie parser middleware
+app.use(cookieParser());
 
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+// Настраиваем CORS
+app.use(
+  cors({
+    origin: 'http://localhost:3000', // Разрешаем запросы с этого домена
+    credentials: true, // Разрешаем отправку куки
+  })
+);
+
+app.use(express.json()); // Используем middleware для обработки JSON-запросов
+
+// Подключаем маршруты
+app.use('/auth', authRoutes);
+app.use('/delete', deleteRoutes);
+app.use('/create', createRoutes);
+app.use('/update', updateRoutes);
+app.use('/getCards', getCardsRoutes);
+app.use('/getItem', getItemRoutes);
+app.use('/addRelationship', addRelationshipRoutes);
+app.use('/export', exportRoutes);
+
+// Функция для проверки подключения к базе данных
 async function testConnection() {
   try {
     await sequelize.authenticate();
@@ -24,14 +56,14 @@ async function testConnection() {
 
 testConnection();
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
+// Запускаем сервер после синхронизации базы данных
 sequelize
-  .sync({ alter: true }) // Добавьте { alter: true } чтобы обновить схему БД
+  .sync({ alter: true }) // { alter: true }  автоматически обновит схему БД. Осторожно в production!
   .then(() => {
     console.log('Database synced');
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
   })
   .catch((error) => {
     console.error('Error syncing database:', error);

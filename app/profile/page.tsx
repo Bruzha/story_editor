@@ -1,76 +1,123 @@
 'use client';
 
-import './style.scss';
+import React, { useEffect } from 'react';
+import { useAuth } from '../AuthContext';
+import { useRouter } from 'next/navigation';
 import Maket from '../components/sections/maket/Maket';
 import Form from '../components/ui/form/Form';
 import Button from '../components/ui/button/Button';
-import React from 'react';
+import Input from '../components/ui/input/Input';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema, { ValidationSchemaType } from './validation';
-import Input from '../components/ui/input/Input';
+import './style.scss';
+import Loading from '../components/ui/loading/Loading';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfile, updateProfile } from './../store/thunks/userThunks';
+import { RootState, AppDispatch } from '@/app/store';
 
-interface ProfileProps {
-  email: string;
-  date: string;
-  updateDate: string;
-  login: string;
-  name: string;
-  lastname: string;
-}
+export default function Profile() {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const dispatch: AppDispatch = useDispatch();
+  const profile = useSelector((state: RootState) => state.user.profile);
+  const isLoading = useSelector((state: RootState) => state.user.isLoading);
+  const error = useSelector((state: RootState) => state.user.error);
 
-export default function Profile({ email, date, updateDate, login, name, lastname }: ProfileProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ValidationSchemaType>({
     resolver: yupResolver(validationSchema),
     mode: 'onBlur',
     defaultValues: {
-      login: login,
-      name: name,
-      lastname: lastname,
+      login: profile?.login || '',
+      name: profile?.name || '',
+      lastname: profile?.lastname || '',
     },
   });
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/auth/autorisation');
+      return;
+    }
+
+    if (!profile) {
+      dispatch(fetchProfile());
+    }
+  }, [isAuthenticated, router, dispatch, profile]);
+
+  useEffect(() => {
+    if (profile) {
+      reset({
+        login: profile.login,
+        name: profile.name,
+        lastname: profile.lastname,
+      });
+    }
+  }, [profile, reset]);
+
   const onSubmit: SubmitHandler<ValidationSchemaType> = async (data: ValidationSchemaType) => {
-    console.log(data);
-    // Здесь будет логика отправки данных на сервер
+    dispatch(updateProfile(data)).catch((error) => {
+      console.error('Ошибка при обновлении данных профиля:', error);
+    });
   };
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
   return (
-    <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle="Ruzhastik">
+    <Maket typeSidebar="profile" title="ПРОФИЛЬ" subtitle={profile?.login || ''}>
       <div className="profile">
         <div>
           <div className="profile__info">
             <p>
-              <span>Имя:</span> Дарья {name}
+              <span>Имя:</span> {profile?.name}
             </p>
             <p>
-              <span>Фамилия:</span> Бружас {lastname}
+              <span>Фамилия:</span> {profile?.lastname}
             </p>
             <p>
-              <span>Email:</span> dashabry15@gmail.com{email}
+              <span>Email:</span> {profile?.email}
             </p>
             <p>
-              <span>Дата создания профиля:</span> 01.05.2025{date}
+              <span>Дата создания профиля:</span> {profile?.date}
             </p>
             <p>
-              <span>Дата последнего изменения профиля:</span> 07.05.2025{updateDate}
+              <span>Дата последнего изменения профиля:</span> {profile?.updateDate}
             </p>
           </div>
           <h3>Статистика</h3>
           <div className="profile__line"></div>
           <div className="profile__info">
             <p>
-              <span>Количество проектов:</span> 0{updateDate}
+              <span>Общее количество проектов:</span> {profile?.totalProjects}
             </p>
             <p>
-              <span>Количество законченных проектов:</span> 0{updateDate}
+              <span>Количество запланированных проектов:</span> {profile?.plannedProjects}
             </p>
             <p>
-              <span>Количество идей:</span> 0{updateDate}
+              <span>Количество проектов в процессе:</span> {profile?.inProgressProjects}
+            </p>
+            <p>
+              <span>Количество законченных проектов:</span> {profile?.completedProjects}
+            </p>
+            <p>
+              <span>Количество приостановленных проектов:</span> {profile?.suspendedProjects}
+            </p>
+            <p>
+              <span>Количество идей:</span> {profile?.totalIdeas}
             </p>
           </div>
         </div>
@@ -92,7 +139,7 @@ export default function Profile({ email, date, updateDate, login, name, lastname
               </div>
             </div>
             <div className="profile__button">
-              <Button name="Сохранить" type="submit" />
+              <Button name="Сохранить" type="submit" disabled={isLoading} />
             </div>
           </Form>
         </div>

@@ -1,0 +1,50 @@
+@import '/app/mixins.scss';
+
+.line{
+    @include media-breakpoint-down(sm) {
+        &__message{
+            font-size: 16px;
+        }
+    }
+    @include media-breakpoint-up(sm) {
+        &__message{
+            font-size: 22px;
+        }
+    }
+    @include media-breakpoint-down(md) {
+        &__line{
+            margin-top: 40px;
+        }
+    }
+    @include media-breakpoint-between(md, xxxl) {
+        &__line{
+            margin-top: 60px;
+        }
+    }
+    @include media-breakpoint-down(xl) {
+        &__radio-block{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+    @include media-breakpoint-up(xl) {
+        &__radio-block{
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+        }
+    }
+    @include media-breakpoint-up(xxxl) {
+        &__line{
+            margin-top: 75px;
+        }
+    }
+    &__message{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        height: 100px;
+    }
+}

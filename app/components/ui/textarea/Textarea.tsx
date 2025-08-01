@@ -1,12 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import './style.scss';
 
-const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = ({ ...props }) => {
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  value?: string;
+  onChange?: (event: ChangeEvent<HTMLTextAreaElement>) => void;
+}
+
+const Textarea: React.FC<TextareaProps> = ({ value, onChange, ...props }) => {
   return (
     <div className="textarea__wrapper">
-      <textarea className="textarea" {...props} />
+      <textarea className="textarea" value={value} onChange={onChange} {...props} />
     </div>
   );
 };

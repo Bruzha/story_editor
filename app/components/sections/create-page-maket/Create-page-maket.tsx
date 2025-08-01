@@ -1,122 +1,117 @@
+// components/sections/create-page-maket/Create-page-maket.tsx
 'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Maket from '../maket/Maket';
-import Textarea from '../../ui/textarea/Textarea';
-import Label from '../../ui/label/Label';
+import Form from '../../ui/form/Form';
 import Button from '../../ui/button/Button';
 import Input from '../../ui/input/Input';
-import Form from '../../ui/form/Form';
+import Textarea from '../../ui/textarea/Textarea';
+import Label from '../../ui/label/Label';
 import Select from '../../ui/select/Select';
-import './style.scss';
-import { useForm } from 'react-hook-form';
+import { SubmitHandler, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import './style.scss';
+import { ChangeEvent } from 'react';
+import { AppDispatch, RootState } from '@/app/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { setCharacterData, setMarkerColor, setMiniature } from '@/app/store/reducers/characterReducer';
+import Image from 'next/image';
 
-interface IProps {
-  typeSidebar: 'profile' | 'project' | 'timeline' | 'help' | 'create_character';
-  title: string;
-  subtitle: string;
-  masItems: {
-    id: number;
-    title: string;
-    placeholder?: string;
-    removable?: boolean;
-  }[];
-  showMarkerColorInput?: boolean;
-  showCancelButton?: boolean;
-  showSaveExitButton?: boolean;
-  showImageInput?: boolean; // Добавили showImageInput
-  handleFileChange?: (event: React.ChangeEvent<HTMLInputElement>) => void; // Добавили handleFileChange
-  children?: React.ReactNode;
-}
-
-interface FormData {
-  [key: string]: string;
-  markerColor: string;
-}
-
-// Определение интерфейса для пропсов Label
 interface LabelProps {
   text: string;
   id?: string;
   children?: React.ReactNode;
 }
 
+interface IProps {
+  typeSidebar: 'project' | 'profile' | 'timeline' | 'help' | 'create_character' | 'create_new_character' | '';
+  title: string;
+  subtitle: string;
+  masItems: {
+    key: string;
+    title: string;
+    value?: any;
+    placeholder?: string;
+    removable?: boolean;
+  }[];
+  markerColor?: string;
+  children?: React.ReactNode;
+  showImageInput?: boolean;
+  showMarkerColorInput?: boolean;
+  showCancelButton?: boolean;
+  showSaveExitButton?: boolean;
+  handleCancelClick?: () => void;
+  register: UseFormRegister<any>;
+  setValue: UseFormSetValue<any>;
+  onSubmit: SubmitHandler<any>;
+  src?: string | null;
+  typePage?: string | null;
+}
+
 export default function CreatePageMaket({
   typeSidebar,
   title,
   subtitle,
-  masItems: initialMasItems,
-  showMarkerColorInput = true,
-  showCancelButton = true,
-  showSaveExitButton = false,
-  showImageInput = true, // Значение по умолчанию для showImageInput
+  masItems,
+  markerColor: initialMarkerColor = '#4682B4',
   children,
+  showImageInput = false,
+  showMarkerColorInput = true,
+  showCancelButton = false,
+  showSaveExitButton = false,
+  handleCancelClick,
+  register,
+  setValue,
+  onSubmit,
+  typePage,
+  src: initialSrc = null,
 }: IProps) {
-  const { register, handleSubmit } = useForm<FormData>();
   const router = useRouter();
-  const [masItems, setMasItems] = useState(initialMasItems);
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
-    // Здесь будет логика отправки данных на сервер
-  };
-
-  const handleCancelClick = () => {
+  handleCancelClick = () => {
     router.back();
   };
+  const dispatch: AppDispatch = useDispatch();
+  const [selectOptions, setSelectOptions] = useState<{ label: string; value: string }[]>([]);
+  const [, setSelectedFileName] = useState<string>('');
+  const [markerColor, setMarkerColorUse] = useState<string>(initialMarkerColor);
+  const [src, setSrc] = useState<string | null>(initialSrc);
+  const userRole = useSelector((state: RootState) => state.user.profile?.role);
 
-  const selectOptions = masItems.map((item) => ({
-    value: `item_${item.id}`,
-    label: item.title,
-  }));
-  React.Children.forEach(children, (child) => {
-    if (React.isValidElement(child) && child.type === Label) {
-      const labelElement = child as React.ReactElement<LabelProps>;
-      const labelText = labelElement.props.text;
-      const labelId = labelElement.props.id || `child_${selectOptions.length}`;
-      selectOptions.push({ label: labelText, value: labelId });
+  useEffect(() => {
+    const options: { label: string; value: string }[] = [];
+
+    if (showImageInput) {
+      options.push({ label: 'Миниатюра', value: 'item_miniature' });
     }
-  });
-  if (showImageInput) {
-    selectOptions.push({ label: 'Миниатюра', value: 'item_miniature' });
-  }
-  if (showMarkerColorInput) {
-    selectOptions.push({ label: 'Маркерный цвет', value: 'item_marker_color' });
-  }
 
-  // Функция для удаления поля
-  const handleDeleteItem = (id: number) => {
-    setMasItems(masItems.filter((item) => item.id !== id));
-  };
+    const masItemsOptions = masItems.map((item) => ({
+      value: `item_${item.key}`,
+      label: item.title,
+    }));
 
-  // Функция выбора миниатюры
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.type.startsWith('image/')) {
-        console.log('Выбранный файл:', file);
-        // Получаем элемент по id, нужно указать, что он Input
-        const miniatureText = document.getElementById('miniature_text') as HTMLInputElement;
-        if (miniatureText) {
-          miniatureText.value = file.name;
-        }
-      } else {
-        alert('Пожалуйста, выберите изображение.'); // Выводим сообщение об ошибке
-        const fileInput = event.target as HTMLInputElement;
-        fileInput.value = '';
+    options.push(...masItemsOptions);
+    React.Children.forEach(children, (child) => {
+      if (React.isValidElement(child) && child.type === Label) {
+        const labelElement = child as React.ReactElement<LabelProps>;
+        const labelText = labelElement.props.text;
+        const labelId = labelElement.props.id || `child_${options.length}`;
+        options.push({ label: labelText, value: labelId });
       }
+    });
+    if (showMarkerColorInput) {
+      options.push({ label: 'Маркерный цвет', value: 'item_marker_color' });
     }
-  };
 
-  // Функция для прокрутки с учетом смещения
+    setSelectOptions(options);
+  }, [masItems, children, showImageInput, showMarkerColorInput]);
+
   const scrollToElement = (targetId: string) => {
     const element = document.getElementById(targetId);
     if (element) {
       const headerOffset = () => {
         let offset = 0;
 
-        // Элементы, которые могут быть sticky
         const createSelect = document.querySelector<HTMLElement>('.create__select');
         if (createSelect) {
           offset += createSelect.offsetHeight;
@@ -126,7 +121,6 @@ export default function CreatePageMaket({
           offset += subtitleContainer.offsetHeight;
         }
 
-        // Учитывается Sidebar, если он sticky
         const isSidebarSticky = window.innerWidth < 768;
         const sidebar = document.querySelector<HTMLElement>('.sidebar');
         if (isSidebarSticky && sidebar) {
@@ -152,9 +146,95 @@ export default function CreatePageMaket({
     }
   };
 
+  const handleFileChange = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+
+      if (file) {
+        setValue('miniature', file);
+        setSelectedFileName(file.name);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setSrc(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+
+        if (typeSidebar === 'create_new_character') {
+          const readerByteArray = new FileReader();
+          readerByteArray.onload = (event: any) => {
+            const arrayBuffer = event.target.result;
+            if (arrayBuffer) {
+              const uint8Array = new Uint8Array(arrayBuffer);
+              dispatch(setMiniature(Array.from(uint8Array))); // Convert to byte array
+            }
+          };
+          readerByteArray.readAsArrayBuffer(file);
+        }
+      } else {
+        setValue('miniature', null);
+        setSelectedFileName('');
+        setSrc(null);
+      }
+    },
+    [setValue, setSelectedFileName, setSrc, typeSidebar, dispatch]
+  );
+
+  useEffect(() => {
+    masItems.forEach((item) => {
+      if (item.value) {
+        setValue(item.key, item.value);
+      }
+    });
+  }, [masItems, setValue]);
+
+  const handleColorChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (typeSidebar === 'create_new_character') {
+      dispatch(setMarkerColor(e.target.value));
+    }
+    setMarkerColorUse(e.target.value);
+    setValue('markerColor', e.target.value);
+  };
+
+  const handleTextareaChange = (itemKey: string) => (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (typePage) {
+      let reduxTypePage = '';
+      switch (typePage) {
+        case 'characters':
+          reduxTypePage = 'characters';
+          break;
+        case 'appearance':
+          reduxTypePage = 'appearance';
+          break;
+        case 'personality':
+          reduxTypePage = 'personality';
+          break;
+        case 'social':
+          reduxTypePage = 'social';
+          break;
+        default:
+          reduxTypePage = 'social';
+          break;
+      }
+      dispatch(
+        setCharacterData({
+          typePage: reduxTypePage,
+          data: { [itemKey]: { value: e.target.value } },
+        })
+      );
+      setValue(itemKey, e.target.value);
+    }
+  };
+
+  if (title === 'ДАННЫЕ СОВЕТА' || title === 'ДАННЫЕ ТЕРМИНА') {
+    showMarkerColorInput = false;
+    if (userRole === 'user') {
+      typeSidebar = 'help';
+    }
+  }
+
   return (
-    <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle}>
-      <Form onSubmit={handleSubmit(onSubmit)}>
+    <Maket typeSidebar={typeSidebar} title={title} subtitle={subtitle} lineColor={markerColor}>
+      <Form onSubmit={onSubmit}>
         <div className="create">
           <div className="create__items">
             <div className="create__select">
@@ -168,57 +248,49 @@ export default function CreatePageMaket({
                   }}
                 />
               </Label>
-              <div className="create__line"></div>
+              <div className="create__line" style={{ backgroundColor: markerColor }}></div>
             </div>
-            {masItems.map((item) => (
-              <Label key={item.id} text={item.title} id={`item_${item.id}`}>
-                <div className="create__textarea-container">
-                  <Textarea key={item.id} placeholder={item.placeholder} {...register(item.title)} />
-                  <div>
-                    <input
-                      title="Добавить поле ниже"
-                      className="create__button-textarea"
-                      type="image"
-                      src="/icons/add.svg"
-                      alt="Добавить поле ниже"
-                    />
-                    <input
-                      title="Удалить поле"
-                      className="create__button-textarea"
-                      type="image"
-                      src="/icons/delete.svg"
-                      alt="Удалить поле"
-                      onClick={() => handleDeleteItem(item.id)}
-                    />
-                    <input
-                      title="Перетащить поле"
-                      className="create__button-textarea"
-                      type="image"
-                      src="/icons/move.svg"
-                      alt="Перетащить поле"
-                    />
-                  </div>
-                </div>
-              </Label>
-            ))}
-            {children}
             {showImageInput && (
               <Label text={'Миниатюра'} id="item_miniature">
-                <Input readOnly id="miniature_text" />
-                <div className="create__input-file">
+                <div className="create__miniature-container">
+                  <div>
+                    {src && (
+                      <Image className="create__miniatire-img" src={src} alt="Миниатюра" width={200} height={200} />
+                    )}
+                  </div>
                   <Input type="file" isFileType={true} onChange={handleFileChange} />
                 </div>
               </Label>
             )}
+            {masItems.map((item) => (
+              <Label key={item.key} text={item.title} id={`item_${item.key}`}>
+                <div className="create__textarea-container">
+                  {userRole === 'user' && (title === 'ДАННЫЕ СОВЕТА' || title === 'ДАННЫЕ ТЕРМИНА') ? (
+                    <p key={item.key}>{item.value}</p>
+                  ) : typePage ? (
+                    <Textarea
+                      key={item.key}
+                      placeholder={item.placeholder}
+                      id={item.key}
+                      onChange={handleTextareaChange(item.key)}
+                      defaultValue={item.value}
+                    />
+                  ) : (
+                    <Textarea key={item.key} placeholder={item.placeholder} {...register(item.key)} />
+                  )}
+                </div>
+              </Label>
+            ))}
+            {children}
             {showMarkerColorInput && (
               <Label text={'Маркерный цвет'} id="item_marker_color">
-                <Input type="color" defaultValue="#4682B4" />
+                <Input type="color" value={markerColor} {...register('markerColor')} onChange={handleColorChange} />
               </Label>
             )}
           </div>
           <div className="create__button">
             <Button type="submit" name={'Сохранить'} />
-            {showCancelButton && <Button name={'Отмена'} onClick={handleCancelClick} />}
+            {showCancelButton && <Button name={'Назад'} onClick={handleCancelClick} />}
             {showSaveExitButton && <Button name={'Сохранить и выйти'} />}
           </div>
         </div>

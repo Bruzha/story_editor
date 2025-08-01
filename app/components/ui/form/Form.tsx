@@ -1,10 +1,9 @@
-// Form.tsx (или аналогичное)
 import React, { ReactNode, FormEventHandler } from 'react';
 import './style.scss';
 
 interface IProps {
   children: ReactNode;
-  onSubmit: FormEventHandler<HTMLFormElement>; // Добавляем проп onSubmit
+  onSubmit: FormEventHandler<HTMLFormElement>;
 }
 
 export default function Form({ children, onSubmit }: IProps) {

@@ -1,5 +1,6 @@
 'use client';
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import validationSchema from './validation';
@@ -7,8 +8,13 @@ import Input from '../../components/ui/input/Input';
 import Button from '../../components/ui/button/Button';
 import Form from '../../components/ui/form/Form';
 import Title from '../../components/ui/title/Title';
-import Link from '../../components/ui/link/Link';
+import MyLink from '../../components/ui/link/Link';
 import './style.scss';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '../../AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../../store/thunks/registerUser';
+import { RootState, AppDispatch } from '@/app/store';
 
 interface FormData {
   login: string;
@@ -25,9 +31,17 @@ interface BackendError {
 interface RegistrationResponse {
   message: string;
   errors?: BackendError[];
+  token?: string;
+  userId?: number;
 }
 
 export default function Registration() {
+  const [, setErrorMessage] = useState<string | null>(null);
+  const router = useRouter();
+  const { login } = useAuth();
+  const dispatch: AppDispatch = useDispatch();
+  const isLoading = useSelector((state: RootState) => state.auth.isLoading);
+
   const {
     register,
     handleSubmit,
@@ -39,37 +53,27 @@ export default function Registration() {
   });
 
   const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
-    try {
-      const response = await fetch('http://localhost:3001/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result: RegistrationResponse = await response.json(); // Явное указание типа
-      if (response.ok) {
-        console.log('Success:', result);
-        // Обработайте успешную регистрацию
-      } else {
-        if (result.errors && Array.isArray(result.errors)) {
-          result.errors.forEach((error) => {
-            if (error.path === 'login') {
-              setError('login', { type: 'manual', message: 'Аккаунт с таким логином уже есть' });
-            } else if (error.path === 'email') {
-              setError('email', { type: 'manual', message: 'Аккаунт с таким email уже есть' });
+    dispatch(registerUser(data))
+      .then((result) => {
+        setErrorMessage(null);
+        login(result.token);
+        router.push('/profile');
+      })
+      .catch((error: RegistrationResponse) => {
+        if (error.errors && Array.isArray(error.errors)) {
+          error.errors.forEach((apiError) => {
+            if (apiError.path === 'login') {
+              setError('login', { type: 'manual', message: 'Пользователь с таким логином уже зарегистрирован' });
+            } else if (apiError.path === 'email') {
+              setError('email', { type: 'manual', message: 'Пользователь с таким email уже зарегистрирован' });
             }
           });
         } else {
-          console.error('Неверный формат ответа:', result); // Логируем, если формат ответа не соответствует ожиданиям
+          console.error('Ошибка:', error);
+          setErrorMessage(error.message || 'Произошла ошибка при регистрации');
         }
-      }
-    } catch (error) {
-      console.error('Ошибка:', error);
-    }
+      });
   };
-
   return (
     <div className="registration">
       <Form onSubmit={handleSubmit(onSubmit)}>
@@ -101,12 +105,12 @@ export default function Registration() {
           </div>
         </div>
         <div className="registration__button">
-          <Button name="Регистрация" type="submit" />
+          <Button name="Регистрация" type="submit" disabled={isLoading} />
         </div>
         <div className="registration__link">
-          <Link name="Уже есть аккаунт? Войти" href={'./autorisation'} className="black-link-form">
+          <MyLink name="Уже есть аккаунт? Войти" href={'./autorisation'} className="black-link-form">
             <></>
-          </Link>
+          </MyLink>
         </div>
       </Form>
     </div>

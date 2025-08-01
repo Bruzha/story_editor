@@ -1,0 +1,39 @@
+@import "/app/mixins.scss";
+
+.loading {
+
+  @include media-breakpoint-down(sm){
+    height: calc(100vh - 90px - 90px);
+  }
+  @include media-breakpoint-between(sm, md){
+    height: calc(100vh - 110px - 110px);
+  }
+  @include media-breakpoint-between(md, xxxl){
+    height: calc(100vh - 130px - 130px);
+  }
+  @include media-breakpoint-up(xxxl){
+    height: calc(100vh - 150px - 150px);
+  }
+
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  align-items: center;
+  z-index: 1;
+
+  &__spinner {
+  //border: 8px solid var(--background-color); // Цвет рамки спиннера
+  border-top: 5px solid var(--primary-color); // Цвет вращающейся части спиннера
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  animation: spin 1s linear infinite; // Анимация вращения
+}
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

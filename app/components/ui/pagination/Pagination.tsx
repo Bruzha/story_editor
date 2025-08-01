@@ -1,4 +1,4 @@
-// Pagination.tsx
+'use client';
 import React from 'react';
 import './style.scss';
 import Button from '../button/Button';

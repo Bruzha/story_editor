@@ -1,0 +1,92 @@
+@import '/app/mixins.scss';
+
+.radio {
+  @include media-breakpoint-down(sm) {
+    &__custom {
+      width: 18px;
+      height: 18px;
+      &::after {
+        width: 10px;
+        height: 10px;
+      }
+    }
+  }
+  @include media-breakpoint-up(sm) {
+    &__custom {
+      width: 20px;
+      height: 20px;
+      &::after {
+        width: 12px;
+        height: 12px;
+      }
+    }
+  }
+
+  &__label {
+    font-family: var(--font-open-sans);
+    color: var(--text-color);
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+
+    &:focus,
+    &:hover {
+        .radio__custom {
+            outline: 3px solid var(--secondary-color);
+        }
+    }
+  }
+
+  &__wrapper {
+    display: inline-block;
+    margin-right: 8px;
+  }
+
+  &__input-hidden {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    cursor: pointer;
+  }
+
+  &__custom {
+    display: inline-block;
+    border: 1px solid var(--secondary-color);
+    border-radius: 50%;
+    background-color: white;
+    vertical-align: middle;
+    position: relative;
+
+    &::after {
+      content: '';
+      display: block;
+      border-radius: 50%;
+      background-color: var(--secondary-color);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+    }
+  }
+
+  &__input-hidden:checked + .radio__custom {
+    &::after {
+      opacity: 1 !important;
+    }
+  }
+
+
+  @include media-breakpoint-down(sm) {
+    &__label {
+      font-size: 16px;
+    }
+  }
+  @include media-breakpoint-up(sm) {
+    &__label {
+      font-size: 22px;
+    }
+  }
+}
